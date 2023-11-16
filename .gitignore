@@ -1,0 +1,7 @@
+build/
+data/
+CMakeFiles/
+result/
+archive/
+ReadGraph.log
+test/
