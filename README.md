@@ -9,5 +9,5 @@ cd build
 cmake ..
 make
 
-./bin/accHiFi
+./bin/ReadGraph
 ```
