@@ -1,4 +1,5 @@
 #include "GraphManager.h"
+#include "ReadWrite.h"
 #include <iostream>
 
 GraphManager::GraphManager(std::map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, pair_comparator> edge_lst, std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : edge_lst_(std::move(edge_lst)), read2count_(std::move(read2count)), args(args) {}
@@ -18,9 +19,10 @@ void GraphManager::construct_graph()
         auto v2_iter = read2vertex[read_pair.second];
 
         boost::add_edge(v1_iter, v2_iter, {read_pair.first, read_pair.second, edit_distance}, graph);
-
     }
     save_graph();
+    // auto graph_full_path_ = args.output_dir / args.graph_filename;
+    // Graph originalGraph = read_graph_from_dot(graph_full_path_);
     // Iterate over vertices and print their attributes
     // boost::graph_traits<Graph>::vertex_iterator vi, vend;
     // for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi) {
@@ -43,6 +45,46 @@ void GraphManager::save_graph() const {
     auto graph_full_path_ = args.output_dir / args.graph_filename;
     std::cout << "Output graph Path: " << graph_full_path_ << std::endl;
     std::ofstream dot_file(graph_full_path_);
-    boost::write_graphviz(dot_file, graph);  
-    std::cout << "Graph saved to file successfully." << std::endl;
+
+    // boost::write_graphviz(dot_file, graph);  
+    
+    // Check if the file is open
+    if (dot_file.is_open()) {
+        // Write the graph to the file in Graphviz format
+        // boost::write_graphviz(dot_file, graph, make_label_writer(get(&VertexProperties::count, graph)),
+        //                make_label_writer(get(&EdgeProperties::weight, graph)));
+
+        // boost::write_graphviz(dot_file, graph, make_label_writer(get(&VertexProperties::count, graph)), custom_edge_label_writer<Graph>(graph));
+        boost::write_graphviz(dot_file, graph, custom_vertex_label_writer<Graph>(graph), custom_edge_label_writer<Graph>(graph));
+
+        // Close the file
+        dot_file.close();
+        
+        std::cout << "Graph written to " << graph_full_path_ << " successfully." << std::endl;
+    } else {
+        std::cerr << "Error opening file " << graph_full_path_ << std::endl;
+    }        
+    // std::cout << "Graph saved to file successfully." << std::endl;
 }
+
+// Function to read the graph from a .dot file and create the original graph
+// Graph GraphManager::read_graph_from_dot(const std::string& filename) {
+//     std::ifstream file(filename);
+
+//     if (!file.is_open()) {
+//         std::cerr << "Error opening file " << filename << std::endl;
+//         return Graph(); // Return an empty graph on error
+//     }
+
+//     Graph graph;
+
+//     dynamic_properties dp;
+//     dp.property("weight", get(&EdgeProperties::weight, graph));
+//     dp.property("count", get(&VertexProperties::count, graph));
+//     dp.property("read", get(&VertexProperties::read, graph));
+
+//     read_graphviz(file, graph, dp);
+
+//     file.close();
+//     return graph;
+// }

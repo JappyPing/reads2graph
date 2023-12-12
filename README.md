@@ -9,5 +9,5 @@ cd build
 cmake ..
 make
 
-./bin/ReadGraph
+../bin/ReadGraph -i ../data/demo.fa -o ../result -k 5 -w 8 -x 6 -n 1 -g graph.dot
 ```

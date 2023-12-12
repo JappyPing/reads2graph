@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
     auto edge_lst = EdgeConstructor(minimiser_to_reads, args).get_edge_lst();
     ///////////////////////////////////////////////////////////////////////////////
     GraphManager(edge_lst, results.second, args).construct_graph();
-
+    
     //Print the stored read pairs and edit distances
     // for (const auto &[read_pair, edit_distance] : edge_lst)
     // {

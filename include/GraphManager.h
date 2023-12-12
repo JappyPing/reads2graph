@@ -3,6 +3,7 @@
 
 #include "Utils.h"
 #include "LoggingLevels.h"
+#include "ReadWrite.h"
 #include "EdgeConstructor.h"
 #include <seqan3/alphabet/nucleotide/dna5.hpp>
 #include <map>
@@ -16,6 +17,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/properties.hpp>
+#include <boost/graph/graphml.hpp>
 // Define the graph type with properties for vertices and edges
 struct VertexProperties {
     std::vector<seqan3::dna5> read;
@@ -46,6 +48,33 @@ struct hash<std::vector<seqan3::dna5>>
 }
 
 typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS, VertexProperties, EdgeProperties> Graph;
+
+template <class Name>
+class custom_edge_label_writer {
+public:
+    custom_edge_label_writer(Name _name) : name(_name) {}
+    template <class Edge>
+    void operator()(std::ostream& out, const Edge& e) const {
+        out << "[" << name[e].weight << "]";
+        // out << "[weight=\"" << name[e].weight << "\"]";
+    }
+private:
+    Name name;
+};
+
+template <class Name>
+class custom_vertex_label_writer {
+public:
+    custom_vertex_label_writer(Name _name) : name(_name) {}
+    template <class Vertex>
+    void operator()(std::ostream& out, const Vertex& v) const {
+        auto seq = name[v].read | seqan3::views::to_char;
+        out << " [" << name[v].count << ", " << std::string(seq.begin(), seq.end()) << "]";
+    }
+private:
+    Name name;
+};
+
 class GraphManager {
 public:
     // Constructor
@@ -54,6 +83,7 @@ public:
     ~GraphManager();
     void construct_graph();
     void save_graph() const;
+    // Graph read_graph_from_dot(const std::string& filename);
 
 private:
     std::map<std::vector<seqan3::dna5>, uint32_t> read2count_;

@@ -54,7 +54,6 @@ void EdgeConstructor::process_blocks_in_parallel()
                         // Process each group in parallel
                         process_block(reads_vec, min_s, max_s);
                     });
-       
 }
 
 std::map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, pair_comparator> EdgeConstructor::get_edge_lst() 
