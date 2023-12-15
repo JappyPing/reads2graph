@@ -5,7 +5,7 @@
 #include <ranges>
 #include <utility>
 #include <vector>
- #include <execution>
+#include <execution>
 #include <seqan3/alignment/pairwise/align_pairwise.hpp>
 #include <seqan3/alignment/scoring/nucleotide_scoring_scheme.hpp>
 #include <seqan3/alphabet/nucleotide/dna4.hpp>
@@ -60,12 +60,33 @@ std::map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, p
 {
     process_blocks_in_parallel();
     // Print the stored read pairs and edit distances
-    // for (const auto &[read_pair, edit_distance] : edge_lst)
-    // {
-    //     seqan3::debug_stream << "Read Pair: " << read_pair.first << " - " << read_pair.second
-    //                         << ", Edit Distance: " << edit_distance << '\n';
-    // }   
-    std::cout << "Number of read edges: " << edge_lst.size() << std::endl; 
+    for (const auto &[read_pair, edit_distance] : edge_lst)
+    {
+        edit_distance_counts_[edit_distance]++;
+        // seqan3::debug_stream << "Read Pair: " << read_pair.first << " - " << read_pair.second
+                            // << ", Edit Distance: " << edit_distance << '\n';
+    }   
+    std::cout << "Number of read edges: " << edge_lst.size() << std::endl;
+    
+    for (const auto & [distance, count] : edit_distance_counts_)
+    {
+        std::cout << "Edit distance by minimiser" << distance << ": " << count << " pairs" << std::endl;
+    }
+    auto filename = args.output_dir / "Minimiser_edit_distance_counts.txt";
+    std::ofstream file(filename);
+    if (!file.is_open())
+    {
+        std::cerr << "Error opening file: " << filename << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
+    for (const auto & [distance, count] : edit_distance_counts_)
+    {
+        file << "Edit distance " << distance << ": " << count << " pairs\n";
+    }
+
+    file.close();
+
     return edge_lst;
 }
 

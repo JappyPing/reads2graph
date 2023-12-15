@@ -24,6 +24,7 @@ set(SOURCES
     GraphManager.cpp
     MinimizerGenerator.cpp
     EdgeConstructor.cpp
+    PairWiseEditDis.cpp
 )
 
 #include_directories

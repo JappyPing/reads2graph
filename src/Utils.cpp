@@ -20,7 +20,7 @@
 // #include <pbbam/DataSet.h>
 
 
-#define ReadGraph_VERSION "0.0.1"
+#define ReadGraph_VERSION "0.1.1"
 
 using namespace std;
 // using namespace PacBio;
@@ -135,6 +135,11 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                       sharg::config{.short_id = 'g',
                                     .long_id = "graph_filename",
                                     .description = "The file name of the constructed graph."});
+    // Brute Force
+    parser.add_option(args.pair_wise,
+                      sharg::config{
+                                    .long_id = "pair_wise",
+                                    .description = "Brute Force calcualte the pairwise edit distance."});
 
     // parser.add_option(args.year,
     //                   sharg::config{.short_id = 'y',

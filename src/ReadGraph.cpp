@@ -13,6 +13,7 @@
 #include "MinimizerGenerator.h"
 #include "EdgeConstructor.h"
 #include "GraphManager.h"
+#include "PairWiseEditDis.h"
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
@@ -81,13 +82,20 @@ int main(int argc, char** argv) {
     // {
     //     seqan3::debug_stream << read << '\n';
     // }
-    auto minimiser_to_reads = MinimizerGenerator(results.first, args).process_reads_in_parallel();
-    // EdgeConstructor(minimiser_to_reads, args).process_block();   
 
-    auto edge_lst = EdgeConstructor(minimiser_to_reads, args).get_edge_lst();
-    ///////////////////////////////////////////////////////////////////////////////
-    GraphManager(edge_lst, results.second, args).construct_graph();
-    
+    if (args.pair_wise) {
+            // Create an instance of PairwiseEditDistance
+            auto edge_lst = PairWiseEditDis(results.first, args).compute_pairwise_edit_distance();
+            GraphManager(edge_lst, results.second, args).construct_graph();
+    } else {
+        auto minimiser_to_reads = MinimizerGenerator(results.first, args).process_reads_in_parallel();
+        // EdgeConstructor(minimiser_to_reads, args).process_block();   
+
+        auto edge_lst = EdgeConstructor(minimiser_to_reads, args).get_edge_lst();
+        ///////////////////////////////////////////////////////////////////////////////
+        GraphManager(edge_lst, results.second, args).construct_graph();
+    }
+
     //Print the stored read pairs and edit distances
     // for (const auto &[read_pair, edit_distance] : edge_lst)
     // {
@@ -114,21 +122,7 @@ int main(int argc, char** argv) {
 
     
 
-    // const int k = 5;
-    // std::string inputFilePath = "../data/demo.fa"; // Replace with your actual file path
-    // std::string query = "ATCGATCAG";
-    // std::string outputFilePath = "output_graph.txt"; // Replace with your desired output file path
 
-    // WorkflowController workflowController;
-    // workflowController.runWorkflow(inputFilePath, query, paras["k"], outputFilePath);
-
-
-    // // split the large pbbam file into few files up to the number of cpu cores - 2
-    // DataProcess DP;
-    // int cpu_core_num = Utils::getHardwareConcurrency();
-    // // DP.splitPBBamFile(paras["i"], cpu_core_num-2, outputFolder);
-    // Controller main_controller;
-    // main_controller.pbbam2records(paras["i"], std::stoi(paras["t"]));
 
     return 0;
 }

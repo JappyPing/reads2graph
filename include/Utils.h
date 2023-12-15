@@ -30,6 +30,7 @@ struct cmd_arguments
     uint8_t max_edit_dis{5};
     uint8_t min_edit_dis{1};
     std::string graph_filename{"graph.dot"};
+    bool pair_wise{false};
 };
 
 class Utils{

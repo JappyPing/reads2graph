@@ -38,5 +38,6 @@ private:
     std::unordered_map<std::int64_t, std::vector<std::vector<seqan3::dna5>>> minimiser_to_reads_;
     cmd_arguments args;
     std::map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, pair_comparator> edge_lst;
+    std::map<int, size_t> edit_distance_counts_;
 };
 #endif // EDGECONSTRUCTOR_H
