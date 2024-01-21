@@ -36,6 +36,7 @@
 // #include <seqan3/std/filesystem>
 #include <iostream>
 #include <vector>
+// #include <omp.h>
 
 using namespace std;
 using namespace seqan3::literals;
@@ -95,7 +96,7 @@ int main(int argc, char** argv) {
         ///////////////////////////////////////////////////////////////////////////////
         GraphManager(edge_lst, results.second, args).construct_graph();
     }
-
+    Utils::logMessage(LOG_LEVEL_INFO,  "All done!");
     //Print the stored read pairs and edit distances
     // for (const auto &[read_pair, edit_distance] : edge_lst)
     // {

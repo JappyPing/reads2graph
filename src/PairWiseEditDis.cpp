@@ -45,8 +45,13 @@ std::map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, p
         // seqan3::debug_stream << "sid1: " << sid1 << "; sid2: " << sid2 << "\n"; // the real sequence ids
         auto read_pair = std::make_pair(reads_vec[sid1], reads_vec[sid2]);
         int edit_distance = result.score();
-        edge_lst[read_pair] = edit_distance;
-        edit_distance_counts_[edit_distance]++;
+        auto it = edge_lst.find(read_pair);
+        if (it == edge_lst.end())
+        {
+            edge_lst[read_pair] = edit_distance;
+            edit_distance_counts_[edit_distance]++;            
+        }
+
     }
     std::cout << "Number of total read edges: " << edge_lst.size() << std::endl; 
     for (const auto & [distance, count] : edit_distance_counts_)

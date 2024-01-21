@@ -131,6 +131,11 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                                     .long_id = "min_edit_dis",
                                     .description = "The minimum edit distance for constructing edges between reads."});
 
+    parser.add_option(args.num_process,
+                      sharg::config{.short_id = 'p',
+                                    .long_id = "num_process",
+                                    .description = "The number of expected processes."});
+
     parser.add_option(args.graph_filename,
                       sharg::config{.short_id = 'g',
                                     .long_id = "graph_filename",
