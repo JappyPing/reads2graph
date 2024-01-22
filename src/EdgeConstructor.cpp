@@ -19,7 +19,8 @@
 
 EdgeConstructor::EdgeConstructor(std::unordered_map<std::int64_t, std::vector<std::vector<seqan3::dna5>>> minimiser_to_reads, cmd_arguments args) : minimiser_to_reads_(std::move(minimiser_to_reads)), args(args) {}
 
-std::map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, pair_comparator> EdgeConstructor::get_edge_lst() 
+// std::map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, pair_comparator> EdgeConstructor::get_edge_lst() 
+std::unordered_map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, unordered_pair> EdgeConstructor::get_edge_lst() 
 {
     process_blocks_in_parallel();
     // Print the stored read pairs and edit distances
@@ -33,7 +34,7 @@ std::map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, p
     
     for (const auto & [distance, count] : edit_distance_counts_)
     {
-        std::cout << "Edit distance by minimiser" << distance << ": " << count << " pairs" << std::endl;
+        std::cout << "Edit distance of " << distance << ": " << count << " pairs" << std::endl;
     }
     auto filename = args.output_dir / "Minimiser_edit_distance_counts.txt";
     std::ofstream file(filename);
@@ -45,7 +46,7 @@ std::map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, p
 
     for (const auto & [distance, count] : edit_distance_counts_)
     {
-        file << "Edit distance " << distance << ": " << count << " pairs\n";
+        file << "Edit distance of " << distance << ": " << count << " pairs\n";
     }
 
     file.close();
@@ -60,12 +61,142 @@ void EdgeConstructor::process_blocks_in_parallel()
 
     // Declare and define a global variable for available cores
     int available_cores = omp_get_max_threads();
+    std::cout << "The maximum number of threads available:" << available_cores << std::endl;
     // Ensure the user-specified number of cores is within a valid range
     int num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
 
     // Set the number of threads for OpenMP
     omp_set_num_threads(num_cores_to_use);
 
+    std::vector<std::vector<std::vector<seqan3::dna5>>> small_group;
+    std::vector<std::vector<std::vector<seqan3::dna5>>> large_group;
+
+    #pragma omp parallel for
+    for (auto i = 0u; i < minimiser_to_reads_.size(); ++i) {
+        const auto &entry = *std::next(minimiser_to_reads_.begin(), i);
+        const std::vector<std::vector<seqan3::dna5>> &reads_vec = entry.second;
+        auto cur_read_num = reads_vec.size();
+        if ( cur_read_num == 1){
+            continue;
+        } else if ( cur_read_num >= 2 && cur_read_num < 100){
+            #pragma omp critical
+            {
+                small_group.emplace_back(reads_vec);
+            } 
+        } else{
+            #pragma omp critical
+            {
+                std::cout << cur_read_num << " ";
+                large_group.emplace_back(reads_vec);    
+            }
+        }
+    }
+
+    // small group
+    #pragma omp parallel for
+    for (const auto &group : small_group)
+    {
+        auto config = seqan3::align_cfg::method_global{} | seqan3::align_cfg::edit_scheme | seqan3::align_cfg::min_score{min_s} | seqan3::align_cfg::output_score{};
+
+        auto pairwise_combinations = seqan3::views::pairwise_combine(group);
+
+        #pragma omp parallel for
+        for (size_t i = 0; i < pairwise_combinations.size(); ++i)
+        {
+            auto const &combination = pairwise_combinations[i];
+            auto const &seq1 = std::get<0>(combination);
+            auto const &seq2 = std::get<1>(combination);
+
+            auto alignment_results = seqan3::align_pairwise(std::tie(seq1, seq2), config);
+
+            auto read_pair = std::make_pair(seq1, seq2);
+            // auto it = edge_lst.find(read_pair);
+            // Iterate over alignment results and access the scores
+            for (auto const &result : alignment_results)
+            {
+                int edit_distance = result.score();
+                if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+                {
+                    #pragma omp critical
+                    {
+                        edge_lst[read_pair] = edit_distance;
+                    }                    
+                }
+
+                // if (it == edge_lst.end() && (edit_distance >= min_s) && (edit_distance <= max_s)) 
+                // {
+                //     #pragma omp critical
+                //     {
+                //         edge_lst[read_pair] = edit_distance;
+                //     }                    
+                // }
+            }
+        }                    
+    }
+    Utils::logMessage(LOG_LEVEL_INFO,  "Pairwise comparsion for the small-size-based buckets done!");
+    // large group
+    for (const auto &group : large_group)
+    {
+        auto config = seqan3::align_cfg::method_global{} | seqan3::align_cfg::edit_scheme | seqan3::align_cfg::min_score{min_s} | seqan3::align_cfg::output_score{};
+
+        auto pairwise_combinations = seqan3::views::pairwise_combine(group);
+
+        #pragma omp parallel for
+        for (size_t i = 0; i < pairwise_combinations.size(); ++i)
+        {
+            auto const &combination = pairwise_combinations[i];
+            auto const &seq1 = std::get<0>(combination);
+            auto const &seq2 = std::get<1>(combination);
+
+            auto alignment_results = seqan3::align_pairwise(std::tie(seq1, seq2), config);
+
+            auto read_pair = std::make_pair(seq1, seq2);
+            auto it = edge_lst.find(read_pair);
+            // Iterate over alignment results and access the scores
+            for (auto const &result : alignment_results)
+            {
+                int edit_distance = result.score();
+                if (it == edge_lst.end() && (edit_distance >= min_s) && (edit_distance <= max_s)) 
+                {
+                    #pragma omp critical
+                    {
+                        edge_lst[read_pair] = edit_distance;
+                    }                    
+                }
+            }
+        }               
+    }
+}
+/*
+void EdgeConstructor::process_blocks_in_parallel()
+{
+    int min_s = -1 * args.max_edit_dis;
+    int max_s = -1 * args.min_edit_dis;
+
+    // Declare and define a global variable for available cores
+    int available_cores = omp_get_max_threads();
+    // Ensure the user-specified number of cores is within a valid range
+    int num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
+
+    // Set the number of threads for OpenMP
+    omp_set_num_threads(num_cores_to_use);
+
+    std::vector<std::vector<seqan3::dna5>> small_group;
+    std::vector<std::vector<seqan3::dna5>> large_group;
+
+    for (auto i = 0u; i < minimiser_to_reads_.size(); ++i) {
+        const auto &entry = *std::next(minimiser_to_reads_.begin(), i);
+        const std::vector<std::vector<seqan3::dna5>> &reads_vec = entry.second;
+        auto cur_read_num = reads_vec.size();
+        if ( cur_read_num < 100)
+            small_group.push_back(reads_vec);
+        else
+        {
+            std::cout << reads_vec.size() << " ";
+            large_group.push_back(reads_vec);            
+        }
+    }
+    
     #pragma omp parallel for
     for (auto i = 0u; i < minimiser_to_reads_.size(); ++i) {
         const auto &entry = *std::next(minimiser_to_reads_.begin(), i);
@@ -109,6 +240,7 @@ void EdgeConstructor::process_blocks_in_parallel()
     // #pragma omp taskwait
 
 }
+*/
 
 //////////////////////
 ////

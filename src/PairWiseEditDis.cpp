@@ -14,7 +14,7 @@
 
 PairWiseEditDis::PairWiseEditDis(std::set<std::vector<seqan3::dna5>> const & reads, cmd_arguments args) : reads_(std::move(reads)), args(args) {}
 
-std::map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, pair_comparator> PairWiseEditDis::compute_pairwise_edit_distance()
+std::unordered_map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, unordered_pair> PairWiseEditDis::compute_pairwise_edit_distance()
 {
     int min_s = -1 * args.max_edit_dis;
     int max_s = -1 * args.min_edit_dis;

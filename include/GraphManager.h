@@ -78,7 +78,8 @@ private:
 class GraphManager {
 public:
     // Constructor
-    GraphManager(std::map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, pair_comparator> edge_lst, std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args);
+    // GraphManager(std::map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, pair_comparator> edge_lst, std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args);
+    GraphManager(std::unordered_map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, unordered_pair> edge_lst, std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args);
     // Destructor
     ~GraphManager();
     void construct_graph();
@@ -87,7 +88,8 @@ public:
 
 private:
     std::map<std::vector<seqan3::dna5>, uint32_t> read2count_;
-    std::map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, pair_comparator> edge_lst_;
+    // std::map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, pair_comparator> edge_lst_;
+    std::unordered_map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, unordered_pair> edge_lst_;
     cmd_arguments args;
     std::filesystem::path graph_full_path_; 
     // Create maps to store the mappings
