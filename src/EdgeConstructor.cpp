@@ -89,6 +89,7 @@ void EdgeConstructor::process_blocks_in_parallel()
                 std::cout << cur_read_num << " ";
                 large_group.emplace_back(reads_vec);    
             }
+            std::cout << std::endl;
         }
     }
 
