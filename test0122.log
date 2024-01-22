@@ -11,3 +11,5 @@ Edit distance of -3: 965185 pairs
 Edit distance of -2: 796164 pairs
 Edit distance of -1: 87652 pairs
 Output graph Path: "./result/graph_new.dot"
+Graph written to "./result/graph_new.dot" successfully.
+2024-01-23 00:27:40: [36mINFO: All done![0m

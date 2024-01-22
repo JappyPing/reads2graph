@@ -8,7 +8,6 @@ GraphManager::GraphManager(std::unordered_map<std::pair<std::vector<seqan3::dna5
 
 GraphManager::~GraphManager(){}
 
-
 void GraphManager::construct_graph()
 {
     for (const auto& [read, count] : read2count_) {
@@ -19,7 +18,6 @@ void GraphManager::construct_graph()
     for (const auto& [read_pair, edit_distance] : edge_lst_) {
         auto v1_iter = read2vertex[read_pair.first];
         auto v2_iter = read2vertex[read_pair.second];
-
         boost::add_edge(v1_iter, v2_iter, {read_pair.first, read_pair.second, edit_distance}, graph);
     }
     save_graph();

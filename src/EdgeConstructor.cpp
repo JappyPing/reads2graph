@@ -1,6 +1,5 @@
 // EdgeConstructor.cpp
 #include "EdgeConstructor.h"
-#include "GraphManager.h"
 #include <algorithm>
 #include <ranges>
 #include <utility>
@@ -89,7 +88,6 @@ void EdgeConstructor::process_blocks_in_parallel()
                 std::cout << cur_read_num << " ";
                 large_group.emplace_back(reads_vec);    
             }
-            std::cout << std::endl;
         }
     }
 
@@ -134,6 +132,7 @@ void EdgeConstructor::process_blocks_in_parallel()
             }
         }                    
     }
+    std::cout << std::endl;
     Utils::logMessage(LOG_LEVEL_INFO,  "Pairwise comparsion for the small-size-based buckets done!");
     // large group
     for (const auto &group : large_group)

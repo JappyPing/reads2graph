@@ -87,16 +87,20 @@ int main(int argc, char** argv) {
     if (args.pair_wise) {
             // Create an instance of PairwiseEditDistance
             auto edge_lst = PairWiseEditDis(results.first, args).compute_pairwise_edit_distance();
+            Utils::logMessage(LOG_LEVEL_INFO,  "Pairwise (brute force) nt-edit-distance-based edges calculation done");
             GraphManager(edge_lst, results.second, args).construct_graph();
     } else {
         auto minimiser_to_reads = MinimizerGenerator(results.first, args).process_reads_in_parallel();
         // EdgeConstructor(minimiser_to_reads, args).process_block();   
 
         auto edge_lst = EdgeConstructor(minimiser_to_reads, args).get_edge_lst();
+        Utils::logMessage(LOG_LEVEL_INFO,  "nt-edit-distance-based edges calculation done!");
         ///////////////////////////////////////////////////////////////////////////////
+        
         GraphManager(edge_lst, results.second, args).construct_graph();
+
     }
-    Utils::logMessage(LOG_LEVEL_INFO,  "All done!");
+    Utils::logMessage(LOG_LEVEL_INFO,  "nt-edit-distance-based graph construction done!");
     //Print the stored read pairs and edit distances
     // for (const auto &[read_pair, edit_distance] : edge_lst)
     // {
