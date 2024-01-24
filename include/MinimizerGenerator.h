@@ -20,6 +20,8 @@ public:
     MinimizerGenerator(std::set<std::vector<seqan3::dna5>> unique_reads, cmd_arguments args);
     void process_read(const std::vector<seqan3::dna5> &read);
     std::unordered_map<std::int64_t, std::vector<std::vector<seqan3::dna5>>> process_reads_in_parallel();
+    std::tuple<int, int, double> findBestParameters(int l, int dt);
+    double prob(int l, int n, int k, int dt);
 private:
     std::set<std::vector<seqan3::dna5>> unique_reads_;
     std::unordered_map<std::int64_t, std::vector<std::vector<seqan3::dna5>>> minimiser_to_reads;

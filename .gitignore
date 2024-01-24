@@ -6,3 +6,4 @@ archive/
 ReadGraph.log
 test/
 bin/
+*log
