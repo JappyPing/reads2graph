@@ -8,6 +8,7 @@
 #define UTILS_H
 
 #include <string>
+#include <memory>
 #include <map>
 #include <iostream>
 #include <stdint.h>

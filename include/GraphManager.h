@@ -87,7 +87,7 @@ public:
     // Graph read_graph_from_dot(const std::string& filename);
 
 private:
-    std::map<std::vector<seqan3::dna5>, uint32_t> read2count_;
+    std::map<std::vector<seqan3::dna5>, uint32_t> read2count;
     // std::map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, pair_comparator> edge_lst_;
     std::unordered_map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, unordered_pair> edge_lst_;
     cmd_arguments args;

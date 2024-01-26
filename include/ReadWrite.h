@@ -16,10 +16,12 @@ using namespace std;
 
 class ReadWrite{
     public:
-        ReadWrite(void);//constructor
-        ~ReadWrite(void); //deconstructor
-        std::pair<std::set<std::vector<seqan3::dna5>>, std::map<std::vector<seqan3::dna5>, uint32_t>> get_unique_reads_counts(cmd_arguments args);
-
+        ReadWrite(cmd_arguments args);//constructor
+        ~ReadWrite(); //deconstructor
+        // std::pair<std::set<std::vector<seqan3::dna5>>, std::map<std::vector<seqan3::dna5>, uint32_t>> get_unique_reads_counts(cmd_arguments args);
+        std::map<std::vector<seqan3::dna5>, uint32_t> get_unique_reads_counts();
+    private:
+        cmd_arguments args;
 };
 
 #endif

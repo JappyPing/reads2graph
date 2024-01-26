@@ -8,15 +8,15 @@
 #include <omp.h>
 #include <seqan3/io/sequence_file/all.hpp>
 
-ReadWrite::ReadWrite(void){
-
+ReadWrite::ReadWrite(cmd_arguments args) : args(args){
 }
 
 ReadWrite::~ReadWrite(void){
 
 }
 
-std::pair<std::set<std::vector<seqan3::dna5>>, std::map<std::vector<seqan3::dna5>, uint32_t>> ReadWrite::get_unique_reads_counts(cmd_arguments args){
+// std::pair<std::set<std::vector<seqan3::dna5>>, std::map<std::vector<seqan3::dna5>, uint32_t>> ReadWrite::get_unique_reads_counts(cmd_arguments args){
+std::map<std::vector<seqan3::dna5>, uint32_t> ReadWrite::get_unique_reads_counts(){
     seqan3::sequence_file_input fin{args.input_data};
     // using record_type = decltype(fin)::record_type;
     // std::vector<record_type> records{};
@@ -26,9 +26,9 @@ std::pair<std::set<std::vector<seqan3::dna5>>, std::map<std::vector<seqan3::dna5
         records.push_back(std::move(record));
     }
     // Define a set to store unique reads.
-    std::set<std::vector<seqan3::dna5>> unique_reads;
+    // std::set<std::vector<seqan3::dna5>> unique_reads;
     // Define a map to store unique reads and their counts
-    std::map<std::vector<seqan3::dna5>, uint32_t> unique_reads2counts;
+    
 
     // Declare and define a global variable for available cores
     int available_cores = omp_get_max_threads();
@@ -38,7 +38,7 @@ std::pair<std::set<std::vector<seqan3::dna5>>, std::map<std::vector<seqan3::dna5
 
     // Set the number of threads for OpenMP
     omp_set_num_threads(num_cores_to_use);
-
+    std::map<std::vector<seqan3::dna5>, uint32_t> read2count;
     // OpenMP parallel for loop
     // OpenMP parallel for loop using range-based for loop
     #pragma omp parallel for
@@ -51,14 +51,15 @@ std::pair<std::set<std::vector<seqan3::dna5>>, std::map<std::vector<seqan3::dna5
         #pragma omp critical
         {
             // Combine unique_reads
-            unique_reads.insert(current_sequence);
+            // unique_reads.insert(current_sequence);
 
-            // Combine unique_reads2counts
-            unique_reads2counts[current_sequence]++;
+            // Combine read2count
+            read2count[current_sequence]++;
         }
     }
     // return unique_reads; 
-    return {unique_reads, unique_reads2counts};   
+    // return {unique_reads, read2count};   
+    return read2count; 
 }
 
 

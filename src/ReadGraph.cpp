@@ -76,8 +76,7 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-    ReadWrite readWrite;
-    auto results = readWrite.get_unique_reads_counts(args);
+    auto read2count = ReadWrite(args).get_unique_reads_counts();
     // // Print the unique reads.
     // for (auto const & read : unique_reads)
     // {
@@ -86,18 +85,18 @@ int main(int argc, char** argv) {
 
     if (args.pair_wise) {
             // Create an instance of PairwiseEditDistance
-            auto edge_lst = PairWiseEditDis(results.first, args).compute_pairwise_edit_distance();
+            auto edge_lst = PairWiseEditDis(read2count, args).compute_pairwise_edit_distance();
             Utils::logMessage(LOG_LEVEL_INFO,  "Pairwise (brute force) nt-edit-distance-based edges calculation done");
-            GraphManager(edge_lst, results.second, args).construct_graph();
+            GraphManager(edge_lst, read2count, args).construct_graph();
     } else {
-        auto minimiser_to_reads = MinimizerGenerator(results.first, args).process_reads_in_parallel();
+        auto minimiser_to_reads = MinimizerGenerator(read2count, args).process_reads_in_parallel();
         // EdgeConstructor(minimiser_to_reads, args).process_block();   
 
         auto edge_lst = EdgeConstructor(minimiser_to_reads, args).get_edge_lst();
         Utils::logMessage(LOG_LEVEL_INFO,  "nt-edit-distance-based edges calculation done!");
         ///////////////////////////////////////////////////////////////////////////////
         
-        GraphManager(edge_lst, results.second, args).construct_graph();
+        GraphManager(edge_lst, read2count, args).construct_graph();
 
     }
     Utils::logMessage(LOG_LEVEL_INFO,  "nt-edit-distance-based graph construction done!");

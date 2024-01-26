@@ -12,12 +12,16 @@
 #include <seqan3/core/debug_stream.hpp>
 #include <seqan3/utility/views/pairwise_combine.hpp>
 
-PairWiseEditDis::PairWiseEditDis(std::set<std::vector<seqan3::dna5>> const & reads, cmd_arguments args) : reads_(std::move(reads)), args(args) {}
+PairWiseEditDis::PairWiseEditDis(std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : read2count(read2count), args(args) {}
 
 std::unordered_map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, unordered_pair> PairWiseEditDis::compute_pairwise_edit_distance()
 {
     // Convert the set to a vector
-    std::vector<std::vector<seqan3::dna5>> reads_vec(reads_.begin(), reads_.end());
+    // std::vector<std::vector<seqan3::dna5>> reads_vec(reads_.begin(), reads_.end());
+    std::vector<std::vector<seqan3::dna5>> reads_vec;
+    std::transform(read2count.begin(), read2count.end(),
+                   std::back_inserter(reads_vec),
+                   [](const auto& pair) { return pair.first; });
 
     int min_s = -1 * args.max_edit_dis;
     int max_s = -1 * args.min_edit_dis;

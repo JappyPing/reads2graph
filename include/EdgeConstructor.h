@@ -36,8 +36,16 @@ struct unordered_pair {
         string seq_str1(seq1.begin(), seq1.end());
         auto seq2 = p.second | seqan3::views::to_char;
         string seq_str2(seq2.begin(), seq2.end());
-        boost::hash_combine(seed, seq_str1);
-        boost::hash_combine(seed, seq_str2);
+        // compare 
+        if (seq_str1 == seq_str2) {
+            throw std::runtime_error("Error: two reads are the same in the unoredered read pair!");
+        } else if (seq_str1 < seq_str2) {
+            boost::hash_combine(seed, seq_str1);
+            boost::hash_combine(seed, seq_str2);
+        } else {
+            boost::hash_combine(seed, seq_str2);
+            boost::hash_combine(seed, seq_str1);        
+        }
         return seed;
     }
 };
