@@ -77,12 +77,12 @@ std::unordered_map<std::int64_t, std::vector<std::vector<seqan3::dna5>>> Minimiz
     // int desired_num_cores = 26; /* specify the number of cores you want to use */
     // int available_cores = omp_get_max_threads();
     // Declare and define a global variable for available cores
-    int available_cores = omp_get_max_threads();
+    // int available_cores = omp_get_max_threads();
     // Ensure the user-specified number of cores is within a valid range
-    int num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
+    // int num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
 
     // Set the number of threads for OpenMP
-    omp_set_num_threads(num_cores_to_use);
+    // omp_set_num_threads(num_cores_to_use);
     // auto w_size = args.window_size;
     
     // for (size_t i = 0; i < unique_reads_.size(); ++i)

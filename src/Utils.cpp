@@ -19,6 +19,7 @@
 #include <functional>
 // #include <pbbam/DataSet.h>
 
+int num_cores_to_use;  // Define the global variable
 
 #define ReadGraph_VERSION "0.1.1"
 

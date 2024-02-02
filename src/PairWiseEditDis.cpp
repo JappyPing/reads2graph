@@ -14,7 +14,9 @@
 
 PairWiseEditDis::PairWiseEditDis(std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : read2count(read2count), args(args) {}
 
-std::unordered_map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, unordered_pair> PairWiseEditDis::compute_pairwise_edit_distance()
+// std::unordered_map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, unordered_pair> PairWiseEditDis::compute_pairwise_edit_distance()
+std::map<std::set<std::vector<seqan3::dna5>>, int> PairWiseEditDis::compute_pairwise_edit_distance()
+
 {
     // Convert the set to a vector
     // std::vector<std::vector<seqan3::dna5>> reads_vec(reads_.begin(), reads_.end());
@@ -31,13 +33,13 @@ std::unordered_map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5
     auto pairwise_combinations = seqan3::views::pairwise_combine(reads_vec);
 
     // Declare and define a global variable for available cores
-    int available_cores = omp_get_max_threads();
-    std::cout << "The maximum number of threads available:" << available_cores << std::endl;
-    // Ensure the user-specified number of cores is within a valid range
-    int num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
+    // int available_cores = omp_get_max_threads();
+    // std::cout << "The maximum number of threads available:" << available_cores << std::endl;
+    // // Ensure the user-specified number of cores is within a valid range
+    // int num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
 
-    // Set the number of threads for OpenMP
-    omp_set_num_threads(num_cores_to_use);
+    // // Set the number of threads for OpenMP
+    // omp_set_num_threads(num_cores_to_use);
 
     #pragma omp parallel for
     for (size_t i = 0; i < pairwise_combinations.size(); ++i)
@@ -46,9 +48,34 @@ std::unordered_map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5
         auto const &seq1 = std::get<0>(combination);
         auto const &seq2 = std::get<1>(combination);
 
+        std::set<std::vector<seqan3::dna5>> read_pair_set;
+        read_pair_set.insert(seq1);
+        read_pair_set.insert(seq2);
         auto alignment_results = seqan3::align_pairwise(std::tie(seq1, seq2), config);
+        // Iterate over alignment results and access the scores
+        for (auto const &result : alignment_results)
+        {
+            int edit_distance = result.score();
+            if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+            {
+                #pragma omp critical
+                {
+                    edge_lst[read_pair_set] = edit_distance;
+                    edit_distance_counts_[edit_distance]++; 
+                }                    
+            }
+        }
 
-        auto read_pair = std::make_pair(seq1, seq2);
+        /*
+        auto alignment_results = seqan3::align_pairwise(std::tie(seq1, seq2), config);
+        std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>> read_pair;
+        if (seq1 == seq2) {
+            throw std::runtime_error("Error: two reads are the same in the unoredered read pair!");
+        } else if (seq1 < seq2) {
+            auto read_pair = std::make_pair(seq1, seq2);
+        } else {
+            auto read_pair = std::make_pair(seq2, seq1);       
+        }
         // auto it = edge_lst.find(read_pair);
         // Iterate over alignment results and access the scores
         for (auto const &result : alignment_results)
@@ -63,6 +90,7 @@ std::unordered_map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5
                 }                    
             }
         }
+        */
     }        
 
     std::cout << "Number of total read edges: " << edge_lst.size() << std::endl; 

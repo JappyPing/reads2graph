@@ -36,7 +36,7 @@
 // #include <seqan3/std/filesystem>
 #include <iostream>
 #include <vector>
-// #include <omp.h>
+#include <omp.h>
 
 using namespace std;
 using namespace seqan3::literals;
@@ -76,7 +76,17 @@ int main(int argc, char** argv) {
         return -1;
     }
 
+    // Declare and define a global variable for available cores
+    int available_cores = omp_get_max_threads();
+    // Ensure the user-specified number of cores is within a valid range
+    auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
+    std::cout << "The maximum number of threads available:" << available_cores << std::endl;
+    // Set the number of threads for OpenMP
+    omp_set_num_threads(num_cores_to_use);
+    std::cout << "The number of threads setted:" << num_cores_to_use << std::endl;
+    ////////////////////////////////////////////////////////////////////////////
     auto read2count = ReadWrite(args).get_unique_reads_counts();
+    // auto [read2count, read2id] = ReadWrite(args).get_unique_reads_counts();
     // // Print the unique reads.
     // for (auto const & read : unique_reads)
     // {
@@ -88,6 +98,7 @@ int main(int argc, char** argv) {
             auto edge_lst = PairWiseEditDis(read2count, args).compute_pairwise_edit_distance();
             Utils::logMessage(LOG_LEVEL_INFO,  "Pairwise (brute force) nt-edit-distance-based edges calculation done");
             GraphManager(edge_lst, read2count, args).construct_graph();
+            // GraphManager(edge_lst, read2count, read2id, args).construct_graph();
     } else {
         auto minimiser_to_reads = MinimizerGenerator(read2count, args).process_reads_in_parallel();
         // EdgeConstructor(minimiser_to_reads, args).process_block();   
@@ -97,6 +108,7 @@ int main(int argc, char** argv) {
         ///////////////////////////////////////////////////////////////////////////////
         
         GraphManager(edge_lst, read2count, args).construct_graph();
+        // GraphManager(edge_lst, read2count, read2id, args).construct_graph();
 
     }
     Utils::logMessage(LOG_LEVEL_INFO,  "nt-edit-distance-based graph construction done!");

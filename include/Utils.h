@@ -17,6 +17,8 @@
 #include <functional>
 // #include <pbbam/DataSet.h>
 #include <sharg/all.hpp> // includes all necessary headers
+#pragma once
+extern int num_cores_to_use;  // Declare the global variable
 
 using namespace std;
 // using namespace PacBio;

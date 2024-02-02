@@ -4,8 +4,9 @@
 
 // GraphManager::GraphManager(std::map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, pair_comparator> edge_lst, std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : edge_lst_(std::move(edge_lst)), read2count_(std::move(read2count)), args(args) {}
 
-GraphManager::GraphManager(std::unordered_map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, unordered_pair> edge_lst, std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : edge_lst_(std::move(edge_lst)), read2count(read2count), args(args) {}
+// GraphManager::GraphManager(std::unordered_map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, unordered_pair> edge_lst, std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : edge_lst_(std::move(edge_lst)), read2count(read2count), args(args) {}
 
+GraphManager::GraphManager(std::map<std::set<std::vector<seqan3::dna5>>, int> edge_lst, std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : edge_lst_(std::move(edge_lst)), read2count(read2count), args(args) {}
 GraphManager::~GraphManager(){}
 
 void GraphManager::construct_graph()
@@ -15,10 +16,16 @@ void GraphManager::construct_graph()
         read2vertex[read] = v;
         vertex2read[v] = read;
     }
-    for (const auto& [read_pair, edit_distance] : edge_lst_) {
-        auto v1_iter = read2vertex[read_pair.first];
-        auto v2_iter = read2vertex[read_pair.second];
-        boost::add_edge(v1_iter, v2_iter, {read_pair.first, read_pair.second, edit_distance}, graph);
+    for (const auto& [read_pair_set, edit_distance] : edge_lst_) {
+        auto it = read_pair_set.begin(); 
+        std::vector<seqan3::dna5> first_read = *it;       
+        auto v1_iter = read2vertex[first_read];
+        ++it;
+        std::vector<seqan3::dna5> second_read = *it;
+        auto v2_iter = read2vertex[second_read];
+        // auto v1_iter = read2vertex[read_pair.first];
+        // auto v2_iter = read2vertex[read_pair.second];
+        boost::add_edge(v1_iter, v2_iter, {first_read, second_read, edit_distance}, graph);
     }
     save_graph();
     // auto graph_full_path_ = args.output_dir / args.graph_filename;

@@ -17,6 +17,7 @@ ReadWrite::~ReadWrite(void){
 
 // std::pair<std::set<std::vector<seqan3::dna5>>, std::map<std::vector<seqan3::dna5>, uint32_t>> ReadWrite::get_unique_reads_counts(cmd_arguments args){
 std::map<std::vector<seqan3::dna5>, uint32_t> ReadWrite::get_unique_reads_counts(){
+// std::tuple<std::map<std::vector<seqan3::dna5>, uint32_t>, std::unordered_map<std::string, std::vector<seqan3::dna5>> ReadWrite::get_unique_reads_counts(){
     seqan3::sequence_file_input fin{args.input_data};
     // using record_type = decltype(fin)::record_type;
     // std::vector<record_type> records{};
@@ -29,16 +30,9 @@ std::map<std::vector<seqan3::dna5>, uint32_t> ReadWrite::get_unique_reads_counts
     // std::set<std::vector<seqan3::dna5>> unique_reads;
     // Define a map to store unique reads and their counts
     
-
-    // Declare and define a global variable for available cores
-    int available_cores = omp_get_max_threads();
-
-    // Ensure the user-specified number of cores is within a valid range
-    int num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
-
-    // Set the number of threads for OpenMP
-    omp_set_num_threads(num_cores_to_use);
     std::map<std::vector<seqan3::dna5>, uint32_t> read2count;
+    // std::unordered_map<seqan3::dna5_vector, std::string> read2id;
+
     // OpenMP parallel for loop
     // OpenMP parallel for loop using range-based for loop
     #pragma omp parallel for
