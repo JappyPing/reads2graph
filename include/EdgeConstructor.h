@@ -11,9 +11,10 @@
 #include <iostream>
 #include <type_traits> // for std::decay_t
 #include <boost/functional/hash.hpp>
+#include <unordered_set>
+
 #include "Utils.h"
 #include "LoggingLevels.h"
-#include <unordered_set>
 
 using namespace std;
 using namespace seqan3::literals;

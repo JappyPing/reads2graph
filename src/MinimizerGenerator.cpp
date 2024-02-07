@@ -95,7 +95,8 @@ std::unordered_map<std::int64_t, std::vector<std::vector<seqan3::dna5>>> Minimiz
         auto it = std::next(read2count.begin(), i);
         const auto& [read, count] = *it;
         // auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{args.k_size}) | seqan3::views::minimiser(args.window_size - args.k_size + 1);
-        auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{best_k}) | seqan3::views::minimiser(best_w - best_k + 1);        
+        auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{best_k}) | seqan3::views::minimiser(best_w - best_k + 1);   
+    
         // forward and backward minimisers
         // auto minimisers = read | seqan3::views::minimiser_hash(seqan3::shape{seqan3::ungapped{args.k_size}}, seqan3::window_size{w_size - args.k_size + 1});
 
