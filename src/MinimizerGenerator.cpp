@@ -1,7 +1,7 @@
 // MinimizerGenerator.cpp
-#include "MinimizerGenerator.h"
-#include "GraphManager.h"
-#include "ReadWrite.h"
+#include "MinimizerGenerator.hpp"
+#include "GraphManager.hpp"
+#include "ReadWrite.hpp"
 #include <algorithm>
 #include <execution>
 #include <omp.h>
@@ -68,11 +68,23 @@ std::unordered_map<std::int64_t, std::vector<std::vector<seqan3::dna5>>> Minimiz
         }
     }    
     std::cout << "Minimum read Length: " << min_length << endl;
-    auto bestParams = findBestParameters(min_length, args.max_edit_dis);
-    auto best_n = std::get<0>(bestParams);
-    auto best_k = std::get<1>(bestParams);
-    auto best_w = static_cast<uint8_t>(round(static_cast<double>(min_length) / best_n));
-    std::cout << "Best number of windows: " << best_n << "\n" << "Best K: " << best_k << "\n" << "Best probability: " << std::get<2>(bestParams) << std::endl;
+    // int best_k;
+    // int best_w;
+    // if (min_length >= 50){
+    //     auto bestParams = findBestParameters(min_length, args.max_edit_dis);
+    //     auto best_n = std::get<0>(bestParams);
+    //     // best_k = static_cast<uint8_t>(std::get<1>(bestParams));
+    //     // best_w = static_cast<uint8_t>(round(static_cast<double>(min_length) / best_n));
+    //     best_k = std::get<1>(bestParams);
+    //     best_w = round(static_cast<double>(min_length) / best_n);
+    //     std::cout << "Best number of windows: " << best_n << "\n" << "Best K: " << best_k << "\n" << "Best probability: " << std::get<2>(bestParams) << std::endl;        
+    // } else {
+    //     best_k = args.k_size;
+    //     best_w = min_length;
+    //     // if {k == 4}
+    //     // std::cout << "Default k " << arg << "\n" << "Best K: " << best_k << "\n" << "Best probability: " << std::get<2>(bestParams) << std::endl;             
+    // }
+
 
     // int desired_num_cores = 26; /* specify the number of cores you want to use */
     // int available_cores = omp_get_max_threads();
@@ -90,12 +102,17 @@ std::unordered_map<std::int64_t, std::vector<std::vector<seqan3::dna5>>> Minimiz
     //     auto it = std::next(unique_reads_.begin(), i);
     //     // Dereference the iterator to get the actual read content
     //     auto const &read = *it;
+
+    int available_cores = omp_get_max_threads();
+    auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
+    omp_set_num_threads(num_cores_to_use);
+
     #pragma omp parallel for
     for (size_t i = 0; i < read2count.size(); ++i) {
         auto it = std::next(read2count.begin(), i);
         const auto& [read, count] = *it;
-        // auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{args.k_size}) | seqan3::views::minimiser(args.window_size - args.k_size + 1);
-        auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{best_k}) | seqan3::views::minimiser(best_w - best_k + 1);   
+        auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{args.k_size}) | seqan3::views::minimiser(args.window_size - args.k_size + 1);
+        // auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{best_k}) | seqan3::views::minimiser(best_w - best_k + 1);   
     
         // forward and backward minimisers
         // auto minimisers = read | seqan3::views::minimiser_hash(seqan3::shape{seqan3::ungapped{args.k_size}}, seqan3::window_size{w_size - args.k_size + 1});
@@ -160,7 +177,7 @@ std::unordered_map<std::int64_t, std::vector<std::vector<seqan3::dna5>>> Minimiz
     //     // }
     //     std::cout << "Number of reads: " << reads.size() << std::endl;
     //     // seqan3::debug_stream << "-----------------\n";
-    //     // Utils::logMessage(LOG_LEVEL_INFO,  "-----------------");
+    //     // Utils::getInstance().logger(LOG_LEVEL_INFO,  "-----------------");
     //     // break;
     // } 
     std::cout << "Size of minimiser_to_reads: " << minimiser_to_reads.size() << std::endl;  
@@ -179,25 +196,29 @@ std::tuple<int, int, double> MinimizerGenerator::findBestParameters(int l, int d
     int bestN = 1;
     int bestK = 3;
     long double bestResult = 0.0;
-    
-    for (int n = 1; n <= round(dt/2); ++n) {
-        // int max_k = round(static_cast<double>(l) / n);
-        int max_k = round(l / n);
-        for (int k = 3; k < max_k; ++k) {
-            auto k4 = std::pow(4, k);
-            if (k4 >= (l - k + 1) * 10000){
-                long double result = prob(l, n, k, dt);
-                if (result > bestResult) {
-                    bestResult = result;
-                    bestN = n;
-                    bestK = k;
-                }                
-            } else{
-                continue;
-            }
+    if (l >=50){
+        for (int n = 1; n <= round(dt/2); ++n) {
+            // int max_k = round(static_cast<double>(l) / n);
+            int max_k = round(l / n);
 
+            for (int k = 3; k < max_k; ++k) {
+                auto k4 = std::pow(4, k);
+                // if (((dt/n) * k < (max_k - k + 1)) && (k4 >= (max_k - k + 1) * 10000)){
+                if (k4 > (l - k + 1) * 10000){
+                // if (k4 > (l - k + 1)*10000 && k*dt < (l-k+1)*n){
+                    long double result = prob(l, n, k, dt);
+                    if (result > bestResult) {
+                        bestResult = result;
+                        bestN = n;
+                        bestK = k;
+                    }                
+                } else{
+                    continue;
+                }
+            }
         }
     }
-
     return std::make_tuple(bestN, bestK, bestResult);
 }
+
+    

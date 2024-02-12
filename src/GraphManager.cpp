@@ -1,5 +1,5 @@
-#include "GraphManager.h"
-#include "ReadWrite.h"
+#include "GraphManager.hpp"
+#include "ReadWrite.hpp"
 #include <iostream>
 
 // GraphManager::GraphManager(std::map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, pair_comparator> edge_lst, std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : edge_lst_(std::move(edge_lst)), read2count_(std::move(read2count)), args(args) {}

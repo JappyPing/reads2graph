@@ -5,8 +5,8 @@
  * @Last Modified time: 2023-03-05 12:47:18
  */
 
-#include "Utils.h"
-#include "LoggingLevels.h"
+#include "Utils.hpp"
+#include "LoggingLevels.hpp"
 #include <iostream>
 #include <fstream>
 #include <ctime>
@@ -17,6 +17,9 @@
 #include <thread>
 #include <unistd.h>
 #include <functional>
+#include <chrono>
+#include <iomanip>
+#include <sstream>
 // #include <pbbam/DataSet.h>
 
 int num_cores_to_use;  // Define the global variable
@@ -24,9 +27,153 @@ int num_cores_to_use;  // Define the global variable
 #define ReadGraph_VERSION "0.1.1"
 
 using namespace std;
-// using namespace PacBio;
-// using namespace BAM;
 
+Utils& Utils::getInstance() {
+    static Utils instance;
+    return instance;
+}
+
+void Utils::logger(int log_level, const std::string& message){
+    if (log_level < LOG_LEVEL) return;
+
+    // Get the current time and format it as a string
+    time_t rawTime;
+    time(&rawTime);
+    struct tm * timeInfo = localtime(&rawTime);
+    char timeString[20];
+    strftime(timeString, 20, "%Y-%m-%d %H:%M:%S", timeInfo);
+
+    std::string log_color;
+    std::string log_prefix;
+    switch (log_level) {
+    case LOG_LEVEL_DEBUG:
+        log_color = COLOR_DEBUG;
+        log_prefix = "DEBUG: ";
+        break;
+    case LOG_LEVEL_INFO:
+        log_color = COLOR_INFO;
+        log_prefix = "INFO: ";
+        break;
+    case LOG_LEVEL_WARNING:
+        log_color = COLOR_WARNING;
+        log_prefix = "WARNING: ";
+        break;
+    case LOG_LEVEL_ERROR:
+        log_color = COLOR_ERROR;
+        log_prefix = "ERROR: ";
+        break;
+    case LOG_LEVEL_CRITICAL:
+        log_color = COLOR_CRITICAL;
+        log_prefix = "CRITICAL ERROR: ";
+        break;
+    default:
+        log_color = COLOR_RESET;
+        break;
+    }
+    logFile << timeString << ": " << log_prefix << message << endl;
+    // std::cout << timeString << ": " << log_color << log_prefix << message << COLOR_RESET << std::endl;
+    // if(logFile.is_open()){
+    //     logFile << timeString << ": " << log_prefix << message << endl;
+    //     logFile.close();
+    // }else {
+    //     std::cerr << "\033[1;31mERROR: ReadGraph log file opened failed.\033[0m" << std::endl;
+    // }
+}
+
+Utils::Utils() {
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+    std::tm now_tm = *std::localtime(&now_c);
+
+    std::ostringstream oss;
+    oss << std::put_time(&now_tm, "log_%Y%m%d_%H%M%S.log");
+
+    // Get the current time and format it as a string
+    time_t rawTime;
+    time(&rawTime);
+    struct tm * timeInfo = localtime(&rawTime);
+    char timeString[20];
+    strftime(timeString, 20, "%Y-%m-%d %H:%M:%S", timeInfo);
+
+    char cwd[1024];
+    if (getcwd(cwd, sizeof(cwd)) != NULL) {
+        std::string filePath = std::string(cwd) + "/ReadGraph" + oss.str();
+        logFile.open(filePath, std::ios::app);
+    } else {
+        std::cerr << timeString << ": "<< "Error: unable to get current working directory." << std::endl;
+    }
+}
+
+// Define a function to control all the parameters via command line
+void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
+{
+    parser.info.author = "Pengyao Ping";
+    parser.info.short_description = "Construct a read graph from a short read set.";
+    parser.info.version = ReadGraph_VERSION;
+ 
+    parser.add_option(args.input_data, 
+                        sharg::config{.short_id = 'i', 
+                                      .long_id = "input_data", 
+                                      .description = "Please provide a fasta/fastq/ data file."});
+
+    parser.add_option(args.output_dir,
+                      sharg::config{.short_id = 'o',
+                                    .long_id = "output_dir",
+                                    .description = "The directory for outputs."});
+
+    parser.add_option(args.k_size,
+                      sharg::config{.short_id = 'k',
+                                    .long_id = "k_size",
+                                    .description = "The size for minimiser."});
+
+    parser.add_option(args.window_size,
+                      sharg::config{.short_id = 'w',
+                                    .long_id = "window_size",
+                                    .description = "The window size for minimiser."});
+
+    parser.add_option(args.max_edit_dis,
+                      sharg::config{.short_id = 'x',
+                                    .long_id = "max_edit_dis",
+                                    .description = "The maximum edit distance for constructing edges between reads"});
+
+    parser.add_option(args.min_edit_dis,
+                      sharg::config{.short_id = 'n',
+                                    .long_id = "min_edit_dis",
+                                    .description = "The minimum edit distance for constructing edges between reads."});
+
+    parser.add_option(args.num_process,
+                      sharg::config{.short_id = 'p',
+                                    .long_id = "num_process",
+                                    .description = "The number of expected processes."});
+
+    parser.add_option(args.graph_filename,
+                      sharg::config{.short_id = 'g',
+                                    .long_id = "graph_filename",
+                                    .description = "The file name of the constructed graph."});
+    // Brute Force
+    parser.add_option(args.pair_wise,
+                      sharg::config{
+                                    .long_id = "pair_wise",
+                                    .description = "Brute Force calcualte the pairwise edit distance."});
+
+    parser.add_option(args.bin_size_min,
+                      sharg::config{.long_id = "bin_size_min",
+                                    .description = "The smaller threshold used to group buckets of different sizes."});
+
+    parser.add_option(args.bin_size_max,
+                      sharg::config{.long_id = "bin_size_max",
+                                    .description = "The larger threshold used to group buckets of different sizes."});
+
+    parser.add_option(args.omh_times,
+                      sharg::config{.long_id = "omh_times",
+                                    .description = "The number of times to perform permutation in order min hashing."});
+
+    parser.add_option(args.omh_kmer_n,
+                      sharg::config{.long_id = "omh_kmer_n",
+                                    .description = "The number of kmers considered in order min hashing."});
+                            
+}
+/*
 Utils::Utils(void){
 
 }
@@ -47,9 +194,18 @@ void Utils::logMessage(int log_level, const std::string& message) {
     strftime(timeString, 20, "%Y-%m-%d %H:%M:%S", timeInfo);
 
     char cwd[1024];
+
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+    std::tm now_tm = *std::localtime(&now_c);
+
+    std::ostringstream oss;
+    oss << std::put_time(&now_tm, "_%Y%m%d_%H%M%S.log");
+
     std::ofstream logFile;
     if (getcwd(cwd, sizeof(cwd)) != NULL) {
-        std::string filePath = std::string(cwd) + "/ReadGraph.log";
+        // std::string filePath = std::string(cwd) + "/ReadGraph.log";
+        std::string filePath = std::string(cwd) + "/ReadGraph" + oss.str();
         logFile.open(filePath, std::ios::app);
     } else {
         std::cerr << timeString << ": "<< "Error: unable to get current working directory." << std::endl;
@@ -146,6 +302,22 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                       sharg::config{
                                     .long_id = "pair_wise",
                                     .description = "Brute Force calcualte the pairwise edit distance."});
+
+    parser.add_option(args.bin_size_min,
+                      sharg::config{.long_id = "bin_size_min",
+                                    .description = "The smaller threshold used to group buckets of different sizes."});
+
+    parser.add_option(args.bin_size_max,
+                      sharg::config{.long_id = "bin_size_max",
+                                    .description = "The larger threshold used to group buckets of different sizes."});
+
+    parser.add_option(args.omh_times,
+                      sharg::config{.long_id = "omh_times",
+                                    .description = "The number of times to perform permutation in order min hashing."});
+
+    parser.add_option(args.omh_kmer_n,
+                      sharg::config{.long_id = "omh_kmer_n",
+                                    .description = "The number of kmers considered in order min hashing."});
 
     // parser.add_option(args.year,
     //                   sharg::config{.short_id = 'y',
@@ -257,7 +429,7 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
 
 //   return groups;
 // }
-
+*/
 
 
 

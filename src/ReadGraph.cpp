@@ -7,13 +7,13 @@
  * @Description: 
  */
 
-#include "Utils.h"
-#include "LoggingLevels.h"
-#include "ReadWrite.h"
-#include "MinimizerGenerator.h"
-#include "EdgeConstructor.h"
-#include "GraphManager.h"
-#include "PairWiseEditDis.h"
+#include "Utils.hpp"
+#include "LoggingLevels.hpp"
+#include "ReadWrite.hpp"
+#include "MinimizerGenerator.hpp"
+#include "EdgeConstructor.hpp"
+#include "GraphManager.hpp"
+#include "PairWiseEditDis.hpp"
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,8 +34,7 @@
 #include <seqan3/utility/views/all.hpp> // optional: use views to convert the input string to a dna5 sequence
 #include <seqan3/io/sequence_file/all.hpp>
 // #include <seqan3/std/filesystem>
-#include <iostream>
-#include <vector>
+
 #include <omp.h>
 
 using namespace std;
@@ -46,25 +45,26 @@ using namespace seqan3::literals;
 
 int main(int argc, char** argv) {
     // check log whether log file exist or not, if exist, remove it
-    char cwd[1024];
-    if (getcwd(cwd, sizeof(cwd)) != NULL) {
-        std::string filePath = std::string(cwd) + "/ReadGraph.log";
-        if (std::filesystem::exists(filePath)) {
-            std::filesystem::remove(filePath);
-        }
-    } else {
-        std::cerr << "Error: unable to get current working directory." << std::endl;
-    }
+    // char cwd[1024];
+    // if (getcwd(cwd, sizeof(cwd)) != NULL) {
+    //     std::string filePath = std::string(cwd) + "/ReadGraph" + oss.str();
+    //     if (std::filesystem::exists(filePath)) {
+    //         std::filesystem::remove(filePath);
+    //     }
+    // } else {
+    //     std::cerr << "Error: unable to get current working directory." << std::endl;
+    // }
     // say hello
     // 
-	Utils::logMessage(LOG_LEVEL_INFO,  "Welcome to use ReadGraph!");
-    // seqan3::debug_stream << "Hello World!\n";
+	// Utils::getInstance().logger(LOG_LEVEL_INFO,  "Welcome to use ReadGraph!");
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  "Welcome to use ReadGraph!");
 
     sharg::parser ReadGraphParser{"ReadGraph", argc, argv}; // initialise parser
     cmd_arguments args{};
  
-    Utils utils;
-    utils.initialise_parser(ReadGraphParser, args);
+    // Utils utils;
+    // utils.initialise_parser(ReadGraphParser, args);
+    Utils::getInstance().initialise_parser(ReadGraphParser, args);
  
     try
     {
@@ -96,7 +96,7 @@ int main(int argc, char** argv) {
     if (args.pair_wise) {
             // Create an instance of PairwiseEditDistance
             auto edge_lst = PairWiseEditDis(read2count, args).compute_pairwise_edit_distance();
-            Utils::logMessage(LOG_LEVEL_INFO,  "Pairwise (brute force) nt-edit-distance-based edges calculation done");
+            Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise (brute force) nt-edit-distance-based edges calculation done");
             GraphManager(edge_lst, read2count, args).construct_graph();
             // GraphManager(edge_lst, read2count, read2id, args).construct_graph();
     } else {
@@ -104,14 +104,14 @@ int main(int argc, char** argv) {
         // EdgeConstructor(minimiser_to_reads, args).process_block();   
 
         auto edge_lst = EdgeConstructor(minimiser_to_reads, args).get_edge_lst();
-        Utils::logMessage(LOG_LEVEL_INFO,  "nt-edit-distance-based edges calculation done!");
+        Utils::getInstance().logger(LOG_LEVEL_INFO,  "nt-edit-distance-based edges calculation done!");
         ///////////////////////////////////////////////////////////////////////////////
         
         GraphManager(edge_lst, read2count, args).construct_graph();
         // GraphManager(edge_lst, read2count, read2id, args).construct_graph();
 
     }
-    Utils::logMessage(LOG_LEVEL_INFO,  "nt-edit-distance-based graph construction done!");
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  "nt-edit-distance-based graph construction done!");
     //Print the stored read pairs and edit distances
     // for (const auto &[read_pair, edit_distance] : edge_lst)
     // {

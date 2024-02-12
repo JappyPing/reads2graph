@@ -7,3 +7,6 @@ ReadGraph.log
 test/
 bin/
 *log
+logs/
+*dot
+*txt

@@ -1,10 +1,10 @@
-#ifndef GRAPH_MANAGER_H
-#define GRAPH_MANAGER_H
+#ifndef GRAPH_MANAGER_HPP
+#define GRAPH_MANAGER_HPP
 
-#include "Utils.h"
-#include "LoggingLevels.h"
-#include "ReadWrite.h"
-#include "EdgeConstructor.h"
+#include "Utils.hpp"
+#include "LoggingLevels.hpp"
+#include "ReadWrite.hpp"
+#include "EdgeConstructor.hpp"
 #include <seqan3/alphabet/nucleotide/dna5.hpp>
 #include <map>
 #include <vector>
@@ -88,13 +88,15 @@ public:
     // Graph read_graph_from_dot(const std::string& filename);
 
 private:
+
+    std::map<std::set<std::vector<seqan3::dna5>>, int> edge_lst_;
     std::map<std::vector<seqan3::dna5>, uint32_t> read2count;
+    cmd_arguments args;
+    std::filesystem::path graph_full_path_; 
     // std::unordered_map<seqan3::dna5_vector, std::string> read2id_;
     // std::map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, pair_comparator> edge_lst_;
     // std::unordered_map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, unordered_pair> edge_lst_;
-    std::map<std::set<std::vector<seqan3::dna5>>, int> edge_lst_;
-    cmd_arguments args;
-    std::filesystem::path graph_full_path_; 
+
     // Create maps to store the mappings
     // std::unordered_map<std::vector<seqan3::dna5>, boost::graph_traits<Graph>::vertex_descriptor> read2vertex;
     // std::unordered_map<boost::graph_traits<Graph>::vertex_descriptor, std::vector<seqan3::dna5>> vertex2read;      

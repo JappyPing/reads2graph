@@ -1,10 +1,10 @@
 // PairWiseEditDis.h
-#ifndef PAIRWISEEDITDIS_H
-#define PAIRWISEEDITDIS_H
+#ifndef PAIRWISEEDITDIS_HPP
+#define PAIRWISEEDITDIS_HPP
 
-#include "Utils.h"
-#include "LoggingLevels.h"
-#include "EdgeConstructor.h"
+#include "Utils.hpp"
+#include "LoggingLevels.hpp"
+#include "EdgeConstructor.hpp"
 #include <iostream>
 #include <fstream>
 #include <vector>

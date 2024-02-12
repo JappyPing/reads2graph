@@ -1,5 +1,5 @@
-#ifndef __XXHASH_H__
-#define __XXHASH_H__
+#ifndef __XXHASH_HPP__
+#define __XXHASH_HPP__
 
 #include <stdexcept>
 #include <xxhash.h>

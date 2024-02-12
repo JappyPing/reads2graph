@@ -6,7 +6,7 @@
  */
 // LoggingLevels.cpp
 
-#include "LoggingLevels.h"
+#include "LoggingLevels.hpp"
 
 // Set the logging level globally
 int LOG_LEVEL = LOG_LEVEL_DEBUG;

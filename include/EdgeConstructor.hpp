@@ -1,6 +1,6 @@
 // EdgeConstructor.h
-#ifndef EDGECONSTRUCTOR_H
-#define EDGECONSTRUCTOR_H
+#ifndef EDGECONSTRUCTOR_HPP
+#define EDGECONSTRUCTOR_HPP
 
 #include <seqan3/core/debug_stream.hpp>
 #include <seqan3/search/all.hpp>
@@ -13,8 +13,8 @@
 #include <boost/functional/hash.hpp>
 #include <unordered_set>
 
-#include "Utils.h"
-#include "LoggingLevels.h"
+#include "Utils.hpp"
+#include "LoggingLevels.hpp"
 
 using namespace std;
 using namespace seqan3::literals;
@@ -67,6 +67,7 @@ public:
     // std::map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, pair_comparator> get_edge_lst();
     // std::unordered_map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, unordered_pair> get_edge_lst();
     std::map<std::set<std::vector<seqan3::dna5>>, int> get_edge_lst();
+    std::vector<std::pair<uint64_t, uint64_t>> get_combinations(const std::vector<uint64_t>& a);
 private:
     std::unordered_map<std::int64_t, std::vector<std::vector<seqan3::dna5>>> minimiser_to_reads_;
     cmd_arguments args;

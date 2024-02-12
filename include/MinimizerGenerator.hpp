@@ -1,4 +1,4 @@
-// MinimizerGenerator.h
+// MinimizerGenerator.hpp
 
 #include <seqan3/core/debug_stream.hpp>
 #include <seqan3/search/all.hpp>
@@ -8,8 +8,8 @@
 #include <algorithm>
 #include <iostream>
 #include <type_traits> // for std::decay_t
-#include "Utils.h"
-#include "LoggingLevels.h"
+#include "Utils.hpp"
+#include "LoggingLevels.hpp"
 
 using namespace std;
 using namespace seqan3::literals;

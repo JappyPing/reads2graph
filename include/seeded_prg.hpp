@@ -1,5 +1,5 @@
-#ifndef __SEEDED_PRG_H__
-#define __SEEDED_PRG_H__
+#ifndef __SEEDED_PRG_HPP__
+#define __SEEDED_PRG_HPP__
 
 #include <iostream>
 #include <fstream>

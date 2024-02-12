@@ -1,0 +1,5 @@
+Edit distance of -5: 3791553 pairs
+Edit distance of -4: 2810160 pairs
+Edit distance of -3: 1876374 pairs
+Edit distance of -2: 1266350 pairs
+Edit distance of -1: 112171 pairs

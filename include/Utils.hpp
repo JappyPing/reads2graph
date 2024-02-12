@@ -4,8 +4,8 @@
  * @Last Modified by:   Pengyao Ping
  * @Last Modified time: 2023-03-05 12:52:34
  */
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef UTILS_HPP
+#define UTILS_HPP
 
 #include <string>
 #include <memory>
@@ -35,20 +35,36 @@ struct cmd_arguments
     int num_process{26};
     std::string graph_filename{"graph.dot"};
     bool pair_wise{false};
+    unsigned int bin_size_min{500};
+    unsigned int bin_size_max{10000};
+    unsigned omh_times{5};
+    unsigned omh_kmer_n{5}; // Number of k-mers to consider
 };
 
 class Utils{
     public:
-        Utils(void);//constructor
-        ~Utils(void); //deconstructor
-        static void logMessage(int log_level, const std::string& message);   
+        static Utils& getInstance();
+
+        void logger(int log_level, const std::string& message);
         void initialise_parser(sharg::parser & parser, cmd_arguments & args);
+
+        // Utils(void);//constructor
+        // ~Utils(void); //deconstructor
+        // static void logMessage(int log_level, const std::string& message);   
+        // void initialise_parser(sharg::parser & parser, cmd_arguments & args);
+        ////////////////////////////////////////////
         // static bool stringExists(const std::string& input);
         // static std::map<std::string, std::string> parseArgvs(int argc, char* argv[]);
         // static void printHelpMessage();
         // static int getHardwareConcurrency();
         // static std::vector<int> get_sub_lst(const std::vector<int>& input, int startIndex, int endIndex);
         // static std::vector<std::vector<int>> split_vector(const std::vector<int>& vec, int num_groups);
+    private:
+        std::ofstream logFile;
+
+        Utils();
+        Utils(const Utils&) = delete;
+        Utils& operator=(const Utils&) = delete;        
 
 };
 

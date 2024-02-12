@@ -1,4 +1,4 @@
-#include "PairWiseEditDis.h"
+#include "PairWiseEditDis.hpp"
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -34,7 +34,7 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> PairWiseEditDis::compute_pair
 
     // Declare and define a global variable for available cores
     // int available_cores = omp_get_max_threads();
-    // std::cout << "The maximum number of threads available:" << available_cores << std::endl;
+    // // std::cout << "The maximum number of threads available:" << available_cores << std::endl;
     // // Ensure the user-specified number of cores is within a valid range
     // int num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
 

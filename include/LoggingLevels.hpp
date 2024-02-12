@@ -4,8 +4,8 @@
  * @Last Modified by:   Pengyao Ping
  * @Last Modified time: 2023-02-09 23:46:49
  */
-#ifndef LOGGINGLEVELS_H
-#define LOGGINGLEVELS_H
+#ifndef LOGGINGLEVELS_HPP
+#define LOGGINGLEVELS_HPP
 
 #include <iostream>
 #include <string>
