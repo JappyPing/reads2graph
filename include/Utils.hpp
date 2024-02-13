@@ -28,6 +28,7 @@ struct cmd_arguments
 {
     std::filesystem::path input_data{};
     std::filesystem::path output_dir{std::filesystem::current_path()};
+    int read_length{4};
     uint8_t k_size{4};
     uint8_t window_size{8};
     uint8_t max_edit_dis{5};
@@ -39,6 +40,8 @@ struct cmd_arguments
     unsigned int bin_size_max{10000};
     unsigned omh_times{5};
     unsigned omh_kmer_n{5}; // Number of k-mers to consider
+    double bad_kmer_ratio{0.4};
+    double probability{0.95};
 };
 
 class Utils{

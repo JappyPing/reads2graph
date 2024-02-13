@@ -121,6 +121,11 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                                     .long_id = "output_dir",
                                     .description = "The directory for outputs."});
 
+    parser.add_option(args.read_length,
+                      sharg::config{.short_id = 'r',
+                                    .long_id = "read_length",
+                                    .description = "The window size for minimiser."});
+
     parser.add_option(args.k_size,
                       sharg::config{.short_id = 'k',
                                     .long_id = "k_size",
@@ -171,7 +176,15 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
     parser.add_option(args.omh_kmer_n,
                       sharg::config{.long_id = "omh_kmer_n",
                                     .description = "The number of kmers considered in order min hashing."});
-                            
+
+    parser.add_option(args.bad_kmer_ratio,
+                      sharg::config{.long_id = "bad_kmer_ratio",
+                                    .description = "The maximum ratio of bad k-mers out of total number of kmers in a window of a read."});
+
+    parser.add_option(args.probability,
+                      sharg::config{.long_id = "probability",
+                                    .description = "The expected probability P for grouping two similar reads into same bucket by at least one minimiser that does not include the different bases"});
+
 }
 /*
 Utils::Utils(void){

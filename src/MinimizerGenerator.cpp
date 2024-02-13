@@ -54,36 +54,30 @@ void MinimizerGenerator::process_read(const std::vector<seqan3::dna5> &read)
 
 std::unordered_map<std::int64_t, std::vector<std::vector<seqan3::dna5>>> MinimizerGenerator::process_reads_in_parallel()
 {
-    size_t max_length = 0;
-    size_t min_length = std::numeric_limits<size_t>::max(); // Set to maximum possible value initially
-    // for (const auto& read : unique_reads_) {
-    for (const auto& [read, count] : read2count) {
-        size_t read_length = read.size();
-        if (read_length > max_length) {
-            max_length = read_length;
-        }
-        // Update minimum length
-        if (read_length < min_length) {
-            min_length = read_length;
-        }
-    }    
-    std::cout << "Minimum read Length: " << min_length << endl;
-    // int best_k;
-    // int best_w;
-    // if (min_length >= 50){
-    //     auto bestParams = findBestParameters(min_length, args.max_edit_dis);
-    //     auto best_n = std::get<0>(bestParams);
-    //     // best_k = static_cast<uint8_t>(std::get<1>(bestParams));
-    //     // best_w = static_cast<uint8_t>(round(static_cast<double>(min_length) / best_n));
-    //     best_k = std::get<1>(bestParams);
-    //     best_w = round(static_cast<double>(min_length) / best_n);
-    //     std::cout << "Best number of windows: " << best_n << "\n" << "Best K: " << best_k << "\n" << "Best probability: " << std::get<2>(bestParams) << std::endl;        
-    // } else {
-    //     best_k = args.k_size;
-    //     best_w = min_length;
-    //     // if {k == 4}
-    //     // std::cout << "Default k " << arg << "\n" << "Best K: " << best_k << "\n" << "Best probability: " << std::get<2>(bestParams) << std::endl;             
-    // }
+    // size_t max_length = 0;
+    // size_t min_length = std::numeric_limits<size_t>::max(); // Set to maximum possible value initially
+    // // for (const auto& read : unique_reads_) {
+    // for (const auto& [read, count] : read2count) {
+    //     size_t read_length = read.size();
+    //     if (read_length > max_length) {
+    //         max_length = read_length;
+    //     }
+    //     // Update minimum length
+    //     if (read_length < min_length) {
+    //         min_length = read_length;
+    //     }
+    // }    
+    // std::cout << "Minimum read Length: " << min_length << endl;
+    int best_k;
+    int best_w;
+
+    auto bestParams = findBestParameters(args.read_length, args.max_edit_dis, args.bad_kmer_ratio);
+    auto best_n = std::get<0>(bestParams);
+    // best_k = static_cast<uint8_t>(std::get<1>(bestParams));
+    // best_w = static_cast<uint8_t>(round(static_cast<double>(read_length) / best_n));
+    best_k = std::get<1>(bestParams);
+    best_w = round(static_cast<double>(args.read_length) / best_n);
+    std::cout << "Best number of windows: " << best_n << "\n" << "Best K: " << best_k << "\n" << "Best probability: " << std::get<2>(bestParams) << std::endl;        
 
 
     // int desired_num_cores = 26; /* specify the number of cores you want to use */
@@ -111,8 +105,8 @@ std::unordered_map<std::int64_t, std::vector<std::vector<seqan3::dna5>>> Minimiz
     for (size_t i = 0; i < read2count.size(); ++i) {
         auto it = std::next(read2count.begin(), i);
         const auto& [read, count] = *it;
-        auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{args.k_size}) | seqan3::views::minimiser(args.window_size - args.k_size + 1);
-        // auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{best_k}) | seqan3::views::minimiser(best_w - best_k + 1);   
+        // auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{args.k_size}) | seqan3::views::minimiser(args.window_size - args.k_size + 1);
+        auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{best_k}) | seqan3::views::minimiser(best_w - best_k + 1);   
     
         // forward and backward minimisers
         // auto minimisers = read | seqan3::views::minimiser_hash(seqan3::shape{seqan3::ungapped{args.k_size}}, seqan3::window_size{w_size - args.k_size + 1});
@@ -192,33 +186,39 @@ long double MinimizerGenerator::prob(int l, int n, int k, int dt) {
     return p2;
 }
 
-std::tuple<int, int, double> MinimizerGenerator::findBestParameters(int l, int dt) {
-    int bestN = 1;
+std::tuple<int, int, double> MinimizerGenerator::findBestParameters(int l, int dt, double pt) {
+    int bestN = 2;
     int bestK = 3;
-    long double bestResult = 0.0;
-    if (l >=50){
-        for (int n = 1; n <= round(dt/2); ++n) {
+    double bestResult = 0.0;
+    if (l >= 50){
+        for (int n = 2; n <= round(dt/2)+2; ++n) {
             // int max_k = round(static_cast<double>(l) / n);
-            int max_k = round(l / n);
+            int max_k = round(l / n) - 1;
 
-            for (int k = 3; k < max_k; ++k) {
+            for (int k = max_k; k <= 3; --k) {
                 auto k4 = std::pow(4, k);
                 // if (((dt/n) * k < (max_k - k + 1)) && (k4 >= (max_k - k + 1) * 10000)){
-                if (k4 > (l - k + 1) * 10000){
+                if ((k4 > (l - k + 1) * 10) && (k*dt <= (round(l / n)-k+1) * n * pt)){
                 // if (k4 > (l - k + 1)*10000 && k*dt < (l-k+1)*n){
-                    long double result = prob(l, n, k, dt);
-                    if (result > bestResult) {
+                    double result = prob(l, n, k, dt);
+                    if (result > args.probability) {
                         bestResult = result;
                         bestN = n;
                         bestK = k;
+                        return std::make_tuple(bestN, bestK, bestResult);
                     }                
                 } else{
-                    continue;
+                    // continue;
+                    auto bestResult = prob(l, n, k, dt);
+                    return std::make_tuple(bestN, bestK, bestResult);
                 }
             }
         }
+    } else {
+        auto bestResult = prob(l, 1, 4, dt);
+        return std::make_tuple(1, 4, bestResult);
     }
-    return std::make_tuple(bestN, bestK, bestResult);
+    
 }
 
     
