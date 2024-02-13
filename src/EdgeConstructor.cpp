@@ -106,13 +106,14 @@ void EdgeConstructor::process_blocks_in_parallel()
         } else if ( cur_read_num >= args.bin_size_min && cur_read_num < args.bin_size_max){
             #pragma omp critical
             {
-                std::cout << cur_read_num << " ";
+                // std::cout << cur_read_num << " ";
+                Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("{} ", cur_read_num));
                 large_group.emplace_back(reads_vec);
             } 
         } else {
             #pragma omp critical
             {
-                std::cout << cur_read_num << " ";
+                Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("{} ", cur_read_num));
                 extra_large_group.emplace_back(reads_vec); 
                 // large_group.emplace_back(reads_vec);   
             }
@@ -289,7 +290,8 @@ void EdgeConstructor::process_blocks_in_parallel()
     }
 
     //////////////////////
-    std::cout << "Current Number of read edges: " << edge_lst.size() << std::endl;
+    // std::cout << "Current Number of read edges: " << edge_lst.size() << std::endl;
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Current Number of read edges: {}.", edge_lst.size()));
     std::map<int, size_t> current_edit_distance_counts;
     for (const auto &[read_pair, edit_distance] : edge_lst)
     {
@@ -299,7 +301,8 @@ void EdgeConstructor::process_blocks_in_parallel()
     }      
     for (const auto & [distance, count] : current_edit_distance_counts)
     {
-        std::cout << "Edit distance of " << distance << ": " << count << " pairs" << std::endl;
+        // std::cout << "Edit distance of " << distance << ": " << count << " pairs" << std::endl;
+        Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Edit distance of {}: {} pairs", distance, count));
     }
     //////////////////////////////////////////////
     Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise comparison for the large-size-based buckets done!");
@@ -341,7 +344,8 @@ void EdgeConstructor::process_blocks_in_parallel()
 
             }
             auto cur_bin_n = cur_omh2reads.size();
-            std::cout << "Size of current omh_to_reads: " << cur_bin_n << std::endl;  
+            // std::cout << "Size of current omh_to_reads: " << cur_bin_n << std::endl;  
+            Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("Size of current omh_to_reads: {}.", cur_bin_n));
             std::vector<std::vector<std::vector<seqan3::dna5>>> small_cur_omh2reads;
             std::vector<std::vector<std::vector<seqan3::dna5>>> large_cur_omh2reads;
 
@@ -362,7 +366,8 @@ void EdgeConstructor::process_blocks_in_parallel()
                 } else{
                     #pragma omp critical
                     {
-                        std::cout << cur_num << " ";
+                        // std::cout << cur_num << " ";
+                        Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("{} ", cur_num));
                         large_cur_omh2reads.emplace_back(cur_reads_vec);
                     } 
                 }

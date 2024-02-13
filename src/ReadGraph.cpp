@@ -80,10 +80,12 @@ int main(int argc, char** argv) {
     int available_cores = omp_get_max_threads();
     // Ensure the user-specified number of cores is within a valid range
     auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
-    std::cout << "The maximum number of threads available:" << available_cores << std::endl;
+    // std::cout << "The maximum number of threads available:" << available_cores << std::endl;
+    Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("The maximum number of threads available: {} ", available_cores));
     // Set the number of threads for OpenMP
     omp_set_num_threads(num_cores_to_use);
-    std::cout << "The number of threads setted:" << num_cores_to_use << std::endl;
+    // std::cout << "The number of threads setted:" << num_cores_to_use << std::endl;
+    Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("The number of threads setted: {} ", num_cores_to_use));
     ////////////////////////////////////////////////////////////////////////////
     auto read2count = ReadWrite(args).get_unique_reads_counts();
     // auto [read2count, read2id] = ReadWrite(args).get_unique_reads_counts();

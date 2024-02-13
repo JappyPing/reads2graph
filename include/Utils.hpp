@@ -41,7 +41,7 @@ struct cmd_arguments
     unsigned omh_times{5};
     unsigned omh_kmer_n{5}; // Number of k-mers to consider
     double bad_kmer_ratio{0.4};
-    double probability{0.95};
+    double probability{0.86};
 };
 
 class Utils{

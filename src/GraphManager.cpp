@@ -51,6 +51,7 @@ void GraphManager::save_graph() const {
     // std::ofstream out(graph_full_path_);
     auto graph_full_path_ = args.output_dir / args.graph_filename;
     std::cout << "Output graph Path: " << graph_full_path_ << std::endl;
+    // Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("Output graph Path: {}.", graph_full_path_));
     std::ofstream dot_file(graph_full_path_);
 
     // boost::write_graphviz(dot_file, graph);  
@@ -68,6 +69,7 @@ void GraphManager::save_graph() const {
         dot_file.close();
         
         std::cout << "Graph written to " << graph_full_path_ << " successfully." << std::endl;
+        // Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("Graph written to {} successfully.", graph_full_path_));
     } else {
         std::cerr << "Error opening file " << graph_full_path_ << std::endl;
     }        
