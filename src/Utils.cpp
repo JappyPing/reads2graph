@@ -86,7 +86,7 @@ Utils::Utils() {
     std::tm now_tm = *std::localtime(&now_c);
 
     std::ostringstream oss;
-    oss << std::put_time(&now_tm, "log_%Y%m%d_%H%M%S.log");
+    oss << std::put_time(&now_tm, "_%Y%m%d_%H%M%S.log");
 
     // Get the current time and format it as a string
     time_t rawTime;
@@ -97,7 +97,7 @@ Utils::Utils() {
 
     char cwd[1024];
     if (getcwd(cwd, sizeof(cwd)) != NULL) {
-        std::string filePath = std::string(cwd) + "/ReadGraph" + oss.str();
+        std::string filePath = std::string(cwd) + "/ReadGraph_" + oss.str();
         logFile.open(filePath, std::ios::app);
     } else {
         std::cerr << timeString << ": "<< "Error: unable to get current working directory." << std::endl;
@@ -151,10 +151,10 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                                     .long_id = "num_process",
                                     .description = "The number of expected processes."});
 
-    parser.add_option(args.graph_filename,
-                      sharg::config{.short_id = 'g',
-                                    .long_id = "graph_filename",
-                                    .description = "The file name of the constructed graph."});
+    // parser.add_option(args.graph_filename,
+    //                   sharg::config{.short_id = 'g',
+    //                                 .long_id = "graph_filename",
+    //                                 .description = "The file name of the constructed graph."});
     // Brute Force
     parser.add_option(args.pair_wise,
                       sharg::config{

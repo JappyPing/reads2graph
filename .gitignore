@@ -10,3 +10,4 @@ bin/
 logs/
 *dot
 *txt
+brute_force/

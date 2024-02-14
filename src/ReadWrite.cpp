@@ -3,6 +3,8 @@
  * 
  */
 #include "ReadWrite.hpp"
+#include "LoggingLevels.hpp"
+
 // #include <unordered_map>
 #include <unordered_set>
 #include <omp.h>
@@ -18,6 +20,8 @@ ReadWrite::~ReadWrite(void){
 // std::pair<std::set<std::vector<seqan3::dna5>>, std::map<std::vector<seqan3::dna5>, uint32_t>> ReadWrite::get_unique_reads_counts(cmd_arguments args){
 std::map<std::vector<seqan3::dna5>, uint32_t> ReadWrite::get_unique_reads_counts(){
 // std::tuple<std::map<std::vector<seqan3::dna5>, uint32_t>, std::unordered_map<std::string, std::vector<seqan3::dna5>> ReadWrite::get_unique_reads_counts(){
+    // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Input dataset: {} ", args.input_data));
+    std::cout << "Input dataset: " << args.input_data.string() << endl;
     seqan3::sequence_file_input fin{args.input_data};
     // using record_type = decltype(fin)::record_type;
     // std::vector<record_type> records{};

@@ -12,6 +12,79 @@
 // MinimizerGenerator::MinimizerGenerator(std::set<std::vector<seqan3::dna5>> unique_reads, cmd_arguments args) : unique_reads_(std::move(unique_reads)), args(args) {}
 MinimizerGenerator::MinimizerGenerator(std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : read2count(read2count), args(args) {}
 
+std::unordered_map<std::int64_t, std::vector<std::vector<seqan3::dna5>>> MinimizerGenerator::process_reads_in_parallel()
+{   
+    // auto bestParams = findBestParameters(args.read_length, args.max_edit_dis, args.bad_kmer_ratio);
+    // auto best_n = std::get<0>(bestParams);
+    // auto best_kk = std::get<1>(bestParams);
+    // auto best_w = round(static_cast<double>(args.read_length) / best_n);
+
+    // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Best number of windows: {}, Best K: {} and Best probability: {}.", best_n, best_kk, std::get<2>(bestParams)));     
+    // auto best_k = static_cast<uint8_t>(best_kk);
+
+    int available_cores = omp_get_max_threads();
+    auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
+    omp_set_num_threads(num_cores_to_use);
+
+    #pragma omp parallel for
+    for (size_t i = 0; i < read2count.size(); ++i) {
+        auto it = std::next(read2count.begin(), i);
+        const auto& [read, count] = *it;
+        auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{args.k_size}) | seqan3::views::minimiser(args.window_size - args.k_size + 1);
+        // auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{best_k}) | seqan3::views::minimiser(best_w - best_k + 1);   
+
+        // // Iterate over minimisers and group reads
+        for (auto const &minimiser : minimisers) {
+            std::int64_t converted_minimiser = static_cast<std::int64_t>(minimiser);
+            #pragma omp critical
+            {
+                minimiser_to_reads[converted_minimiser].push_back(read);
+            }
+        }
+    }
+
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Size of minimiser_to_reads: {}.", minimiser_to_reads.size()));  
+    return minimiser_to_reads;     
+}
+
+long double MinimizerGenerator::prob(int l, int n, int k, int dt) {
+    int w = round(static_cast<double>(l) / n);
+    // long double p1 = ((w - (round(static_cast<double>(dt) / n) + 1) * k) + 1) / (w - k + 1);
+    long double p1 = (static_cast<long double>(dt) * k) / (n * (w - k + 1));
+    long double p2 = 1 - std::pow(p1, n);
+    return p2;
+}
+
+std::tuple<int, int, double> MinimizerGenerator::findBestParameters(int l, int dt, double pt) {
+    int bestN = 2;
+    int bestK = 3;
+    double bestResult = 0.0;
+    if (l >= 50){
+        for (int n = 2; n <= round(dt/2)+2; ++n) {
+            // int max_k = round(static_cast<double>(l) / n);
+            int max_k = round(l / n) - 1;
+            for (int k = max_k; k >= 3; --k) {
+                auto k4 = std::pow(4, k);
+                double result = prob(l, n, k, dt);
+                // if (((dt/n) * k < (max_k - k + 1)) && (k4 >= (max_k - k + 1) * 10000)){
+                if ((k4 > (l - k + 1) * 10) && (k*dt <= (round(l / n)-k+1) * n * pt) && result > args.probability){
+                    return std::make_tuple(n, k, result);
+                } 
+                if (result > bestResult){
+                    bestN = n;
+                    bestK = k;
+                    bestResult = result;
+                }            
+            }
+        }
+        return std::make_tuple(bestN, bestK, bestResult);
+    } else {
+        auto result = prob(l, 1, 4, dt);
+        return std::make_tuple(1, 4, result);
+    }
+    
+}
+
 // splicing multiple minimisers as one key
 // void MinimizerGenerator::process_read(const std::vector<seqan3::dna5> &read)
 // {
@@ -26,34 +99,9 @@ MinimizerGenerator::MinimizerGenerator(std::map<std::vector<seqan3::dna5>, uint3
 //     } 
 //     minimiser_to_reads[hash_sum].push_back(read);
 // }
-/*
-void MinimizerGenerator::process_read(const std::vector<seqan3::dna5> &read)
-{
-    // Here a consecutive shape with size 4 (so the k-mer size is 4) and a window size of 8 is used.
-    // auto minimisers = read | seqan3::views::minimiser_hash(seqan3::shape{seqan3::ungapped{4}}, seqan3::window_size{8});
-    auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{args.k_size}) | seqan3::views::minimiser(args.window_size - args.k_size + 1);
 
-    // seqan3::debug_stream << read << '\n';
-    // seqan3::debug_stream << minimisers << '\n';
-    // Iterate over the elements of the minimiser range
-    // for (auto const &minimiser : minimisers)
-    // {
-    //     // Process each minimiser as needed
-    //     seqan3::debug_stream << "Minimiser: " << minimiser << '\n';
-    // }
-
-    // Iterate over minimisers and group reads
-    // using each minimiser as a key
-    for (auto const &minimiser : minimisers) {
-        std::int64_t converted_minimiser = static_cast<std::int64_t>(minimiser);
-        // seqan3::debug_stream << "Minimiser: " << minimiser << " " << converted_minimiser << '\n';
-        minimiser_to_reads[converted_minimiser].push_back(read);
-    } 
-}
-*/
-
-std::unordered_map<std::int64_t, std::vector<std::vector<seqan3::dna5>>> MinimizerGenerator::process_reads_in_parallel()
-{
+// std::unordered_map<std::int64_t, std::vector<std::vector<seqan3::dna5>>> MinimizerGenerator::process_reads_in_parallel()
+// {   
     // size_t max_length = 0;
     // size_t min_length = std::numeric_limits<size_t>::max(); // Set to maximum possible value initially
     // // for (const auto& read : unique_reads_) {
@@ -71,13 +119,13 @@ std::unordered_map<std::int64_t, std::vector<std::vector<seqan3::dna5>>> Minimiz
     // int best_k;
     // int best_w;
 
-    auto bestParams = findBestParameters(args.read_length, args.max_edit_dis, args.bad_kmer_ratio);
-    auto best_n = std::get<0>(bestParams);
-    auto best_kk = std::get<1>(bestParams);
-    auto best_w = round(static_cast<double>(args.read_length) / best_n);
-    // std::cout << "Best number of windows: " << best_n << "\n" << "Best K: " << best_kk << "\n" << "Best probability: " << std::get<2>(bestParams) << std::endl;   
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Best number of windows: {}, Best K: {} and Best probability: {}.", best_n, best_kk, std::get<2>(bestParams)));     
-    auto best_k = static_cast<uint8_t>(best_kk);
+    // auto bestParams = findBestParameters(args.read_length, args.max_edit_dis, args.bad_kmer_ratio);
+    // auto best_n = std::get<0>(bestParams);
+    // auto best_kk = std::get<1>(bestParams);
+    // auto best_w = round(static_cast<double>(args.read_length) / best_n);
+    // // std::cout << "Best number of windows: " << best_n << "\n" << "Best K: " << best_kk << "\n" << "Best probability: " << std::get<2>(bestParams) << std::endl;   
+    // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Best number of windows: {}, Best K: {} and Best probability: {}.", best_n, best_kk, std::get<2>(bestParams)));     
+    // auto best_k = static_cast<uint8_t>(best_kk);
 
     // int desired_num_cores = 26; /* specify the number of cores you want to use */
     // int available_cores = omp_get_max_threads();
@@ -96,16 +144,16 @@ std::unordered_map<std::int64_t, std::vector<std::vector<seqan3::dna5>>> Minimiz
     //     // Dereference the iterator to get the actual read content
     //     auto const &read = *it;
 
-    int available_cores = omp_get_max_threads();
-    auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
-    omp_set_num_threads(num_cores_to_use);
+    // int available_cores = omp_get_max_threads();
+    // auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
+    // omp_set_num_threads(num_cores_to_use);
 
-    #pragma omp parallel for
-    for (size_t i = 0; i < read2count.size(); ++i) {
-        auto it = std::next(read2count.begin(), i);
-        const auto& [read, count] = *it;
-        // auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{args.k_size}) | seqan3::views::minimiser(args.window_size - args.k_size + 1);
-        auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{best_k}) | seqan3::views::minimiser(best_w - best_k + 1);   
+    // #pragma omp parallel for
+    // for (size_t i = 0; i < read2count.size(); ++i) {
+    //     auto it = std::next(read2count.begin(), i);
+    //     const auto& [read, count] = *it;
+    //     // auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{args.k_size}) | seqan3::views::minimiser(args.window_size - args.k_size + 1);
+    //     auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{best_k}) | seqan3::views::minimiser(best_w - best_k + 1);   
     
         // forward and backward minimisers
         // auto minimisers = read | seqan3::views::minimiser_hash(seqan3::shape{seqan3::ungapped{args.k_size}}, seqan3::window_size{w_size - args.k_size + 1});
@@ -122,14 +170,14 @@ std::unordered_map<std::int64_t, std::vector<std::vector<seqan3::dna5>>> Minimiz
         //     minimiser_to_reads[seed].push_back(read);
         // }
         // // Iterate over minimisers and group reads
-        for (auto const &minimiser : minimisers) {
-            std::int64_t converted_minimiser = static_cast<std::int64_t>(minimiser);
-            #pragma omp critical
-            {
-                minimiser_to_reads[converted_minimiser].push_back(read);
-            }
-        }
-    }
+    //     for (auto const &minimiser : minimisers) {
+    //         std::int64_t converted_minimiser = static_cast<std::int64_t>(minimiser);
+    //         #pragma omp critical
+    //         {
+    //             minimiser_to_reads[converted_minimiser].push_back(read);
+    //         }
+    //     }
+    // }
     // #pragma omp taskwait
     // #pragma omp parallel for
     // for (size_t i = 0; i < unique_reads_.size(); ++i)
@@ -174,46 +222,7 @@ std::unordered_map<std::int64_t, std::vector<std::vector<seqan3::dna5>>> Minimiz
     //     // break;
     // } 
     // std::cout << "Size of minimiser_to_reads: " << minimiser_to_reads.size() << std::endl;  
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Size of minimiser_to_reads: {}.", minimiser_to_reads.size()));  
-    return minimiser_to_reads;     
-}
+//     Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Size of minimiser_to_reads: {}.", minimiser_to_reads.size()));  
+//     return minimiser_to_reads;     
+// }
 
-long double MinimizerGenerator::prob(int l, int n, int k, int dt) {
-    int w = round(static_cast<double>(l) / n);
-    // long double p1 = ((w - (round(static_cast<double>(dt) / n) + 1) * k) + 1) / (w - k + 1);
-    long double p1 = (static_cast<long double>(dt) * k) / (n * (w - k + 1));
-    long double p2 = 1 - std::pow(p1, n);
-    return p2;
-}
-
-std::tuple<int, int, double> MinimizerGenerator::findBestParameters(int l, int dt, double pt) {
-    int bestN = 2;
-    int bestK = 3;
-    double bestResult = 0.0;
-    if (l >= 50){
-        for (int n = 2; n <= round(dt/2)+2; ++n) {
-            // int max_k = round(static_cast<double>(l) / n);
-            int max_k = round(l / n) - 1;
-            for (int k = max_k; k >= 3; --k) {
-                auto k4 = std::pow(4, k);
-                double result = prob(l, n, k, dt);
-                // if (((dt/n) * k < (max_k - k + 1)) && (k4 >= (max_k - k + 1) * 10000)){
-                if ((k4 > (l - k + 1) * 10) && (k*dt <= (round(l / n)-k+1) * n * pt) && result > args.probability){
-                    return std::make_tuple(n, k, result);
-                } 
-                if (result > bestResult){
-                    bestN = n;
-                    bestK = k;
-                    bestResult = result;
-                }            
-            }
-        }
-        return std::make_tuple(bestN, bestK, bestResult);
-    } else {
-        auto result = prob(l, 1, 4, dt);
-        return std::make_tuple(1, 4, result);
-    }
-    
-}
-
-    

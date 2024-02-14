@@ -34,7 +34,7 @@ struct cmd_arguments
     uint8_t max_edit_dis{5};
     uint8_t min_edit_dis{1};
     int num_process{26};
-    std::string graph_filename{"graph.dot"};
+    // std::string graph_filename{"graph.dot"};
     bool pair_wise{false};
     unsigned int bin_size_min{500};
     unsigned int bin_size_max{10000};

@@ -94,11 +94,11 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> PairWiseEditDis::compute_pair
     }        
 
     // std::cout << "Number of total read edges: " << edge_lst.size() << std::endl; 
-    Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("Number of total read edges: {}.", edge_lst.size()));
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Number of total read edges: {}.", edge_lst.size()));
     for (const auto & [distance, count] : edit_distance_counts_)
     {
         // std::cout << "Edit distance by Brute_Force" << distance << ": " << count << " pairs" << std::endl;
-        Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("Edit distance by Brute_Force {}: {} pairs.", distance, count));
+        Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Edit distance by Brute_Force {}: {} pairs.", distance, count));
     }
     auto filename = args.output_dir / "Brute_Force_pairwise_edit_distance_counts.txt";
     std::ofstream file(filename);

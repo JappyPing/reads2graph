@@ -49,7 +49,11 @@ void GraphManager::construct_graph()
 
 void GraphManager::save_graph() const {
     // std::ofstream out(graph_full_path_);
-    auto graph_full_path_ = args.output_dir / args.graph_filename;
+    // auto graph_full_path_ = args.output_dir / args.graph_filename;
+    std::filesystem::path modifiable_path = args.input_data;
+    modifiable_path.replace_extension(".dot");
+    std::string output_filename = modifiable_path.filename().string();
+    auto graph_full_path_ = args.output_dir / output_filename;
     std::cout << "Output graph Path: " << graph_full_path_ << std::endl;
     // Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("Output graph Path: {}.", graph_full_path_));
     std::ofstream dot_file(graph_full_path_);
