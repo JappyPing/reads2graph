@@ -1,3 +1,8 @@
+/*
+The head is used to implementate the Order Min Hash (OMH)(https://github.com/Kingsford-Group/omhismb2019). If you want to use the following source codes in your project, please remember to cite the original work listed below.
+Guillaume Marçais, Dan DeBlasio, Prashant Pandey, Carl Kingsford, Locality-sensitive hashing for the edit distance, Bioinformatics, Volume 35, Issue 14, July 2019, Pages i127–i135, https://doi.org/10.1093/bioinformatics/btz354
+*/
+
 #ifndef __SEEDED_PRG_HPP__
 #define __SEEDED_PRG_HPP__
 
