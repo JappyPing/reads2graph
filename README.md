@@ -1,5 +1,5 @@
 # ReadGraph
-Generate edit-distance-based read graph from short reads
+Generate edit-distance-based read graph from short reads via looped minimiser and locality-sensitive hashing
 
 
 ## Compile
