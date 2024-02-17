@@ -12,25 +12,24 @@
 #include <seqan3/core/debug_stream.hpp>
 #include <seqan3/utility/views/pairwise_combine.hpp>
 
-PairWiseEditDis::PairWiseEditDis(std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : read2count(read2count), args(args) {}
-
+// PairWiseEditDis::PairWiseEditDis(std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : read2count(read2count), args(args) {}
+PairWiseEditDis::PairWiseEditDis(std::vector<std::vector<seqan3::dna5>> unique_reads, cmd_arguments args) : unique_reads(unique_reads), args(args) {}
 // std::unordered_map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, unordered_pair> PairWiseEditDis::compute_pairwise_edit_distance()
 std::map<std::set<std::vector<seqan3::dna5>>, int> PairWiseEditDis::compute_pairwise_edit_distance()
 
 {
     // Convert the set to a vector
-    // std::vector<std::vector<seqan3::dna5>> reads_vec(reads_.begin(), reads_.end());
-    std::vector<std::vector<seqan3::dna5>> reads_vec;
-    std::transform(read2count.begin(), read2count.end(),
-                   std::back_inserter(reads_vec),
-                   [](const auto& pair) { return pair.first; });
+    // std::vector<std::vector<seqan3::dna5>> reads_vec;
+    // std::transform(read2count.begin(), read2count.end(),
+    //                std::back_inserter(reads_vec),
+    //                [](const auto& pair) { return pair.first; });
 
     int min_s = -1 * args.max_edit_dis;
     int max_s = -1 * args.min_edit_dis;
 
     auto config = seqan3::align_cfg::method_global{} | seqan3::align_cfg::edit_scheme | seqan3::align_cfg::min_score{min_s} | seqan3::align_cfg::output_score{};
 
-    auto pairwise_combinations = seqan3::views::pairwise_combine(reads_vec);
+    auto pairwise_combinations = seqan3::views::pairwise_combine(unique_reads);
 
     // Declare and define a global variable for available cores
     // int available_cores = omp_get_max_threads();

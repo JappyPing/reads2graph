@@ -7,6 +7,9 @@ Guillaume Marçais, Dan DeBlasio, Prashant Pandey, Carl Kingsford, Locality-sens
 #ifndef __OMH_HPP__
 #define __OMH_HPP__
 
+#include "Utils.hpp"
+#include "LoggingLevels.hpp"
+
 #include <cstring>
 #include <string>
 #include <vector>
@@ -30,37 +33,52 @@ struct mer_info {
   { }
 };
 
-uint64_t omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned l, unsigned int seed) {
-    auto seql = read | seqan3::views::to_char;
-    string seq(seql.begin(), seql.end());
-    if(seq.size() < k) return {};
+class OMH
+{
+public:
+    // OMH(std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args);
+    OMH(std::vector<std::vector<seqan3::dna5>> unique_reads, cmd_arguments args);
+    std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> omh2read_main();
+    uint64_t omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned l, unsigned int seed);
+private:
+    // std::map<std::vector<seqan3::dna5>, uint32_t> read2count;
+    std::vector<std::vector<seqan3::dna5>> unique_reads;
+    std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> omh2reads;
+    cmd_arguments args;
 
-    const bool weight = l > 0;
-    if(l == 0) l = 1;
+};
 
-    std::vector<mer_info> mers;
-    std::unordered_map<std::string, unsigned> occurrences;
+// uint64_t omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned l, unsigned int seed) {
+//     auto seql = read | seqan3::views::to_char;
+//     string seq(seql.begin(), seql.end());
+//     if(seq.size() < k) return {};
 
-    //  Create list of k-mers with occurrence numbers
-    for(size_t i = 0; i < seq.size() - k + 1; ++i) {
-        auto occ = occurrences[seq.substr(i, k)]++;
-        mers.emplace_back(i, occ, (uint64_t)0);
-    }
+//     const bool weight = l > 0;
+//     if(l == 0) l = 1;
 
-    xxhash hash;
-    // uint64_t omh_result;
+//     std::vector<mer_info> mers;
+//     std::unordered_map<std::string, unsigned> occurrences;
 
-    for(auto& meri : mers) {
-      hash.reset(seed);
-      hash.update(&seq.data()[meri.pos], k);
-      if(weight) hash.update(&meri.occ, sizeof(meri.occ));
-      meri.hash = hash.digest();
-    }
-    std::partial_sort(mers.begin(), mers.begin() + l, mers.end(), [&](const mer_info& x, const mer_info& y) { return x.hash < y.hash; });
-    std::sort(mers.begin(), mers.begin() + l, [&](const mer_info& x, const mer_info& y) { return x.pos < y.pos; });
+//     //  Create list of k-mers with occurrence numbers
+//     for(size_t i = 0; i < seq.size() - k + 1; ++i) {
+//         auto occ = occurrences[seq.substr(i, k)]++;
+//         mers.emplace_back(i, occ, (uint64_t)0);
+//     }
 
-    return mers[0].hash; // Return the OMH results
-}
+//     xxhash hash;
+//     // uint64_t omh_result;
+
+//     for(auto& meri : mers) {
+//       hash.reset(seed);
+//       hash.update(&seq.data()[meri.pos], k);
+//       if(weight) hash.update(&meri.occ, sizeof(meri.occ));
+//       meri.hash = hash.digest();
+//     }
+//     std::partial_sort(mers.begin(), mers.begin() + l, mers.end(), [&](const mer_info& x, const mer_info& y) { return x.hash < y.hash; });
+//     std::sort(mers.begin(), mers.begin() + l, [&](const mer_info& x, const mer_info& y) { return x.pos < y.pos; });
+
+//     return mers[0].hash; // Return the OMH results
+// }
 
 
 // template<typename EngineT>

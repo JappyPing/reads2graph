@@ -28,7 +28,7 @@ struct cmd_arguments
 {
     std::filesystem::path input_data{};
     std::filesystem::path output_dir{std::filesystem::current_path()};
-    int read_length{4};
+    int read_length{150};
     uint8_t k_size{4};
     uint8_t window_size{8};
     uint8_t max_edit_dis{5};

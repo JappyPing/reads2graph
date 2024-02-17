@@ -14,6 +14,8 @@
 #include "EdgeConstructor.hpp"
 #include "GraphManager.hpp"
 #include "PairWiseEditDis.hpp"
+#include "OMH.hpp"
+
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
@@ -75,7 +77,7 @@ int main(int argc, char** argv) {
         std::cerr << "[Invalid Options] " << ext.what() << "\n"; // customise your error message
         return -1;
     }
-
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Parameters: -o {} -k {} -w {} --omh_kmer_n {} --omh_times {}", args.output_dir.string(), args.k_size, args.window_size, args.omh_kmer_n, args.omh_times));
     // Declare and define a global variable for available cores
     int available_cores = omp_get_max_threads();
     // Ensure the user-specified number of cores is within a valid range
@@ -87,7 +89,28 @@ int main(int argc, char** argv) {
     // std::cout << "The number of threads setted:" << num_cores_to_use << std::endl;
     Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("The number of threads setted: {} ", num_cores_to_use));
     ////////////////////////////////////////////////////////////////////////////
-    auto read2count = ReadWrite(args).get_unique_reads_counts();
+    // auto read2count = ReadWrite(args).get_unique_reads_counts();
+    auto [unique_reads, read2count] = ReadWrite(args).get_unique_reads_counts();
+
+    auto uniq_num = unique_reads.size();
+    Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("The number of unique reads: {} ", uniq_num));
+
+    // std::vector<std::vector<seqan3::dna5>> unique_reads;
+    // #pragma omp parallel
+    // {
+    //     std::vector<std::vector<seqan3::dna5>> private_unique_reads;
+
+    //     #pragma omp for nowait
+    //     for (long unsigned int i = 0; i < uniq_num; ++i) {
+    //         auto it = read2count.begin();
+    //         std::advance(it, i);
+    //         private_unique_reads.push_back(it->first);
+    //     }
+
+    //     #pragma omp critical
+    //     unique_reads.insert(unique_reads.end(), private_unique_reads.begin(), private_unique_reads.end());
+    // }
+
     // auto [read2count, read2id] = ReadWrite(args).get_unique_reads_counts();
     // // Print the unique reads.
     // for (auto const & read : unique_reads)
@@ -97,23 +120,27 @@ int main(int argc, char** argv) {
 
     if (args.pair_wise) {
             // Create an instance of PairwiseEditDistance
-            auto edge_lst = PairWiseEditDis(read2count, args).compute_pairwise_edit_distance();
+            auto edge_lst = PairWiseEditDis(unique_reads, args).compute_pairwise_edit_distance();
             Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise (brute force) nt-edit-distance-based edges calculation done");
             GraphManager(edge_lst, read2count, args).construct_graph();
             // GraphManager(edge_lst, read2count, read2id, args).construct_graph();
     } else {
-        auto minimiser_to_reads = MinimizerGenerator(read2count, args).process_reads_in_parallel();
-        // EdgeConstructor(minimiser_to_reads, args).process_block();   
+        // minimizer grouping first and then omh
+        auto minimiser2reads = MinimizerGenerator(unique_reads, args).minimizer2reads_main();
+        auto edge_lst = EdgeConstructor(minimiser2reads, args).minimizer_omh();
 
-        auto edge_lst = EdgeConstructor(minimiser_to_reads, args).get_edge_lst();
+        // omh grouping first and then minimizer
+        // auto omh2reads = OMH(unique_reads, args).omh2read_main();
+        // auto edge_lst = EdgeConstructor(omh2reads, args).omh_minimizer();
+
         Utils::getInstance().logger(LOG_LEVEL_INFO,  "nt-edit-distance-based edges calculation done!");
         ///////////////////////////////////////////////////////////////////////////////
         
-        GraphManager(edge_lst, read2count, args).construct_graph();
+        // GraphManager(edge_lst, read2count, args).construct_graph();
         // GraphManager(edge_lst, read2count, read2id, args).construct_graph();
 
     }
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  "nt-edit-distance-based graph construction done!");
+    // Utils::getInstance().logger(LOG_LEVEL_INFO,  "nt-edit-distance-based graph construction done!");
     //Print the stored read pairs and edit distances
     // for (const auto &[read_pair, edit_distance] : edge_lst)
     // {

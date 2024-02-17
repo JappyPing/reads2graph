@@ -60,20 +60,26 @@ using namespace seqan3::literals;
 class EdgeConstructor
 {
 public:
-    EdgeConstructor(std::unordered_map<std::int64_t, std::vector<std::vector<seqan3::dna5>>> minimiser_to_reads, cmd_arguments args);
+    // EdgeConstructor(std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> minimiser_to_reads, cmd_arguments args);
+    // EdgeConstructor(std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> omh2reads, cmd_arguments args);
+    EdgeConstructor(std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> key2reads, cmd_arguments args);
+    
     // void process_block();
-    void process_block(const std::vector<std::vector<seqan3::dna5>> &reads_vec, int min_s, int max_s);
-    void process_blocks_in_parallel();
+    // void process_block(const std::vector<std::vector<seqan3::dna5>> &reads_vec, int min_s, int max_s);
+    std::map<std::set<std::vector<seqan3::dna5>>, int> minimizer_omh();
+    std::map<std::set<std::vector<seqan3::dna5>>, int> omh_minimizer();
     // std::map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, pair_comparator> get_edge_lst();
     // std::unordered_map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, unordered_pair> get_edge_lst();
-    std::map<std::set<std::vector<seqan3::dna5>>, int> get_edge_lst();
+    void display_edge_summary(std::map<std::set<std::vector<seqan3::dna5>>, int> edge_lst);
     std::vector<std::pair<uint64_t, uint64_t>> get_combinations(const std::vector<uint64_t>& a);
 private:
-    std::unordered_map<std::int64_t, std::vector<std::vector<seqan3::dna5>>> minimiser_to_reads_;
+    // std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> minimiser_to_reads_;
+    // std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> omh2reads_;
+    std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> key2reads_;
     cmd_arguments args;
     // std::map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, pair_comparator> edge_lst;
     // std::unordered_map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, unordered_pair> edge_lst;
     std::map<std::set<std::vector<seqan3::dna5>>, int> edge_lst;    
-    std::map<int, size_t> edit_distance_counts_;
+    // std::map<int, size_t> edit_distance_counts_;
 };
 #endif // EDGECONSTRUCTOR_H

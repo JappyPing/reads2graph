@@ -9,33 +9,35 @@
 #include <boost/functional/hash.hpp>
 #include <cmath>
 
-// MinimizerGenerator::MinimizerGenerator(std::set<std::vector<seqan3::dna5>> unique_reads, cmd_arguments args) : unique_reads_(std::move(unique_reads)), args(args) {}
-MinimizerGenerator::MinimizerGenerator(std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : read2count(read2count), args(args) {}
+MinimizerGenerator::MinimizerGenerator(std::vector<std::vector<seqan3::dna5>> unique_reads, cmd_arguments args) : unique_reads(unique_reads), args(args) {}
+// MinimizerGenerator::MinimizerGenerator(std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : read2count(read2count), args(args) {}
 
-std::unordered_map<std::int64_t, std::vector<std::vector<seqan3::dna5>>> MinimizerGenerator::process_reads_in_parallel()
+std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> MinimizerGenerator::minimizer2reads_main()
 {   
-    // auto bestParams = findBestParameters(args.read_length, args.max_edit_dis, args.bad_kmer_ratio);
-    // auto best_n = std::get<0>(bestParams);
-    // auto best_kk = std::get<1>(bestParams);
-    // auto best_w = round(static_cast<double>(args.read_length) / best_n);
+    auto bestParams = findBestParameters(args.read_length, args.max_edit_dis, args.bad_kmer_ratio);
+    auto best_n = std::get<0>(bestParams);
+    auto best_kk = std::get<1>(bestParams);
+    auto best_w = round(static_cast<double>(args.read_length) / best_n);
 
-    // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Best number of windows: {}, Best K: {} and Best probability: {}.", best_n, best_kk, std::get<2>(bestParams)));     
-    // auto best_k = static_cast<uint8_t>(best_kk);
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Best number of windows: {}, Best K: {} and Best probability: {}.", best_n, best_kk, std::get<2>(bestParams)));     
+    auto best_k = static_cast<uint8_t>(best_kk);
 
     int available_cores = omp_get_max_threads();
     auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
     omp_set_num_threads(num_cores_to_use);
 
+    // #pragma omp parallel for
+    // for (size_t i = 0; i < read2count.size(); ++i) {
+    //     auto it = std::next(read2count.begin(), i);
+    //     const auto& [read, count] = *it;
     #pragma omp parallel for
-    for (size_t i = 0; i < read2count.size(); ++i) {
-        auto it = std::next(read2count.begin(), i);
-        const auto& [read, count] = *it;
-        auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{args.k_size}) | seqan3::views::minimiser(args.window_size - args.k_size + 1);
-        // auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{best_k}) | seqan3::views::minimiser(best_w - best_k + 1);   
+    for (auto const & read : unique_reads){
+        // auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{args.k_size}) | seqan3::views::minimiser(args.window_size - args.k_size + 1);
+        auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{best_k}) | seqan3::views::minimiser(best_w - best_k + 1);   
 
         // // Iterate over minimisers and group reads
         for (auto const &minimiser : minimisers) {
-            std::int64_t converted_minimiser = static_cast<std::int64_t>(minimiser);
+            std::uint64_t converted_minimiser = static_cast<std::uint64_t>(minimiser);
             #pragma omp critical
             {
                 minimiser_to_reads[converted_minimiser].push_back(read);
@@ -93,14 +95,14 @@ std::tuple<int, int, double> MinimizerGenerator::findBestParameters(int l, int d
 //     auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{args.k_size}) | seqan3::views::minimiser(args.window_size - args.k_size + 1);
 //     uint64_t hash_sum = 0;
 //     for (auto const &minimiser : minimisers) {
-//         // std::int64_t converted_minimiser = static_cast<std::int64_t>(minimiser);
+//         // std::uint64_t converted_minimiser = static_cast<std::uint64_t>(minimiser);
 //         // seqan3::debug_stream << "Minimiser: " << minimiser << " " << converted_minimiser << '\n';
 //         hash_sum += minimiser;
 //     } 
 //     minimiser_to_reads[hash_sum].push_back(read);
 // }
 
-// std::unordered_map<std::int64_t, std::vector<std::vector<seqan3::dna5>>> MinimizerGenerator::process_reads_in_parallel()
+// std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> MinimizerGenerator::process_reads_in_parallel()
 // {   
     // size_t max_length = 0;
     // size_t min_length = std::numeric_limits<size_t>::max(); // Set to maximum possible value initially
@@ -162,7 +164,7 @@ std::tuple<int, int, double> MinimizerGenerator::findBestParameters(int l, int d
         // Iterate over minimisers and group reads
         // std::size_t seed = 0;
         // for (auto const &minimiser : minimisers) {
-        //     std::int64_t converted_minimiser = static_cast<std::int64_t>(minimiser);
+        //     std::uint64_t converted_minimiser = static_cast<std::uint64_t>(minimiser);
         //     boost::hash_combine(seed, converted_minimiser);
         // }
         // #pragma omp critical
@@ -171,7 +173,7 @@ std::tuple<int, int, double> MinimizerGenerator::findBestParameters(int l, int d
         // }
         // // Iterate over minimisers and group reads
     //     for (auto const &minimiser : minimisers) {
-    //         std::int64_t converted_minimiser = static_cast<std::int64_t>(minimiser);
+    //         std::uint64_t converted_minimiser = static_cast<std::uint64_t>(minimiser);
     //         #pragma omp critical
     //         {
     //             minimiser_to_reads[converted_minimiser].push_back(read);

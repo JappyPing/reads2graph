@@ -17,16 +17,16 @@ using namespace seqan3::literals;
 class MinimizerGenerator
 {
 public:
-    // MinimizerGenerator(std::set<std::vector<seqan3::dna5>> unique_reads, cmd_arguments args);
-    MinimizerGenerator(std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args);
-    std::unordered_map<std::int64_t, std::vector<std::vector<seqan3::dna5>>> process_reads_in_parallel();
+    MinimizerGenerator(std::vector<std::vector<seqan3::dna5>> unique_reads, cmd_arguments args);
+    // MinimizerGenerator(std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args);
+    std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> minimizer2reads_main();
     std::tuple<int, int, double> findBestParameters(int l, int dt, double pt);
     long double prob(int l, int n, int k, int dt);
     // void process_read(const std::vector<seqan3::dna5> &read);
 private:
-    // std::set<std::vector<seqan3::dna5>> unique_reads_;
-    std::map<std::vector<seqan3::dna5>, uint32_t> read2count;
-    std::unordered_map<std::int64_t, std::vector<std::vector<seqan3::dna5>>> minimiser_to_reads;
+    std::vector<std::vector<seqan3::dna5>> unique_reads;
+    // std::map<std::vector<seqan3::dna5>, uint32_t> read2count;
+    std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> minimiser_to_reads;
     cmd_arguments args;
 };
 

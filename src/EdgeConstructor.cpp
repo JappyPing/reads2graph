@@ -1,7 +1,7 @@
 // EdgeConstructor.cpp
 #include "EdgeConstructor.hpp"
-// #include "maximiser_view.hpp"
 #include "OMH.hpp"
+#include "MinimizerGenerator.hpp"
 
 #include <algorithm>
 #include <ranges>
@@ -15,50 +15,56 @@
 #include <seqan3/utility/views/pairwise_combine.hpp>
 #include <seqan3/alphabet/views/to_rank.hpp>
 #include <omp.h>
-#include <eigen3/Eigen/Dense>
+// #include <eigen3/Eigen/Dense>
 #include <unordered_set>
 #include <boost/functional/hash.hpp>
 #include <seqan3/alphabet/all.hpp>
+#include <boost/functional/hash.hpp>
 // #include <thread>
 // #include <mutex>
 
-EdgeConstructor::EdgeConstructor(std::unordered_map<std::int64_t, std::vector<std::vector<seqan3::dna5>>> minimiser_to_reads, cmd_arguments args) : minimiser_to_reads_(std::move(minimiser_to_reads)), args(args) {}
+// EdgeConstructor::EdgeConstructor(std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> minimiser_to_reads, cmd_arguments args) : minimiser_to_reads_(std::move(minimiser_to_reads)), args(args) {}
+// EdgeConstructor::EdgeConstructor(std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> omh2reads, cmd_arguments args) : omh2reads_(std::move(omh2reads)), args(args) {}
+EdgeConstructor::EdgeConstructor(std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> key2reads, cmd_arguments args) : key2reads_(std::move(key2reads)), args(args) {}
 
 // std::map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, pair_comparator> EdgeConstructor::get_edge_lst() 
 // std::unordered_map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, unordered_pair> EdgeConstructor::get_edge_lst() 
-std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::get_edge_lst() 
-
+void EdgeConstructor::display_edge_summary(std::map<std::set<std::vector<seqan3::dna5>>, int> edges) 
 {
-    process_blocks_in_parallel();
+    // minimizer_omh();
     // Print the stored read pairs and edit distances
-    for (const auto &[read_pair, edit_distance] : edge_lst)
+    uint64_t edge_num = 0;
+    std::map<int, size_t> edit_distance2count;
+    for (const auto &[read_pair, edit_distance] : edges)
     {
-        edit_distance_counts_[edit_distance]++;
+        edit_distance2count[edit_distance]++;
+        edge_num++;
         // seqan3::debug_stream << "Read Pair: " << read_pair.first << " - " << read_pair.second
                             // << ", Edit Distance: " << edit_distance << '\n';
     }   
-    std::cout << "Number of read edges: " << edge_lst.size() << std::endl;
-    
-    for (const auto & [distance, count] : edit_distance_counts_)
+    // std::cout << "Number of read edges: " << edge_lst.size() << std::endl;
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Number of read edges: {}.", edge_num));    
+
+    for (const auto & [distance, count] : edit_distance2count)
     {
-        std::cout << "Edit distance of " << distance << ": " << count << " pairs" << std::endl;
-    }
-    auto filename = args.output_dir / "Minimiser_edit_distance_counts.txt";
-    std::ofstream file(filename);
-    if (!file.is_open())
-    {
-        std::cerr << "Error opening file: " << filename << std::endl;
-        std::exit(EXIT_FAILURE);
+        // std::cout << "Edit distance of " << distance << ": " << count << " pairs" << std::endl;
+        Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Edit distance of {}: {} pairs", distance, count));
     }
 
-    for (const auto & [distance, count] : edit_distance_counts_)
-    {
-        file << "Edit distance of " << distance << ": " << count << " pairs\n";
-    }
+    // auto filename = args.output_dir / "Minimiser_edit_distance_counts.txt";
+    // std::ofstream file(filename);
+    // if (!file.is_open())
+    // {
+    //     std::cerr << "Error opening file: " << filename << std::endl;
+    //     std::exit(EXIT_FAILURE);
+    // }
 
-    file.close();
+    // for (const auto & [distance, count] : edit_distance_counts_)
+    // {
+    //     file << "Edit distance of " << distance << ": " << count << " pairs\n";
+    // }
 
-    return edge_lst;
+    // file.close();
 }
 
 std::vector<std::pair<uint64_t, uint64_t>> EdgeConstructor::get_combinations(const std::vector<uint64_t>& a) {
@@ -71,7 +77,7 @@ std::vector<std::pair<uint64_t, uint64_t>> EdgeConstructor::get_combinations(con
     return combinations;
 }
 
-void EdgeConstructor::process_blocks_in_parallel()
+std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::minimizer_omh()
 {
     int min_s = -1 * args.max_edit_dis;
     int max_s = -1 * args.min_edit_dis;
@@ -92,8 +98,8 @@ void EdgeConstructor::process_blocks_in_parallel()
     omp_set_num_threads(num_cores_to_use);
 
     #pragma omp parallel for
-    for (auto i = 0u; i < minimiser_to_reads_.size(); ++i) {
-        const auto &entry = *std::next(minimiser_to_reads_.begin(), i);
+    for (auto i = 0u; i < key2reads_.size(); ++i) {
+        const auto &entry = *std::next(key2reads_.begin(), i);
         const std::vector<std::vector<seqan3::dna5>> &reads_vec = entry.second;
         auto cur_read_num = reads_vec.size();
         if ( cur_read_num == 1){
@@ -223,6 +229,9 @@ void EdgeConstructor::process_blocks_in_parallel()
                 std::set<std::vector<seqan3::dna5>> read_pair_set;
                 read_pair_set.insert(seq1);
                 read_pair_set.insert(seq2);
+                // if (edge_lst.contains(read_pair_set)){
+                //     continue;
+                // } else {
                 auto alignment_results = seqan3::align_pairwise(std::tie(seq1, seq2), config);
                 // Iterate over alignment results and access the scores
                 for (auto const &result : alignment_results)
@@ -237,6 +246,7 @@ void EdgeConstructor::process_blocks_in_parallel()
                         }                    
                     }
                 }
+                // }
                 /*
                 auto seq11 = seq1 | seqan3::views::to_char;
                 string seq_str1(seq11.begin(), seq11.end());
@@ -310,39 +320,7 @@ void EdgeConstructor::process_blocks_in_parallel()
 
     if (extra_large_group.size() > 0){
         for (const auto &el_group : extra_large_group){
-            std::map<std::vector<uint64_t>, std::vector<std::vector<seqan3::dna5>>> cur_omh2reads;
-            // std::map<std::pair<uint64_t, uint64_t>, std::vector<std::vector<seqan3::dna5>>> cur_omh2reads;
-            // std::map<uint64_t, std::vector<std::vector<seqan3::dna5>>> cur_omh2reads;
-
-            std::default_random_engine prg;
-            vector<unsigned int> seeds;
-            for(unsigned i = 0; i < args.omh_times; ++i) {
-                seeds.push_back(prg());
-            }
-            omp_set_num_threads(num_cores_to_use);
-            #pragma omp parallel for
-            for (const auto &cur_read : el_group){
-                vector<uint64_t> omh_results;
-                for(auto seed : seeds){
-                    auto omh_result = omh_pos(cur_read, args.k_size, args.omh_kmer_n, seed);   
-                    omh_results.push_back(omh_result);                 
-                }
-                #pragma omp critical
-                {
-                    cur_omh2reads[omh_results].push_back(cur_read);
-                }  
-
-                // for (const auto& pair : combinations) {
-                //     uint64_t first = pair.first;
-                //     uint64_t second = pair.second;
-                //     std::cout << first << "--" << second << endl;
-                //     // #pragma omp critical
-                //     {
-                //         cur_omh2reads[pair].push_back(cur_read);
-                //     }  
-                // }
-
-            }
+            auto cur_omh2reads = OMH(el_group, args).omh2read_main();
             auto cur_bin_n = cur_omh2reads.size();
             // std::cout << "Size of current omh_to_reads: " << cur_bin_n << std::endl;  
             Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("Size of current omh_to_reads: {}.", cur_bin_n));
@@ -363,7 +341,7 @@ void EdgeConstructor::process_blocks_in_parallel()
                     {
                         small_cur_omh2reads.emplace_back(cur_reads_vec);
                     } 
-                } else{
+                } else if (cur_bin_n >= args.bin_size_min && cur_bin_n < args.bin_size_max){
                     #pragma omp critical
                     {
                         // std::cout << cur_num << " ";
@@ -422,6 +400,240 @@ void EdgeConstructor::process_blocks_in_parallel()
                         std::set<std::vector<seqan3::dna5>> read_pair_set;
                         read_pair_set.insert(seq1);
                         read_pair_set.insert(seq2);
+                        // if (edge_lst.contains(read_pair_set)){
+                        //     continue;
+                        // } else {
+                        auto alignment_results = seqan3::align_pairwise(std::tie(seq1, seq2), config);
+                        // Iterate over alignment results and access the scores
+                        for (auto const &result : alignment_results)
+                        {
+                            int edit_distance = result.score();
+                            // std::cout << edit_distance << endl;
+                            if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+                            {
+                                #pragma omp critical
+                                {
+                                    edge_lst[read_pair_set] = edit_distance;
+                                }                    
+                            }
+                        }
+                        // }
+                    }    
+                }
+            }
+        }
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise comparison for the extra-large-size-based buckets done!");
+    }
+display_edge_summary(edge_lst);
+return edge_lst;
+}
+
+std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::omh_minimizer()
+{
+    int min_s = -1 * args.max_edit_dis;
+    int max_s = -1 * args.min_edit_dis;
+
+    std::vector<std::vector<std::vector<seqan3::dna5>>> small_group;
+    std::vector<std::vector<std::vector<seqan3::dna5>>> large_group;
+    std::vector<std::vector<std::vector<seqan3::dna5>>> extra_large_group;
+
+    int available_cores = omp_get_max_threads();
+    auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
+    omp_set_num_threads(num_cores_to_use);
+
+    #pragma omp parallel for
+    for (auto i = 0u; i < key2reads_.size(); ++i) {
+        const auto &entry = *std::next(key2reads_.begin(), i);
+        const std::vector<std::vector<seqan3::dna5>> &reads_vec = entry.second;
+        auto cur_read_num = reads_vec.size();
+        if ( cur_read_num == 1){
+            continue;
+        } else if ( cur_read_num >= 2 && cur_read_num < args.bin_size_min){
+            #pragma omp critical
+            {
+                small_group.emplace_back(reads_vec);
+            } 
+        } else if ( cur_read_num >= args.bin_size_min && cur_read_num < args.bin_size_max){
+            #pragma omp critical
+            {
+                // std::cout << cur_read_num << " ";
+                Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("{} ", cur_read_num));
+                large_group.emplace_back(reads_vec);
+            } 
+        } else {
+            #pragma omp critical
+            {
+                Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("{} ", cur_read_num));
+                extra_large_group.emplace_back(reads_vec); 
+                // large_group.emplace_back(reads_vec);   
+            }
+        }
+    }
+    // std::unordered_set<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, unordered_pair> edge_key_set;
+    // small group
+    omp_set_num_threads(num_cores_to_use);
+    if (small_group.size() > 0){
+        #pragma omp parallel for
+        for (const auto &group : small_group)
+        {
+            auto config = seqan3::align_cfg::method_global{} | seqan3::align_cfg::edit_scheme | seqan3::align_cfg::min_score{min_s} | seqan3::align_cfg::output_score{};
+
+            auto pairwise_combinations = seqan3::views::pairwise_combine(group);
+            // std::cout << group.size() << " " << pairwise_combinations.size() << endl;
+            #pragma omp parallel for
+            for (size_t i = 0; i < pairwise_combinations.size(); ++i)
+            {
+                auto const &combination = pairwise_combinations[i];
+                auto const &seq1 = std::get<0>(combination);
+                auto const &seq2 = std::get<1>(combination);
+
+                std::set<std::vector<seqan3::dna5>> read_pair_set;
+                
+                read_pair_set.insert(seq1);
+                read_pair_set.insert(seq2);
+                auto alignment_results = seqan3::align_pairwise(std::tie(seq1, seq2), config);
+                // Iterate over alignment results and access the scores
+                for (auto const &result : alignment_results)
+                {
+                    int edit_distance = result.score();
+                    // std::cout << edit_distance << endl;
+                    if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+                    {
+                        #pragma omp critical
+                        {
+                            edge_lst[read_pair_set] = edit_distance;
+                        }                    
+                    }
+                }
+            }        
+        }             
+        std::cout << std::endl;
+        Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise comparison for the small-size-based buckets done!");
+    } else {
+        Utils::getInstance().logger(LOG_LEVEL_INFO,  "No bucket has a size less than 100!");
+    }
+    // large group
+    if (large_group.size() > 0){
+        for (const auto &group : large_group)
+        {
+            auto config = seqan3::align_cfg::method_global{} | seqan3::align_cfg::edit_scheme | seqan3::align_cfg::min_score{min_s} | seqan3::align_cfg::output_score{};
+
+            auto pairwise_combinations = seqan3::views::pairwise_combine(group);
+
+            omp_set_num_threads(num_cores_to_use);
+
+            #pragma omp parallel for
+            for (size_t i = 0; i < pairwise_combinations.size(); ++i)
+            {
+                auto const &combination = pairwise_combinations[i];
+                auto const &seq1 = std::get<0>(combination);
+                auto const &seq2 = std::get<1>(combination);
+
+                std::set<std::vector<seqan3::dna5>> read_pair_set;
+                read_pair_set.insert(seq1);
+                read_pair_set.insert(seq2);
+                // if (edge_lst.contains(read_pair_set)){
+                //     continue;
+                // } else {
+                auto alignment_results = seqan3::align_pairwise(std::tie(seq1, seq2), config);
+                // Iterate over alignment results and access the scores
+                for (auto const &result : alignment_results)
+                {
+                    int edit_distance = result.score();
+                    // std::cout << edit_distance << endl;
+                    if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+                    {
+                        #pragma omp critical
+                        {
+                            edge_lst[read_pair_set] = edit_distance;
+                        }                    
+                    }
+                }
+            }   
+        }            
+    } else {
+        Utils::getInstance().logger(LOG_LEVEL_INFO,  "No bucket has a size larger than 100!");
+    }
+
+    //////////////////////
+    display_edge_summary(edge_lst);
+    //////////////////////////////////////////////
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise comparison for the large-size-based buckets done!");
+    // extra largr group
+
+    if (extra_large_group.size() > 0){
+        for (const auto &el_group : extra_large_group){
+            // std::map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> cur_minimizer2reads;
+            // omp_set_num_threads(num_cores_to_use);
+            // #pragma omp parallel for
+            // for (const auto &cur_read : el_group){
+                
+            //     auto minimisers = cur_read | seqan3::views::kmer_hash(seqan3::ungapped{args.k_size}) | seqan3::views::minimiser(args.window_size - args.k_size + 1);
+            //     // auto minimisers = cur_read | seqan3::views::kmer_hash(seqan3::ungapped{best_k}) | seqan3::views::minimiser(best_w - best_k + 1);   
+            //     // std::vector<uint64_t> cur_minimizers;
+            //     // // Iterate over minimisers and group reads
+            //     // std::uint64_t seed = 0;
+            //     for (auto const &minimiser : minimisers) {
+            //         std::uint64_t minimiser_value = static_cast<std::uint64_t>(minimiser);
+            //         // boost::hash_combine(seed, minimiser_value);
+            //         #pragma omp critical
+            //         {
+            //             cur_minimizer2reads[minimiser_value].push_back(cur_read);
+            //         }
+            //     }
+            //     // #pragma omp critical
+            //     // {
+            //     //     cur_minimizer2reads[seed].push_back(cur_read);
+            //     // }
+            // }
+
+            auto cur_minimizer2reads = MinimizerGenerator(el_group, args).minimizer2reads_main();
+            auto cur_bin_n = cur_minimizer2reads.size();
+            // std::cout << "Size of current omh_to_reads: " << cur_bin_n << std::endl;  
+            Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("Size of current omh_to_reads: {}.", cur_bin_n));
+            std::vector<std::vector<std::vector<seqan3::dna5>>> small_cur_minimizer2reads;
+            std::vector<std::vector<std::vector<seqan3::dna5>>> large_cur_minimizer2reads;
+
+            omp_set_num_threads(num_cores_to_use);
+
+            #pragma omp parallel for
+            for (auto i = 0u; i < cur_bin_n; ++i) {
+                const auto &cur_entry = *std::next(cur_minimizer2reads.begin(), i);
+                const std::vector<std::vector<seqan3::dna5>> &cur_reads_vec = cur_entry.second;
+                auto cur_num = cur_reads_vec.size();
+                if ( cur_num == 1){
+                    continue;
+                } else if ( cur_bin_n >= 2 && cur_bin_n < args.bin_size_min){
+                    #pragma omp critical
+                    {
+                        small_cur_minimizer2reads.emplace_back(cur_reads_vec);
+                    } 
+                } else{
+                    #pragma omp critical
+                    {
+                        // std::cout << cur_num << " ";
+                        Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("{} ", cur_num));
+                        large_cur_minimizer2reads.emplace_back(cur_reads_vec);
+                    } 
+                }
+            }
+            if (small_cur_minimizer2reads.size() > 0){
+                #pragma omp parallel for
+                for (const auto &cur_reads_vec : small_cur_minimizer2reads){
+                    auto config = seqan3::align_cfg::method_global{} | seqan3::align_cfg::edit_scheme | seqan3::align_cfg::min_score{min_s} | seqan3::align_cfg::output_score{};
+
+                    auto pairwise_combinations = seqan3::views::pairwise_combine(cur_reads_vec);
+
+                    #pragma omp parallel for
+                    for (size_t i = 0; i < pairwise_combinations.size(); ++i)
+                    {
+                        auto const &combination = pairwise_combinations[i];
+                        auto const &seq1 = std::get<0>(combination);
+                        auto const &seq2 = std::get<1>(combination);
+
+                        std::set<std::vector<seqan3::dna5>> read_pair_set;
+                        read_pair_set.insert(seq1);
+                        read_pair_set.insert(seq2);
                         auto alignment_results = seqan3::align_pairwise(std::tie(seq1, seq2), config);
                         // Iterate over alignment results and access the scores
                         for (auto const &result : alignment_results)
@@ -439,15 +651,56 @@ void EdgeConstructor::process_blocks_in_parallel()
                     }    
                 }
             }
+            if (large_cur_minimizer2reads.size() > 0){
+                for (const auto &cur_reads_vec : large_cur_minimizer2reads){
+                    auto config = seqan3::align_cfg::method_global{} | seqan3::align_cfg::edit_scheme | seqan3::align_cfg::min_score{min_s} | seqan3::align_cfg::output_score{};
+
+                    auto pairwise_combinations = seqan3::views::pairwise_combine(cur_reads_vec);
+
+                    #pragma omp parallel for
+                    for (size_t i = 0; i < pairwise_combinations.size(); ++i)
+                    {
+                        auto const &combination = pairwise_combinations[i];
+                        auto const &seq1 = std::get<0>(combination);
+                        auto const &seq2 = std::get<1>(combination);
+
+                        std::set<std::vector<seqan3::dna5>> read_pair_set;
+                        read_pair_set.insert(seq1);
+                        read_pair_set.insert(seq2);
+                        // if (edge_lst.contains(read_pair_set)){
+                        //     continue;
+                        // } else {
+                        auto alignment_results = seqan3::align_pairwise(std::tie(seq1, seq2), config);
+                        // Iterate over alignment results and access the scores
+                        for (auto const &result : alignment_results)
+                        {
+                            int edit_distance = result.score();
+                            // std::cout << edit_distance << endl;
+                            if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+                            {
+                                #pragma omp critical
+                                {
+                                    edge_lst[read_pair_set] = edit_distance;
+                                }                    
+                            }
+                        }
+                        // }
+                    }    
+                }
+            }
         }
     Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise comparison for the extra-large-size-based buckets done!");
     }
-
+display_edge_summary(edge_lst);
+return edge_lst;
 }
+
+
+
 //     /**/
 //     if (extra_large_group.size() > 0){
 //         for (const auto &el_group : extra_large_group){
-//             std::unordered_map<std::int64_t, std::vector<std::vector<seqan3::dna5>>> cur_minimiser_to_reads;
+//             std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> cur_minimiser_to_reads;
 //             auto w_size = args.window_size / 2; 
 //             #pragma omp parallel for
 //             for (const auto &cur_read : el_group){
@@ -458,7 +711,7 @@ void EdgeConstructor::process_blocks_in_parallel()
 //                 // // Iterate over minimisers and group reads
 //                 // std::size_t seed = 0;
 //                 // for (auto const &minimiser : minimisers) {
-//                 //     std::int64_t converted_minimiser = static_cast<std::int64_t>(minimiser);
+//                 //     std::uint64_t converted_minimiser = static_cast<std::uint64_t>(minimiser);
 //                 //     boost::hash_combine(seed, converted_minimiser);
 //                 // }  
 //                 // #pragma omp critical
@@ -466,7 +719,7 @@ void EdgeConstructor::process_blocks_in_parallel()
 //                 //     cur_minimiser_to_reads[seed].push_back(cur_read);
 //                 // }    
 //                 for (auto const &minimiser : minimisers) {
-//                     std::int64_t converted_minimiser = static_cast<std::int64_t>(minimiser);
+//                     std::uint64_t converted_minimiser = static_cast<std::uint64_t>(minimiser);
 //                     #pragma omp critical
 //                     {
 //                         cur_minimiser_to_reads[converted_minimiser].push_back(cur_read);
@@ -641,7 +894,7 @@ void EdgeConstructor::process_blocks_in_parallel()
 //     int max_s = -1 * args.min_edit_dis;
 //     // std::for_each(std::execution::par_unseq, minimiser_to_reads_.begin(), minimiser_to_reads_.end(),
 //     //                 [this, min_s, max_s](const auto &entry) {
-//     //                     // std::int64_t minimiser = entry.first;
+//     //                     // std::uint64_t minimiser = entry.first;
 //     //                     const std::vector<std::vector<seqan3::dna5>> &reads_vec = entry.second;
 //     //                     // Process each group in parallel
 //     //                     process_block(reads_vec, min_s, max_s);
@@ -751,7 +1004,7 @@ void EdgeConstructor::process_blocks_in_parallel()
 //             }
 //         };
 
-//         // std::int64_t minimiser = entry.first;
+//         // std::uint64_t minimiser = entry.first;
 //         const std::vector<std::vector<seqan3::dna5>> &reads_vec = entry.second;
 //         // Parallelize the calculation using C++20 parallel algorithms
 //         auto pair_vec = seqan3::views::pairwise_combine(reads_vec);
@@ -1052,3 +1305,37 @@ void EdgeConstructor::process_blocks_in_parallel()
 //         }
 //     }
 // }
+
+
+            // std::map<std::vector<uint64_t>, std::vector<std::vector<seqan3::dna5>>> cur_omh2reads;
+            // // std::map<std::pair<uint64_t, uint64_t>, std::vector<std::vector<seqan3::dna5>>> cur_omh2reads;
+            // // std::map<uint64_t, std::vector<std::vector<seqan3::dna5>>> cur_omh2reads;
+
+            // std::default_random_engine prg;
+            // vector<unsigned int> seeds;
+            // for(unsigned i = 0; i < args.omh_times; ++i) {
+            //     seeds.push_back(prg());
+            // }
+            // omp_set_num_threads(num_cores_to_use);
+            // #pragma omp parallel for
+            // for (const auto &cur_read : el_group){
+            //     vector<uint64_t> omh_results;
+            //     for(auto seed : seeds){
+            //         auto omh_result = omh_pos(cur_read, args.k_size, args.omh_kmer_n, seed);   
+            //         omh_results.push_back(omh_result);                 
+            //     }
+            //     #pragma omp critical
+            //     {
+            //         cur_omh2reads[omh_results].push_back(cur_read);
+            //     }  
+
+                // for (const auto& pair : combinations) {
+                //     uint64_t first = pair.first;
+                //     uint64_t second = pair.second;
+                //     std::cout << first << "--" << second << endl;
+                //     // #pragma omp critical
+                //     {
+                //         cur_omh2reads[pair].push_back(cur_read);
+                //     }  
+                // }
+            // }
