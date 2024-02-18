@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
     // check log whether log file exist or not, if exist, remove it
     // char cwd[1024];
     // if (getcwd(cwd, sizeof(cwd)) != NULL) {
-    //     std::string filePath = std::string(cwd) + "/ReadGraph" + oss.str();
+    //     std::string filePath = std::string(cwd) + "/reads2graph" + oss.str();
     //     if (std::filesystem::exists(filePath)) {
     //         std::filesystem::remove(filePath);
     //     }
@@ -55,19 +55,19 @@ int main(int argc, char** argv) {
     // }
     // say hello
     // 
-	// Utils::getInstance().logger(LOG_LEVEL_INFO,  "Welcome to use ReadGraph!");
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  "Welcome to use ReadGraph!");
+	// Utils::getInstance().logger(LOG_LEVEL_INFO,  "Welcome to use reads2graph!");
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  "Welcome to use reads2graph!");
 
-    sharg::parser ReadGraphParser{"ReadGraph", argc, argv}; // initialise parser
+    sharg::parser reads2graphParser{"reads2graph", argc, argv, sharg::update_notifications::off}; // initialise parser
     cmd_arguments args{};
  
     // Utils utils;
-    // utils.initialise_parser(ReadGraphParser, args);
-    Utils::getInstance().initialise_parser(ReadGraphParser, args);
+    // utils.initialise_parser(reads2graphParser, args);
+    Utils::getInstance().initialise_parser(reads2graphParser, args);
  
     try
     {
-        ReadGraphParser.parse(); // trigger command line parsing
+        reads2graphParser.parse(); // trigger command line parsing
     }
     catch (sharg::parser_error const & ext) // catch user errors
     {

@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.20)
 # set(CMAKE_CXX_COMPILER "/home/pping/miniconda3/envs/gcc_env/bin/g++")
 
 #set the project name and version
-project(ReadGraph CXX)
+project(reads2graph CXX)
 
 # # add seqan3 to search path
 # list (APPEND CMAKE_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../seqan3/build_system")
@@ -19,7 +19,7 @@ find_package(sharg REQUIRED)
 set(SOURCES
     LoggingLevels.cpp
     Utils.cpp
-    ReadGraph.cpp
+    reads2graph.cpp
     ReadWrite.cpp
     GraphManager.cpp
     MinimizerGenerator.cpp
@@ -49,7 +49,7 @@ link_directories($ENV{CONDA_PREFIX}/lib)
 
 
 
-# include_directories(/home/pping/Data/Repo/ReadGraph/include)
+# include_directories(/home/pping/Data/Repo/reads2graph/include)
 # include_directories(/home/pping/miniconda3/envs/gcc_env/include)
 # link_directories(/home/pping/miniconda3/envs/gcc_env/lib)
 

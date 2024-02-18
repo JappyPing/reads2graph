@@ -24,7 +24,8 @@
 
 int num_cores_to_use;  // Define the global variable
 
-#define ReadGraph_VERSION "0.2.0"
+#define reads2graph_VERSION "0.2.0"
+#define last_update_date "18.02.2024"
 
 using namespace std;
 
@@ -76,7 +77,7 @@ void Utils::logger(int log_level, const std::string& message){
     //     logFile << timeString << ": " << log_prefix << message << endl;
     //     logFile.close();
     // }else {
-    //     std::cerr << "\033[1;31mERROR: ReadGraph log file opened failed.\033[0m" << std::endl;
+    //     std::cerr << "\033[1;31mERROR: reads2graph log file opened failed.\033[0m" << std::endl;
     // }
 }
 
@@ -97,7 +98,7 @@ Utils::Utils() {
 
     char cwd[1024];
     if (getcwd(cwd, sizeof(cwd)) != NULL) {
-        std::string filePath = std::string(cwd) + "/ReadGraph_" + oss.str();
+        std::string filePath = std::string(cwd) + "/reads2graph_" + oss.str();
         logFile.open(filePath, std::ios::app);
     } else {
         std::cerr << timeString << ": "<< "Error: unable to get current working directory." << std::endl;
@@ -108,9 +109,38 @@ Utils::Utils() {
 void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
 {
     parser.info.author = "Pengyao Ping";
-    parser.info.short_description = "Construct a read graph from a short read set.";
-    parser.info.version = ReadGraph_VERSION;
- 
+    parser.info.short_description = "Efficiently construct a read graph from a short-read set.";
+    parser.info.description.push_back("Efficiently construct edit-distance-based read graph via looped minimisers and locality-sensitive hashing from a short-read set.");
+    parser.info.version = reads2graph_VERSION;
+    parser.info.date = last_update_date;
+    parser.info.short_copyright = "BSD 3-Clause License";
+    parser.info.long_copyright = "BSD 3-Clause License\n"
+        "Copyright (c) 2024, Pengyao Ping\n"
+        "All rights reserved.\n"
+        "\n"
+        "Redistribution and use in source and binary forms, with or without\n"
+        "modification, are permitted provided that the following conditions are met:\n"
+        "\n"
+        "  1. Redistributions of source code must retain the above copyright notice,\n"
+        "     this list of conditions and the following disclaimer.\n"
+        "  2. Redistributions in binary form must reproduce the above copyright notice,\n"
+        "     this list of conditions and the following disclaimer in the documentation\n"
+        "     and/or other materials provided with the distribution.\n"
+        "  3. Neither the name of Pengyao Ping nor the names of its contributors may be\n"
+        "     used to endorse or promote products derived from this software without\n" 
+        "     specific prior written permission.\n"
+        "\n"
+        "THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND \n"
+        "ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED \n"
+        "WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.\n"
+        "IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, \n"
+        "INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, \n" 
+        "BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\n"
+        " DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY\n"
+        "OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE\n"
+        "OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED\n"
+        "OF THE POSSIBILITY OF SUCH DAMAGE.";
+
     parser.add_option(args.input_data, 
                         sharg::config{.short_id = 'i', 
                                       .long_id = "input_data", 
@@ -187,8 +217,11 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
 
     parser.add_option(args.save_graph,
                       sharg::config{.long_id = "save_graph",
-                                    .description = "If ture, ReadGraph will save graph to file in graphviz dot format."});
-
+                                    .description = "If ture, reads2graph will save graph to file in graphviz dot format."});
+                                    
+    // parser.add_option(args.version_check,
+    //                   sharg::config{.long_id = "version_check",
+    //                                 .description = "If ture, check the version."});
 }
 /*
 Utils::Utils(void){
@@ -221,8 +254,8 @@ void Utils::logMessage(int log_level, const std::string& message) {
 
     std::ofstream logFile;
     if (getcwd(cwd, sizeof(cwd)) != NULL) {
-        // std::string filePath = std::string(cwd) + "/ReadGraph.log";
-        std::string filePath = std::string(cwd) + "/ReadGraph" + oss.str();
+        // std::string filePath = std::string(cwd) + "/reads2graph.log";
+        std::string filePath = std::string(cwd) + "/reads2graph" + oss.str();
         logFile.open(filePath, std::ios::app);
     } else {
         std::cerr << timeString << ": "<< "Error: unable to get current working directory." << std::endl;
@@ -261,7 +294,7 @@ void Utils::logMessage(int log_level, const std::string& message) {
         logFile << timeString << ": " << log_prefix << message << endl;
         logFile.close();
     }else {
-        std::cerr << "\033[1;31mERROR: ReadGraph log file opened failed.\033[0m" << std::endl;
+        std::cerr << "\033[1;31mERROR: reads2graph log file opened failed.\033[0m" << std::endl;
     }
     
 }
@@ -272,7 +305,7 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
 {
     parser.info.author = "Pengyao Ping";
     parser.info.short_description = "Construct a read graph from a short read set.";
-    parser.info.version = ReadGraph_VERSION;
+    parser.info.version = reads2graph_VERSION;
  
     parser.add_option(args.input_data, 
                         sharg::config{.short_id = 'i', 
@@ -371,7 +404,7 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
 //                 printHelpMessage();
 //                 exit(0);
 //             } else if (argument == "-v" || argument == "--version"){
-//                 std::cout << "ReadGraph version: " << ReadGraph_VERSION << std::endl;
+//                 std::cout << "reads2graph version: " << reads2graph_VERSION << std::endl;
 //             }
 //             else{
 //                 std::string key;
@@ -409,14 +442,14 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
 
 // // print help message
 // void Utils::printHelpMessage() {
-//     std::cout << "Usage: ReadGraph [OPTIONS]\n"
+//     std::cout << "Usage: reads2graph [OPTIONS]\n"
 //             << "\n"
 //             << "Options:\n"
 //             << "  -h, --help            Show this help message and exit\n"
 //             << "  -i, --input filename  Input filename\n"
 //             << "  -o, --output filename Output filename\n"
-//             << "  -v, --version output ReadGraph version\n"
-//             << "  -t, --thread output ReadGraph version\n"
+//             << "  -v, --version output reads2graph version\n"
+//             << "  -t, --thread output reads2graph version\n"
 //             << std::endl;
 // }
 

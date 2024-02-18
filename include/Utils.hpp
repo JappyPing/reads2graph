@@ -43,6 +43,7 @@ struct cmd_arguments
     double bad_kmer_ratio{0.4};
     double probability{0.86};
     bool save_graph{false};
+    // bool version_check{0};
 };
 
 class Utils{
