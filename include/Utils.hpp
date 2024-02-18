@@ -42,6 +42,7 @@ struct cmd_arguments
     unsigned omh_kmer_n{5}; // Number of k-mers to consider
     double bad_kmer_ratio{0.4};
     double probability{0.86};
+    bool save_graph{false};
 };
 
 class Utils{

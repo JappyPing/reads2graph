@@ -33,7 +33,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::o
     for (auto const & read : unique_reads){
 
         for(auto seed : seeds){
-            auto omh_value = omh_pos(read, args.k_size, args.omh_kmer_n, seed);   
+            auto omh_value = omh_pos(read, 25, args.omh_kmer_n, seed);   //args.k_size
             #pragma omp critical
             {
                 omh2reads[omh_value].push_back(read);
@@ -44,7 +44,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::o
         //     Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("{} unique reads for OMH done!", i));
         // }
     }
-    Utils::getInstance().logger(LOG_LEVEL_INFO, "All the unique reads for OMH done.");  
+    Utils::getInstance().logger(LOG_LEVEL_DEBUG, "All the unique reads for OMH done.");  
     return omh2reads;            
 }
 

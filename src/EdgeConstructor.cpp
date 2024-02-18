@@ -299,31 +299,17 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::minimizer_om
         Utils::getInstance().logger(LOG_LEVEL_INFO,  "No bucket has a size larger than 100!");
     }
 
-    //////////////////////
-    // std::cout << "Current Number of read edges: " << edge_lst.size() << std::endl;
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Current Number of read edges: {}.", edge_lst.size()));
-    std::map<int, size_t> current_edit_distance_counts;
-    for (const auto &[read_pair, edit_distance] : edge_lst)
-    {
-        current_edit_distance_counts[edit_distance]++;
-        // seqan3::debug_stream << "Read Pair: " << read_pair.first << " - " << read_pair.second
-                            // << ", Edit Distance: " << edit_distance << '\n';
-    }      
-    for (const auto & [distance, count] : current_edit_distance_counts)
-    {
-        // std::cout << "Edit distance of " << distance << ": " << count << " pairs" << std::endl;
-        Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Edit distance of {}: {} pairs", distance, count));
-    }
-    //////////////////////////////////////////////
     Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise comparison for the large-size-based buckets done!");
-    // extra largr group
+    display_edge_summary(edge_lst);
 
+    // extra largr group
     if (extra_large_group.size() > 0){
         for (const auto &el_group : extra_large_group){
             auto cur_omh2reads = OMH(el_group, args).omh2read_main();
             auto cur_bin_n = cur_omh2reads.size();
             // std::cout << "Size of current omh_to_reads: " << cur_bin_n << std::endl;  
             Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("Size of current omh_to_reads: {}.", cur_bin_n));
+            
             std::vector<std::vector<std::vector<seqan3::dna5>>> small_cur_omh2reads;
             std::vector<std::vector<std::vector<seqan3::dna5>>> large_cur_omh2reads;
 

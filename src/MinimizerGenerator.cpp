@@ -14,13 +14,13 @@ MinimizerGenerator::MinimizerGenerator(std::vector<std::vector<seqan3::dna5>> un
 
 std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> MinimizerGenerator::minimizer2reads_main()
 {   
-    auto bestParams = findBestParameters(args.read_length, args.max_edit_dis, args.bad_kmer_ratio);
-    auto best_n = std::get<0>(bestParams);
-    auto best_kk = std::get<1>(bestParams);
-    auto best_w = round(static_cast<double>(args.read_length) / best_n);
+    // auto bestParams = findBestParameters(args.read_length, args.max_edit_dis, args.bad_kmer_ratio);
+    // auto best_n = std::get<0>(bestParams);
+    // auto best_kk = std::get<1>(bestParams);
+    // auto best_w = round(static_cast<double>(args.read_length) / best_n);
 
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Best number of windows: {}, Best K: {} and Best probability: {}.", best_n, best_kk, std::get<2>(bestParams)));     
-    auto best_k = static_cast<uint8_t>(best_kk);
+    // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Best number of windows: {}, Best K: {} and Best probability: {}.", best_n, best_kk, std::get<2>(bestParams)));     
+    // auto best_k = static_cast<uint8_t>(best_kk);
 
     int available_cores = omp_get_max_threads();
     auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
@@ -32,8 +32,8 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
     //     const auto& [read, count] = *it;
     #pragma omp parallel for
     for (auto const & read : unique_reads){
-        // auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{args.k_size}) | seqan3::views::minimiser(args.window_size - args.k_size + 1);
-        auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{best_k}) | seqan3::views::minimiser(best_w - best_k + 1);   
+        auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{args.k_size}) | seqan3::views::minimiser(args.window_size - args.k_size + 1);
+        // auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{best_k}) | seqan3::views::minimiser(best_w - best_k + 1);   
 
         // // Iterate over minimisers and group reads
         for (auto const &minimiser : minimisers) {

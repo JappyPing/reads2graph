@@ -41,9 +41,6 @@
 
 using namespace std;
 using namespace seqan3::literals;
-// global default parameters
-// bool logToFile = true;
-// int numThreads = 1;
 
 int main(int argc, char** argv) {
     // check log whether log file exist or not, if exist, remove it
@@ -87,13 +84,13 @@ int main(int argc, char** argv) {
     // Set the number of threads for OpenMP
     omp_set_num_threads(num_cores_to_use);
     // std::cout << "The number of threads setted:" << num_cores_to_use << std::endl;
-    Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("The number of threads setted: {} ", num_cores_to_use));
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The number of threads setted: {} ", num_cores_to_use));
     ////////////////////////////////////////////////////////////////////////////
     // auto read2count = ReadWrite(args).get_unique_reads_counts();
     auto [unique_reads, read2count] = ReadWrite(args).get_unique_reads_counts();
 
     auto uniq_num = unique_reads.size();
-    Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("The number of unique reads: {} ", uniq_num));
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The number of unique reads: {} ", uniq_num));
 
     // std::vector<std::vector<seqan3::dna5>> unique_reads;
     // #pragma omp parallel
@@ -117,28 +114,26 @@ int main(int argc, char** argv) {
     // {
     //     seqan3::debug_stream << read << '\n';
     // }
-
+    std::map<std::set<std::vector<seqan3::dna5>>, int> edge_lst;
     if (args.pair_wise) {
             // Create an instance of PairwiseEditDistance
-            auto edge_lst = PairWiseEditDis(unique_reads, args).compute_pairwise_edit_distance();
+            edge_lst = PairWiseEditDis(unique_reads, args).compute_pairwise_edit_distance();
             Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise (brute force) nt-edit-distance-based edges calculation done");
-            GraphManager(edge_lst, read2count, args).construct_graph();
+            // GraphManager(edge_lst, read2count, args).construct_graph();
             // GraphManager(edge_lst, read2count, read2id, args).construct_graph();
     } else {
         // minimizer grouping first and then omh
         auto minimiser2reads = MinimizerGenerator(unique_reads, args).minimizer2reads_main();
-        auto edge_lst = EdgeConstructor(minimiser2reads, args).minimizer_omh();
+        edge_lst = EdgeConstructor(minimiser2reads, args).minimizer_omh();
 
         // omh grouping first and then minimizer
         // auto omh2reads = OMH(unique_reads, args).omh2read_main();
         // auto edge_lst = EdgeConstructor(omh2reads, args).omh_minimizer();
 
         Utils::getInstance().logger(LOG_LEVEL_INFO,  "nt-edit-distance-based edges calculation done!");
-        ///////////////////////////////////////////////////////////////////////////////
-        
-        // GraphManager(edge_lst, read2count, args).construct_graph();
-        // GraphManager(edge_lst, read2count, read2id, args).construct_graph();
-
+    }
+    if (args.save_graph){
+        GraphManager(edge_lst, read2count, args).construct_graph();
     }
     // Utils::getInstance().logger(LOG_LEVEL_INFO,  "nt-edit-distance-based graph construction done!");
     //Print the stored read pairs and edit distances
@@ -164,10 +159,5 @@ int main(int argc, char** argv) {
     //         std::filesystem::create_directory(outputFolder);
     //     }        
     // }
-
-    
-
-
-
     return 0;
 }

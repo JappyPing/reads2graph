@@ -24,7 +24,7 @@
 
 int num_cores_to_use;  // Define the global variable
 
-#define ReadGraph_VERSION "0.1.1"
+#define ReadGraph_VERSION "0.2.0"
 
 using namespace std;
 
@@ -184,6 +184,10 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
     parser.add_option(args.probability,
                       sharg::config{.long_id = "probability",
                                     .description = "The expected probability P for grouping two similar reads into same bucket by at least one minimiser that does not include the different bases"});
+
+    parser.add_option(args.save_graph,
+                      sharg::config{.long_id = "save_graph",
+                                    .description = "If ture, ReadGraph will save graph to file in graphviz dot format."});
 
 }
 /*
