@@ -38,6 +38,7 @@ struct cmd_arguments
     bool pair_wise{false};
     unsigned int bin_size_min{500};
     unsigned int bin_size_max{10000};
+    unsigned omh_k{25};
     unsigned omh_times{5};
     unsigned omh_kmer_n{5}; // Number of k-mers to consider
     double bad_kmer_ratio{0.4};

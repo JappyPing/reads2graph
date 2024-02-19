@@ -2,6 +2,14 @@
 Generate edit-distance-based read graph from short reads via looped minimiser and locality-sensitive hashing
 
 
+## Dependencies
+Sharg 1.1.1
+Seqan 3.3.0
+Boost 1.82.0
+OpenMP 9.0.1
+xxhash 0.8.2
+omh 0.0.2 (source code of OMH compute used)
+
 ## Compile
 
 ```

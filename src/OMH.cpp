@@ -33,7 +33,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::o
     for (auto const & read : unique_reads){
 
         for(auto seed : seeds){
-            auto omh_value = omh_pos(read, 25, args.omh_kmer_n, seed);   //args.k_size
+            auto omh_value = omh_pos(read, args.omh_k, args.omh_kmer_n, seed);   //args.k_size
             #pragma omp critical
             {
                 omh2reads[omh_value].push_back(read);

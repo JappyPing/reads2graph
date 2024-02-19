@@ -199,6 +199,10 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                       sharg::config{.long_id = "bin_size_max",
                                     .description = "The larger threshold used to group buckets of different sizes."});
 
+    parser.add_option(args.omh_k,
+                      sharg::config{.long_id = "omh_k",
+                                    .description = "K-mer size used in order min hashing."});
+
     parser.add_option(args.omh_times,
                       sharg::config{.long_id = "omh_times",
                                     .description = "The number of times to perform permutation in order min hashing."});
@@ -222,6 +226,13 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
     // parser.add_option(args.version_check,
     //                   sharg::config{.long_id = "version_check",
     //                                 .description = "If ture, check the version."});
+    
+    // other dependencies
+    // std::cout << "Boost version: 1.82.0" << "\n";
+    // std::cout << "OpenMP version: 8.0.1" << "\n";
+    // std::cout << "xxhash version: 0.8.2" << "\n";
+
+
 }
 /*
 Utils::Utils(void){
