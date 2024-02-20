@@ -74,7 +74,8 @@ int main(int argc, char** argv) {
         std::cerr << "[Invalid Options] " << ext.what() << "\n"; // customise your error message
         return -1;
     }
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Parameters: -o {} -k {} -w {} --omh_kmer_n {} --omh_times {}", args.output_dir.string(), args.k_size, args.window_size, args.omh_kmer_n, args.omh_times));
+    // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Parameters: -o {} -k {} -w {} --omh_kmer_n {} --omh_times {}", args.output_dir.string(), args.k_size, args.window_size, args.omh_kmer_n, args.omh_times));
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Parameters: -o {} -k {} -w {} --omh_times {}", args.output_dir.string(), args.k_size, args.window_size, args.omh_times));
     // Declare and define a global variable for available cores
     int available_cores = omp_get_max_threads();
     // Ensure the user-specified number of cores is within a valid range

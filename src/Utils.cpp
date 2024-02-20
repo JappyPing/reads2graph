@@ -207,9 +207,9 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                       sharg::config{.long_id = "omh_times",
                                     .description = "The number of times to perform permutation in order min hashing."});
 
-    parser.add_option(args.omh_kmer_n,
-                      sharg::config{.long_id = "omh_kmer_n",
-                                    .description = "The number of kmers considered in order min hashing."});
+    // parser.add_option(args.omh_kmer_n,
+    //                   sharg::config{.long_id = "omh_kmer_n",
+    //                                 .description = "The number of kmers considered in order min hashing."});
 
     parser.add_option(args.bad_kmer_ratio,
                       sharg::config{.long_id = "bad_kmer_ratio",

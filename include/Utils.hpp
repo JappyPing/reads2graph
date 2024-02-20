@@ -40,7 +40,7 @@ struct cmd_arguments
     unsigned int bin_size_max{10000};
     unsigned omh_k{25};
     unsigned omh_times{5};
-    unsigned omh_kmer_n{5}; // Number of k-mers to consider
+    // unsigned omh_kmer_n{5}; // Number of k-mers to consider
     double bad_kmer_ratio{0.4};
     double probability{0.86};
     bool save_graph{false};
