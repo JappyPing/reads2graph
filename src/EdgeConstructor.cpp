@@ -19,7 +19,7 @@
 #include <unordered_set>
 #include <boost/functional/hash.hpp>
 #include <seqan3/alphabet/all.hpp>
-#include <boost/functional/hash.hpp>
+
 // #include <thread>
 // #include <mutex>
 
@@ -67,16 +67,6 @@ void EdgeConstructor::display_edge_summary(std::map<std::set<std::vector<seqan3:
     // file.close();
 }
 
-std::vector<std::pair<uint64_t, uint64_t>> EdgeConstructor::get_combinations(const std::vector<uint64_t>& a) {
-    std::vector<std::pair<uint64_t, uint64_t>> combinations;
-    for (size_t i = 0; i < a.size(); ++i) {
-        for (size_t j = i + 1; j < a.size(); ++j) {
-            combinations.push_back({a[i], a[j]});
-        }
-    }
-    return combinations;
-}
-
 std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::minimizer_omh()
 {
     int min_s = -1 * args.max_edit_dis;
@@ -96,7 +86,6 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::minimizer_om
     int available_cores = omp_get_max_threads();
     auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
     omp_set_num_threads(num_cores_to_use);
-
     #pragma omp parallel for
     for (auto i = 0u; i < key2reads_.size(); ++i) {
         const auto &entry = *std::next(key2reads_.begin(), i);
@@ -147,6 +136,7 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::minimizer_om
                 
                 read_pair_set.insert(seq1);
                 read_pair_set.insert(seq2);
+                
                 auto alignment_results = seqan3::align_pairwise(std::tie(seq1, seq2), config);
                 // Iterate over alignment results and access the scores
                 for (auto const &result : alignment_results)
@@ -426,7 +416,6 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::omh_minimize
     int available_cores = omp_get_max_threads();
     auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
     omp_set_num_threads(num_cores_to_use);
-
     #pragma omp parallel for
     for (auto i = 0u; i < key2reads_.size(); ++i) {
         const auto &entry = *std::next(key2reads_.begin(), i);
@@ -1325,3 +1314,13 @@ void EdgeConstructor::process_blocks_in_parallel()
                 //     }  
                 // }
             // }
+
+// std::vector<std::pair<uint64_t, uint64_t>> EdgeConstructor::get_combinations(const std::vector<uint64_t>& a) {
+//     std::vector<std::pair<uint64_t, uint64_t>> combinations;
+//     for (size_t i = 0; i < a.size(); ++i) {
+//         for (size_t j = i + 1; j < a.size(); ++j) {
+//             combinations.push_back({a[i], a[j]});
+//         }
+//     }
+//     return combinations;
+// }

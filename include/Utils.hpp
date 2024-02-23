@@ -21,8 +21,6 @@
 extern int num_cores_to_use;  // Declare the global variable
 
 using namespace std;
-// using namespace PacBio;
-// using namespace BAM;
 
 struct cmd_arguments
 {
@@ -34,17 +32,16 @@ struct cmd_arguments
     uint8_t max_edit_dis{5};
     uint8_t min_edit_dis{1};
     int num_process{26};
-    // std::string graph_filename{"graph.dot"};
     bool pair_wise{false};
     unsigned int bin_size_min{500};
     unsigned int bin_size_max{10000};
     unsigned omh_k{25};
     unsigned omh_times{5};
-    // unsigned omh_kmer_n{5}; // Number of k-mers to consider
+    unsigned omh_kmer_n{5}; // Number of k-mers to consider
     double bad_kmer_ratio{0.4};
     double probability{0.86};
     bool save_graph{false};
-    // bool version_check{0};
+    double sampling_rate{0.01};
 };
 
 class Utils{

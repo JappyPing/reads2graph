@@ -90,8 +90,11 @@ int main(int argc, char** argv) {
     // auto read2count = ReadWrite(args).get_unique_reads_counts();
     auto [unique_reads, read2count] = ReadWrite(args).get_unique_reads_counts();
 
-    auto uniq_num = unique_reads.size();
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The number of unique reads: {} ", uniq_num));
+    auto total_uniq_num = unique_reads.size();
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The number of unique reads: {} ", total_uniq_num));
+
+    // auto uniq_num = unique_reads.size();
+    // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The number of unique reads: {} ", uniq_num));
 
     // std::vector<std::vector<seqan3::dna5>> unique_reads;
     // #pragma omp parallel

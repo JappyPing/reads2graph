@@ -1,5 +1,5 @@
 # CMake version
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.21)
 
 # set(CMAKE_CXX_COMPILER "/home/pping/miniconda3/envs/gcc_env/bin/g++")
 
@@ -47,8 +47,6 @@ link_directories($ENV{CONDA_PREFIX}/lib)
 #     $ENV{CONDA_PREFIX}/lib  # Additional library directory if needed
 # )
 
-
-
 # include_directories(/home/pping/Data/Repo/reads2graph/include)
 # include_directories(/home/pping/miniconda3/envs/gcc_env/include)
 # link_directories(/home/pping/miniconda3/envs/gcc_env/lib)
@@ -62,23 +60,24 @@ link_directories($ENV{CONDA_PREFIX}/lib)
 # set(CMAKE_BUILD_TYPE Debug)
 # set(CMAKE_CXX_EXTENSIONS ON)
 # set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "${CAMKE_CXX_FLAGS} -std=c++20 -fopenmp -isystem /home/pping/miniconda3/envs/gcc_env/include/seqan3/submodules/sdsl-lite/include -isystem /home/pping/miniconda3/envs/gcc_env/include/seqan3/submodules/cereal/include -fconcepts -g -Wall -lyaml-cpp -lxxhash -Wno-interference-size") #-fsanitize=address
+set(CMAKE_CXX_FLAGS "${CAMKE_CXX_FLAGS} -std=c++20 -fopenmp -static-libgcc -static-libstdc++ -isystem /home/pping/miniconda3/envs/gcc_env/include/seqan3/submodules/sdsl-lite/include -isystem /home/pping/miniconda3/envs/gcc_env/include/seqan3/submodules/cereal/include -fconcepts -g -Wall -lyaml-cpp -lxxhash -Wno-interference-size") #-fsanitize=address
 
 # set(CMAKE_CXX_FLAGS "${CAMKE_CXX_FLAGS} -std=c++20 -isystem ${CONDA_PREFIX}/envs/gcc_env/include/seqan3/submodules/sdsl-lite/include -isystem ${CONDA_PREFIX}/envs/gcc_env/include/seqan3/submodules/cereal/include -pthread -fconcepts -g -Wall -lyaml-cpp ") #-fsanitize=address
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 
 aux_source_directory(${PROJECT_SOURCE_DIR}/src c_files)
-# target_link_libraries(${PROJECT_NAME} ${CONDA_PREFIX}/lib/libsnap.so)
-
-# add the executable
 add_executable(${PROJECT_NAME} ${c_files})
+
+# target_link_libraries(${PROJECT_NAME} /home/pping/miniconda3/envs/gcc_env/lib/libxxhash.so.0)
+# target_link_libraries(${PROJECT_NAME} ${CONDA_PREFIX}/lib/libsnap.so)
 # target_link_libraries(${PROJECT_NAME} $ENV{CONDA_PREFIX}/lib/libigraph.so)
 # Link against the required libraries
-# target_link_libraries(${PROJECT_NAME}
-#     $ENV{CONDA_PREFIX}/lib/libigraph.so
-#     seqan3::seqan3        # Link against SeqAn3
-#     sharg::sharg          # Link against sharg
-#     lemon                  # Link against Lemon
-#     # Add other libraries if needed
-# )
+target_link_libraries(${PROJECT_NAME} -Wl,-Bstatic xxhash -Wl,-Bdynamic
+    # libigraph.so
+    # seqan3::seqan3        # Link against SeqAn3
+    # sharg::sharg          # Link against sharg
+    # lemon                  # Link against Lemon
+    # # Add other libraries if needed
+)
+# add the executable

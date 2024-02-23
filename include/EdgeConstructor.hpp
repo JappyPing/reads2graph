@@ -71,7 +71,7 @@ public:
     // std::map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, pair_comparator> get_edge_lst();
     // std::unordered_map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, unordered_pair> get_edge_lst();
     void display_edge_summary(std::map<std::set<std::vector<seqan3::dna5>>, int> edge_lst);
-    std::vector<std::pair<uint64_t, uint64_t>> get_combinations(const std::vector<uint64_t>& a);
+    // std::vector<std::pair<uint64_t, uint64_t>> get_combinations(const std::vector<uint64_t>& a);
 private:
     // std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> minimiser_to_reads_;
     // std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> omh2reads_;

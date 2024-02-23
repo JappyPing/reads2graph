@@ -87,6 +87,59 @@ std::tuple<int, int, double> MinimizerGenerator::findBestParameters(int l, int d
     
 }
 
+// // Function to sample p percentage of elements
+// std::size_t MinimizerGenerator::min_k_in_sampling(const std::vector<std::vector<seqan3::dna5>>& unique_reads, double p) {
+//     auto total_uniq_num = unique_reads.size();
+//     Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The number of unique reads: {} ", total_uniq_num));
+//     std::size_t sample_num = static_cast<std::size_t>(p * total_uniq_num);
+
+//     // Set up a default random number generator
+//     std::default_random_engine gen;
+
+//     // Create an index vector to randomly shuffle
+//     std::vector<std::size_t> indices(total_uniq_num);
+//     std::iota(indices.begin(), indices.end(), 0);
+
+//     // Shuffle the indices
+//     std::shuffle(indices.begin(), indices.end(), gen);
+
+//     // Create a vector to store the sampled sequences
+//     std::vector<std::vector<seqan3::dna5>> sampled_uniq_reads;
+
+//     std::size_t min_length = std::numeric_limits<std::size_t>::max();
+//     // Extract the first num_to_sample indices from the shuffled vector
+//     #pragma omp parallel for
+//     for (std::size_t i = 0; i < sample_num; ++i) {
+//         #pragma omp critical
+//         {
+//            sampled_uniq_reads.push_back(unique_reads[indices[i]]); 
+//            auto cur_read_length = unique_reads[indices[i]].size();
+//             if (cur_read_length < min_length) {
+//                 min_length = cur_read_length;
+//             }
+//         }        
+//     }
+//     auto max_k = round(min_length/3)-1;
+//     // Parallelize the loop using OpenMP
+//     // #pragma omp parallel for
+//     for (std::size_t k = 3; k < max_k; ++k) {
+//         bool all_unique_flag = true;
+//         for (auto& cur_seq : sampled_uniq_reads) {
+//             auto kmer_view = cur_seq | seqan3::views::kmer_hash(seqan3::ungapped{k});
+//             std::set<size_t> kmer_set(kmer_view.begin(), kmer_view.end());
+
+//             if (kmer_set.size() < (cur_seq.size() - k + 1)){
+//                 all_unique_flag = false;
+//                 break;
+//             }
+//         }
+//         if (all_unique_flag){
+//             return k;
+//         }
+//     }
+//     return max_k - 1;
+// }
+
 // splicing multiple minimisers as one key
 // void MinimizerGenerator::process_read(const std::vector<seqan3::dna5> &read)
 // {

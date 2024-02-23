@@ -23,6 +23,8 @@ public:
     std::tuple<int, int, double> findBestParameters(int l, int dt, double pt);
     long double prob(int l, int n, int k, int dt);
     // void process_read(const std::vector<seqan3::dna5> &read);
+    // std::size_t min_k_in_sampling(const std::vector<std::vector<seqan3::dna5>>& unique_reads, double p);
+
 private:
     std::vector<std::vector<seqan3::dna5>> unique_reads;
     // std::map<std::vector<seqan3::dna5>, uint32_t> read2count;

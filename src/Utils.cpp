@@ -207,9 +207,9 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                       sharg::config{.long_id = "omh_times",
                                     .description = "The number of times to perform permutation in order min hashing."});
 
-    // parser.add_option(args.omh_kmer_n,
-    //                   sharg::config{.long_id = "omh_kmer_n",
-    //                                 .description = "The number of kmers considered in order min hashing."});
+    parser.add_option(args.omh_kmer_n,
+                      sharg::config{.long_id = "omh_kmer_n",
+                                    .description = "The number of kmers considered in order min hashing."});
 
     parser.add_option(args.bad_kmer_ratio,
                       sharg::config{.long_id = "bad_kmer_ratio",
@@ -222,11 +222,10 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
     parser.add_option(args.save_graph,
                       sharg::config{.long_id = "save_graph",
                                     .description = "If ture, reads2graph will save graph to file in graphviz dot format."});
-                                    
-    // parser.add_option(args.version_check,
-    //                   sharg::config{.long_id = "version_check",
-    //                                 .description = "If ture, check the version."});
-    
+
+    parser.add_option(args.sampling_rate,
+                      sharg::config{.long_id = "sampling_rate",
+                                    .description = "Sampling rate for estimating the kmer size."}); 
     // other dependencies
     // std::cout << "Boost version: 1.82.0" << "\n";
     // std::cout << "OpenMP version: 8.0.1" << "\n";
