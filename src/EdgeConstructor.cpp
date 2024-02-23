@@ -1324,3 +1324,39 @@ void EdgeConstructor::process_blocks_in_parallel()
 //     }
 //     return combinations;
 // }
+
+// this method will cost a lot of memory and run slow
+// std::unordered_set<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, customHash> EdgeConstructor::unique_combination(){
+//     // std::unordered_set<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>> pair_wiseSet;
+//     std::unordered_set<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, customHash> pair_wiseSet;
+
+//     #pragma omp parallel for
+//     for (auto i = 0u; i < key2reads_.size(); ++i) {
+//         const auto &entry = *std::next(key2reads_.begin(), i);
+//         const std::vector<std::vector<seqan3::dna5>> &reads_vec = entry.second;
+//         // auto cur_read_num = reads_vec.size(); 
+
+//         auto pairwise_combinations = seqan3::views::pairwise_combine(reads_vec);
+//         #pragma omp parallel for
+//         for (size_t i = 0; i < pairwise_combinations.size(); ++i)
+//         {
+//             auto const &combination = pairwise_combinations[i];
+//             auto const &seq1 = std::get<0>(combination);
+//             auto const &seq2 = std::get<1>(combination);
+
+//         // Compare vectors lexicographically
+//             std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>> new_pair;
+//             bool result = std::lexicographical_compare(seq1.begin(), seq1.end(), seq2.begin(), seq2.end());
+//             if (result){
+//                 new_pair = std::make_pair(seq1, seq2);
+//             } else {
+//                 new_pair = std::make_pair(seq2, seq1);
+//             }
+//             #pragma omp critical
+//             {
+//                 pair_wiseSet.emplace(new_pair);
+//             }
+//         }
+//     }
+//     return pair_wiseSet;
+// }
