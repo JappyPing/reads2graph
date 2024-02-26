@@ -58,13 +58,22 @@ int main(int argc, char** argv) {
 	// Utils::getInstance().logger(LOG_LEVEL_INFO,  "Welcome to use reads2graph!");
     Utils::getInstance().logger(LOG_LEVEL_INFO,  "Welcome to use reads2graph!");
 
+    std::string concatenatedArgs;
+
+    for (int i = 0; i < argc; ++i) {
+        concatenatedArgs += argv[i];
+        if (i < argc - 1) {
+            concatenatedArgs += " ";
+        }
+    }
     sharg::parser reads2graphParser{"reads2graph", argc, argv, sharg::update_notifications::off}; // initialise parser
     cmd_arguments args{};
- 
-    // Utils utils;
+
     // utils.initialise_parser(reads2graphParser, args);
     Utils::getInstance().initialise_parser(reads2graphParser, args);
- 
+
+    Utils::getInstance().logger(LOG_LEVEL_INFO, concatenatedArgs);
+
     try
     {
         reads2graphParser.parse(); // trigger command line parsing
@@ -75,7 +84,7 @@ int main(int argc, char** argv) {
         return -1;
     }
     // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Parameters: -o {} -k {} -w {} --omh_kmer_n {} --omh_times {}", args.output_dir.string(), args.k_size, args.window_size, args.omh_kmer_n, args.omh_times));
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Parameters: -o {} -k {} -w {} --omh_times {}", args.output_dir.string(), args.k_size, args.window_size, args.omh_times));
+
     // Declare and define a global variable for available cores
     int available_cores = omp_get_max_threads();
     // Ensure the user-specified number of cores is within a valid range
@@ -127,13 +136,15 @@ int main(int argc, char** argv) {
             // GraphManager(edge_lst, read2count, read2id, args).construct_graph();
     } else {
         // minimizer grouping first and then omh
-        auto minimiser2reads = MinimizerGenerator(unique_reads, args).minimizer2reads_main();
-        edge_lst = EdgeConstructor(minimiser2reads, args).minimizer_omh();
-
-        // omh grouping first and then minimizer
-        // auto omh2reads = OMH(unique_reads, args).omh2read_main();
-        // auto edge_lst = EdgeConstructor(omh2reads, args).omh_minimizer();
-
+        std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> hash2reads;
+        if (args.minimizer_omh){
+            hash2reads = MinimizerGenerator(unique_reads, args).minimizer2reads_main();                
+        } else {
+            // omh grouping first and then minimizer
+            hash2reads = OMH(unique_reads, args).omh2read_main();
+            // auto edge_lst = EdgeConstructor(omh2reads, args).edges_main();
+        }
+        edge_lst = EdgeConstructor(hash2reads, args).edges_main(); 
         Utils::getInstance().logger(LOG_LEVEL_INFO,  "nt-edit-distance-based edges calculation done!");
     }
     if (args.save_graph){

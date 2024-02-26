@@ -14,10 +14,16 @@
 // OMH::OMH(std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : read2count(read2count), args(args) {}
 OMH::OMH(std::vector<std::vector<seqan3::dna5>> unique_reads, cmd_arguments args) : unique_reads(unique_reads), args(args) {}
 
+int OMH::omh_k(int L, double p, uint8_t d) {
+    return ceil((p*(1+L))/(d+p));
+}
+
 std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::omh2read_main(){
     int available_cores = omp_get_max_threads();
     auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
     omp_set_num_threads(num_cores_to_use);
+
+    auto betterK = omh_k(args.read_length, args.bad_kmer_ratio, args.max_edit_dis);
 
     std::default_random_engine prg;
     vector<unsigned int> seeds;
@@ -35,7 +41,8 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::o
     for (auto const & read : unique_reads){
         // std::vector<uint64_t> cur_omh_vals;
         for(auto seed : seeds){
-            auto omh_value = omh_pos(read, args.omh_k, args.omh_kmer_n, seed);   
+            // auto omh_value = omh_pos(read, args.omh_k, args.omh_kmer_n, seed);   
+            auto omh_value = omh_pos(read, betterK, args.omh_kmer_n, seed);  
             // auto omh_value = omh_pos(read, args.omh_k, seed);  
             // cur_omh_vals.push_back(omh_value); 
             #pragma omp critical

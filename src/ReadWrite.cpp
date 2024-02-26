@@ -4,7 +4,7 @@
  */
 #include "ReadWrite.hpp"
 #include "LoggingLevels.hpp"
-
+#include "Utils.hpp"
 // #include <unordered_map>
 #include <unordered_set>
 #include <omp.h>
@@ -48,7 +48,7 @@ ReadWrite::~ReadWrite(void){
 // }
 std::pair<std::vector<std::vector<seqan3::dna5>>, std::map<std::vector<seqan3::dna5>, uint32_t>> ReadWrite::get_unique_reads_counts(){
 // std::map<std::vector<seqan3::dna5>, uint32_t> ReadWrite::get_unique_reads_counts(){
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Input dataset: {} ", args.input_data.string()));
+    // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Input dataset: {} ", args.input_data.string()));
     // std::cout << "Input dataset: " << args.input_data.string() << endl;
     seqan3::sequence_file_input fin{args.input_data};
     // using record_type = decltype(fin)::record_type;
@@ -58,6 +58,7 @@ std::pair<std::vector<std::vector<seqan3::dna5>>, std::map<std::vector<seqan3::d
     {
         records.push_back(std::move(record));
     }
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  "Load data done!");
     // Define a set to store unique reads.
     std::vector<std::vector<seqan3::dna5>> unique_reads;
     // Define a map to store unique reads and their counts

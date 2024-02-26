@@ -58,8 +58,9 @@ public:
     
     // void process_block();
     // void process_block(const std::vector<std::vector<seqan3::dna5>> &reads_vec, int min_s, int max_s);
-    std::map<std::set<std::vector<seqan3::dna5>>, int> minimizer_omh();
-    std::map<std::set<std::vector<seqan3::dna5>>, int> omh_minimizer();
+    // std::map<std::set<std::vector<seqan3::dna5>>, int> minimizer_omh();
+    // std::map<std::set<std::vector<seqan3::dna5>>, int> omh_minimizer();
+    std::map<std::set<std::vector<seqan3::dna5>>, int> edges_main();
     // std::map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, pair_comparator> get_edge_lst();
     // std::unordered_map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, unordered_pair> get_edge_lst();
     void display_edge_summary(std::map<std::set<std::vector<seqan3::dna5>>, int> edge_lst);

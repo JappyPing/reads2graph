@@ -14,13 +14,16 @@ MinimizerGenerator::MinimizerGenerator(std::vector<std::vector<seqan3::dna5>> un
 
 std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> MinimizerGenerator::minimizer2reads_main()
 {   
-    // auto bestParams = findBestParameters(args.read_length, args.max_edit_dis, args.bad_kmer_ratio);
-    // auto best_n = std::get<0>(bestParams);
-    // auto best_kk = std::get<1>(bestParams);
+    auto betterParams = possibleBetterParameters(args.read_length, args.max_edit_dis, args.bad_kmer_ratio);
+    auto better_n = std::get<0>(betterParams);
+    auto better_ww = std::get<1>(betterParams);
+    auto better_kk = std::get<2>(betterParams);
+    auto prob = std::get<3>(betterParams);
     // auto best_w = round(static_cast<double>(args.read_length) / best_n);
 
-    // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Best number of windows: {}, Best K: {} and Best probability: {}.", best_n, best_kk, std::get<2>(bestParams)));     
-    // auto best_k = static_cast<uint8_t>(best_kk);
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Better number of windows: {}, Better window size: {}, Better K: {} and the probability: {}.", better_n, better_ww, better_kk, prob));     
+    auto better_k = static_cast<uint8_t>(better_kk);
+    auto better_w = static_cast<uint8_t>(better_ww);
 
     int available_cores = omp_get_max_threads();
     auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
@@ -32,8 +35,8 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
     //     const auto& [read, count] = *it;
     #pragma omp parallel for
     for (auto const & read : unique_reads){
-        auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{args.k_size}) | seqan3::views::minimiser(args.window_size - args.k_size + 1);
-        // auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{best_k}) | seqan3::views::minimiser(best_w - best_k + 1);   
+        // auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{args.k_size}) | seqan3::views::minimiser(args.window_size - args.k_size + 1);
+        auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{better_k}) | seqan3::views::minimiser(better_w - better_k + 1);   
 
         // // Iterate over minimisers and group reads
         for (auto const &minimiser : minimisers) {
@@ -49,42 +52,44 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
     return minimiser_to_reads;     
 }
 
-long double MinimizerGenerator::prob(int l, int n, int k, int dt) {
-    int w = round(static_cast<double>(l) / n);
-    // long double p1 = ((w - (round(static_cast<double>(dt) / n) + 1) * k) + 1) / (w - k + 1);
-    long double p1 = (static_cast<long double>(dt) * k) / (n * (w - k + 1));
-    long double p2 = 1 - std::pow(p1, n);
-    return p2;
+// long double MinimizerGenerator::prob(int l, int n, int k, int dt) {
+//     int w = round(static_cast<double>(l) / n);
+//     // long double p1 = ((w - (round(static_cast<double>(dt) / n) + 1) * k) + 1) / (w - k + 1);
+//     long double p1 = (static_cast<long double>(dt) * k) / (n * (w - k + 1));
+//     long double p2 = 1 - std::pow(p1, n);
+//     return p2;
+// }
+
+int MinimizerGenerator::kSize(int L, double p) {
+    return ceil((p*(1+L))/(1+p));
 }
 
-std::tuple<int, int, double> MinimizerGenerator::findBestParameters(int l, int dt, double pt) {
-    int bestN = 2;
-    int bestK = 3;
-    double bestResult = 0.0;
-    if (l >= 50){
-        for (int n = 2; n <= round(dt/2)+2; ++n) {
-            // int max_k = round(static_cast<double>(l) / n);
-            int max_k = round(l / n) - 1;
-            for (int k = max_k; k >= 3; --k) {
-                auto k4 = std::pow(4, k);
-                double result = prob(l, n, k, dt);
-                // if (((dt/n) * k < (max_k - k + 1)) && (k4 >= (max_k - k + 1) * 10000)){
-                if ((k4 > (l - k + 1) * 10) && (k*dt <= (round(l / n)-k+1) * n * pt) && result > args.probability){
-                    return std::make_tuple(n, k, result);
-                } 
-                if (result > bestResult){
-                    bestN = n;
-                    bestK = k;
-                    bestResult = result;
-                }            
-            }
-        }
-        return std::make_tuple(bestN, bestK, bestResult);
+double MinimizerGenerator::proba(int L, int k) {
+    double p;
+    p = (static_cast<double>(k))/(L-k+1);
+    return p;
+}
+
+std::tuple<int, int, int, double> MinimizerGenerator::possibleBetterParameters(int L, int dt, double pt) {
+    int bestK;
+    int bestN;
+    int bestW;
+    double p;
+    if (L < 50){
+        bestK = 3;
+        bestN = 1;
+        bestW = L;
     } else {
-        auto result = prob(l, 1, 4, dt);
-        return std::make_tuple(1, 4, result);
+        if (dt == 1 || dt == 2){
+            bestN = 2;
+        } else {
+            bestN = ceil((static_cast<double>(dt))/2);
+        }
+        bestW = round(L/bestN);
+        bestK = kSize(bestW, pt);
     }
-    
+    p = 1 - std::pow(proba(bestW, bestK), bestN);
+    return std::make_tuple(bestN, bestW, bestK, p);   
 }
 
 // // Function to sample p percentage of elements
