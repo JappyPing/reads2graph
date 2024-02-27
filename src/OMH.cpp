@@ -8,9 +8,17 @@
 #include <set>
 #include <format>
 #include <seqan3/alphabet/all.hpp>
-#include <seqan3/utility/views/pairwise_combine.hpp>
+// #include <seqan3/utility/views/pairwise_combine.hpp>
 #include <boost/functional/hash.hpp>
-
+#include <xxhash.h>
+// #include <seqan3/alphabet/nucleotide/dna5.hpp>
+// #include <seqan3/alphabet/range/hash.hpp>
+// #include <seqan3/utility/container/dynamic_bitset.hpp>
+#include <seqan3/search/views/kmer_hash.hpp>
+#include <boost/functional/hash.hpp>
+#include <seqan3/core/debug_stream.hpp>
+// #include <seqan3/alphabet/hash.hpp>
+// #include <seqan3/alphabet/range/hash.hpp>
 // OMH::OMH(std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : read2count(read2count), args(args) {}
 OMH::OMH(std::vector<std::vector<seqan3::dna5>> unique_reads, cmd_arguments args) : unique_reads(unique_reads), args(args) {}
 
@@ -25,11 +33,28 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::o
 
     auto betterK = omh_k(args.read_length, args.bad_kmer_ratio, args.max_edit_dis);
 
-    std::default_random_engine prg;
-    vector<unsigned int> seeds;
-    for(unsigned i = 0; i < args.omh_times; ++i) {
-        seeds.push_back(prg());
+    // std::default_random_engine prg;
+    // vector<unsigned int> seeds;
+    // for(unsigned i = 0; i < args.omh_times; ++i) {
+    //     seeds.push_back(prg());
+    // }
+
+    // Use a random_device to seed the random number generator
+    std::random_device rd;
+
+    // Use the Mersenne Twister engine for random number generation
+    std::mt19937_64 generator(rd());
+
+    // Specify the range of values for your seeds
+    std::uniform_int_distribution<std::uint64_t> distribution(std::numeric_limits<std::uint64_t>::min(), std::numeric_limits<std::uint64_t>::max());
+
+    // Generate seeds and store them in a vector
+    std::vector<std::uint64_t> seeds;
+
+    for (unsigned int i = 0; i < args.omh_times; ++i) {
+        seeds.push_back(distribution(generator));
     }
+
     // auto uniq_num = read2count.size();
     // auto uniq_num = unique_reads.size();
     // Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("The number of unique reads: {} ", uniq_num));
@@ -63,40 +88,40 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::o
         //     #pragma omp critical
         //     {
         //         omh2reads[new_val].push_back(read);
-        //     }
+        //     
         // }
     }
     Utils::getInstance().logger(LOG_LEVEL_DEBUG, "All the unique reads for OMH done.");  
     return omh2reads;            
 }
 
-uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned l, unsigned int seed) {
-// uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned int seed) {
-    auto seql = read | seqan3::views::to_char;
-    string seq(seql.begin(), seql.end());
-    if(seq.size() < k) return {};
+// uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned l, unsigned int seed) {
+uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned l, std::uint64_t seed) {
+
+    if(read.size() < k) return {};
 
     const bool weight = l > 0;
     // const bool weight = 1 > 0;
     if(l == 0) l = 1;
 
     std::vector<mer_info> mers;
-    std::unordered_map<std::string, unsigned> occurrences;
+    std::unordered_map<std::uint64_t, unsigned> occurrences;
+    std::uint64_t cur_seed = seed;
 
-    //  Create list of k-mers with occurrence numbers
-    for(size_t i = 0; i < seq.size() - k + 1; ++i) {
-        auto occ = occurrences[seq.substr(i, k)]++;
-        mers.emplace_back(i, occ, (uint64_t)0);
-    }
-
-    xxhash hash;
-    // std::uint64_t minHash = std::numeric_limits<uint64_t>::max();  // Initialize with the maximum value
-    for(auto& meri : mers) {
-        hash.reset(seed);
-        hash.update(&seq.data()[meri.pos], k);
-        if(weight) hash.update(&meri.occ, sizeof(meri.occ));
-        meri.hash= hash.digest();
-        // minHash = std::min(minHash, meri.hash); // using minhash directly will get poor performance
+    for (size_t i = 0; i < read.size() - k + 1; ++i)
+    {
+        auto kmer = std::vector<seqan3::dna5>(read.begin() + i, read.begin() + i + k);
+        auto hash_val_range = seqan3::views::kmer_hash(kmer, seqan3::ungapped{static_cast<uint8_t>(k)});
+        std::uint64_t hash_val = *hash_val_range.begin();
+        auto occ = occurrences[hash_val]++;
+        // seqan3::debug_stream << seed << " " << occ << '\n';        
+        boost::hash_combine(cur_seed, hash_val);
+        if (weight)
+            boost::hash_combine(cur_seed, occurrences[hash_val]);
+        // seqan3::debug_stream << i << " " << kmer << " " << hash_val << " " << cur_seed << " " << occ << " " << cur_seed << '\n';
+        mers.emplace_back(i, occ, cur_seed);
+        // minHash = std::min(minHash, cur_seed);
+        cur_seed = seed;
     }
     // return minHash;
     std::partial_sort(mers.begin(), mers.begin() + l, mers.end(), [&](const mer_info& x, const mer_info& y) { return x.hash < y.hash; });
@@ -104,3 +129,38 @@ uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigne
 
     return mers[0].hash; // Return the OMH results
 }
+
+// uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned l, unsigned int seed) {
+// // uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned int seed) {
+//     auto seql = read | seqan3::views::to_char;
+//     string seq(seql.begin(), seql.end());
+//     if(seq.size() < k) return {};
+
+//     const bool weight = l > 0;
+//     // const bool weight = 1 > 0;
+//     if(l == 0) l = 1;
+
+//     std::vector<mer_info> mers;
+//     std::unordered_map<std::string, unsigned> occurrences;
+
+//     //  Create list of k-mers with occurrence numbers
+//     for(size_t i = 0; i < seq.size() - k + 1; ++i) {
+//         auto occ = occurrences[seq.substr(i, k)]++;
+//         mers.emplace_back(i, occ, (uint64_t)0);
+//     }
+
+//     xxhash hash;
+//     // std::uint64_t minHash = std::numeric_limits<uint64_t>::max();  // Initialize with the maximum value
+//     for(auto& meri : mers) {
+//         hash.reset(seed);
+//         hash.update(&seq.data()[meri.pos], k);
+//         if(weight) hash.update(&meri.occ, sizeof(meri.occ));
+//         meri.hash= hash.digest();
+//         // minHash = std::min(minHash, meri.hash); // using minhash directly will get poor performance
+//     }
+//     // return minHash;
+//     std::partial_sort(mers.begin(), mers.begin() + l, mers.end(), [&](const mer_info& x, const mer_info& y) { return x.hash < y.hash; });
+//     std::sort(mers.begin(), mers.begin() + l, [&](const mer_info& x, const mer_info& y) { return x.pos < y.pos; });
+
+//     return mers[0].hash; // Return the OMH results
+// }

@@ -54,41 +54,47 @@ std::pair<std::vector<std::vector<seqan3::dna5>>, std::map<std::vector<seqan3::d
     // using record_type = decltype(fin)::record_type;
     // std::vector<record_type> records{};
     std::vector<decltype(fin)::record_type> records;
-    for (auto &record : fin)
-    {
-        records.push_back(std::move(record));
-    }
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  "Load data done!");
     // Define a set to store unique reads.
     std::vector<std::vector<seqan3::dna5>> unique_reads;
     // Define a map to store unique reads and their counts
     std::map<std::vector<seqan3::dna5>, uint32_t> read2count;
     // std::unordered_map<seqan3::dna5_vector, std::string> read2id;
-    
-    // OpenMP parallel for loop
-    // OpenMP parallel for loop using range-based for loop
-    #pragma omp parallel for
-    for (auto &record : records)
-    {
-        // Process the record and update local data structure
-        std::vector<seqan3::dna5> cur_seq = record.sequence();
 
-        // Combine local result into global data structure using critical section
-        #pragma omp critical
-        {
-            // Combine unique_reads
-            // unique_reads.insert(cur_seq);
-            if (read2count[cur_seq]++ == 0) {
-                unique_reads.push_back(cur_seq);
-            }
-            // Combine read2count
-            // read2count[current_sequence]++;
+    for (auto &record : fin)
+    {
+        // records.push_back(std::move(record));
+        // std::vector<seqan3::dna5> cur_seq = record.sequence();
+        if (read2count[record.sequence()]++ == 0) {
+            unique_reads.push_back(record.sequence());
         }
     }
-    // return unique_reads; 
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  "Load data done!");
     return {unique_reads, read2count};   
-    // return read2count; 
 }
+    // OpenMP parallel for loop
+    // OpenMP parallel for loop using range-based for loop
+    // #pragma omp parallel for
+    // for (auto &record : records)
+    // {
+    //     // Process the record and update local data structure
+    //     std::vector<seqan3::dna5> cur_seq = record.sequence();
+
+    //     // Combine local result into global data structure using critical section
+    //     #pragma omp critical
+    //     {
+    //         // Combine unique_reads
+    //         // unique_reads.insert(cur_seq);
+    //         if (read2count[cur_seq]++ == 0) {
+    //             unique_reads.push_back(cur_seq);
+    //         }
+    //         // Combine read2count
+    //         // read2count[current_sequence]++;
+    //     }
+    // }
+    // return unique_reads; 
+    // return {unique_reads, read2count};   
+    // return read2count; 
+// }
 
 
 // std::pair<std::set<std::vector<seqan3::dna5>>, std::map<std::vector<seqan3::dna5>, uint32_t>> ReadWrite::get_unique_reads_counts(cmd_arguments args){
