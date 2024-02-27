@@ -222,10 +222,12 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
     parser.add_option(args.save_graph,
                       sharg::config{.long_id = "save_graph",
                                     .description = "If ture, reads2graph will save graph to file in graphviz dot format."});
-
-    parser.add_option(args.sampling_rate,
-                      sharg::config{.long_id = "sampling_rate",
-                                    .description = "Sampling rate for estimating the kmer size."}); 
+    parser.add_option(args.minimizer_omh,
+                      sharg::config{.long_id = "minimizer_omh",
+                                    .description = "If ture, reads2graph employs minimizer bucketing first and then OMH bucketing; otherwise, OMH first then minimizer."});
+    // parser.add_option(args.sampling_rate,
+    //                   sharg::config{.long_id = "sampling_rate",
+    //                                 .description = "Sampling rate for estimating the kmer size."}); 
     // other dependencies
     // std::cout << "Boost version: 1.82.0" << "\n";
     // std::cout << "OpenMP version: 8.0.1" << "\n";

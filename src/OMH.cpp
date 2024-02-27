@@ -22,8 +22,9 @@
 // OMH::OMH(std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : read2count(read2count), args(args) {}
 OMH::OMH(std::vector<std::vector<seqan3::dna5>> unique_reads, cmd_arguments args) : unique_reads(unique_reads), args(args) {}
 
-int OMH::omh_k(int L, double p, uint8_t d) {
-    return ceil((p*(1+L))/(d+p));
+unsigned OMH::omh_k(unsigned L, double p, uint8_t d) {
+    unsigned k = ceil((p*(1+L))/(d+p));
+    return k;
 }
 
 std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::omh2read_main(){
@@ -32,32 +33,43 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::o
     omp_set_num_threads(num_cores_to_use);
 
     auto betterK = omh_k(args.read_length, args.bad_kmer_ratio, args.max_edit_dis);
-
+    Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("Better k for bucketing by OMH: {}.", betterK));  
     // std::default_random_engine prg;
     // vector<unsigned int> seeds;
     // for(unsigned i = 0; i < args.omh_times; ++i) {
     //     seeds.push_back(prg());
     // }
-
     // Use a random_device to seed the random number generator
     std::random_device rd;
-
     // Use the Mersenne Twister engine for random number generation
     std::mt19937_64 generator(rd());
-
     // Specify the range of values for your seeds
     std::uniform_int_distribution<std::uint64_t> distribution(std::numeric_limits<std::uint64_t>::min(), std::numeric_limits<std::uint64_t>::max());
 
     // Generate seeds and store them in a vector
-    std::vector<std::uint64_t> seeds;
-
+    std::vector<std::pair<std::uint64_t, unsigned>> seeds_k;
+    unsigned cur_k = betterK;
+    unsigned even_k = betterK;
+    unsigned odd_k = betterK;
     for (unsigned int i = 0; i < args.omh_times; ++i) {
-        seeds.push_back(distribution(generator));
+        auto cur_seed = distribution(generator);
+        Utils::getInstance().logger(LOG_LEVEL_DEBUG, std::format("Current k={} and seed={} for OMH bucketing.", cur_k, cur_seed));
+        std::pair<std::uint64_t, unsigned> cur_pair = std::make_pair(cur_seed, cur_k);
+        seeds_k.push_back(cur_pair);
+        if (cur_k >= 4 && cur_k < (args.read_length - 1)) {
+            if (i % 2 == 0){
+                cur_k = even_k + 2;
+                even_k = cur_k;
+            } else {
+                cur_k = odd_k - 2;
+                odd_k = cur_k;
+            }
+        }  
     }
 
     // auto uniq_num = read2count.size();
     // auto uniq_num = unique_reads.size();
-    // Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("The number of unique reads: {} ", uniq_num));
+    Utils::getInstance().logger(LOG_LEVEL_DEBUG,  "Seeds and kmer-size done!");
     // #pragma omp parallel for
     // for (size_t i = 0; i < uniq_num; ++i) {
     //     auto it = std::next(read2count.begin(), i);
@@ -65,16 +77,20 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::o
     #pragma omp parallel for
     for (auto const & read : unique_reads){
         // std::vector<uint64_t> cur_omh_vals;
-        for(auto seed : seeds){
+        #pragma omp critical
+        for(auto &pair : seeds_k){
+            std::uint64_t seed = pair.first;
+            unsigned k = pair.second;
             // auto omh_value = omh_pos(read, args.omh_k, args.omh_kmer_n, seed);   
-            auto omh_value = omh_pos(read, betterK, args.omh_kmer_n, seed);  
+            auto omh_value = omh_pos(read, k, args.omh_kmer_n, seed);  
             // auto omh_value = omh_pos(read, args.omh_k, seed);  
             // cur_omh_vals.push_back(omh_value); 
-            #pragma omp critical
-            {
-                omh2reads[omh_value].push_back(read);
-            }        
+            // #pragma omp critical
+            // {
+            omh2reads[omh_value].push_back(read);
+            // }        
         } 
+    }
         // auto omh_combins = seqan3::views::pairwise_combine(cur_omh_vals);
         // for (size_t i = 0; i < omh_combins.size(); ++i)
         // {
@@ -90,7 +106,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::o
         //         omh2reads[new_val].push_back(read);
         //     
         // }
-    }
+    // }
     Utils::getInstance().logger(LOG_LEVEL_DEBUG, "All the unique reads for OMH done.");  
     return omh2reads;            
 }

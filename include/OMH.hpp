@@ -41,7 +41,7 @@ public:
     std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> omh2read_main();
     // uint64_t omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned l, unsigned int seed);
     uint64_t omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned l, std::uint64_t seed);
-    int omh_k(int L, double p, uint8_t d);
+    unsigned omh_k(unsigned L, double p, uint8_t d);
     // uint64_t omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned int seed);
 private:
     // std::map<std::vector<seqan3::dna5>, uint32_t> read2count;

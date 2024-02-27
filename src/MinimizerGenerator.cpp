@@ -48,7 +48,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
         }
     }
 
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Size of minimiser_to_reads: {}.", minimiser_to_reads.size()));  
+    Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("Size of minimiser_to_reads: {}.", minimiser_to_reads.size()));  
     return minimiser_to_reads;     
 }
 
@@ -64,16 +64,16 @@ int MinimizerGenerator::kSize(int L, double p) {
     return ceil((p*(1+L))/(1+p));
 }
 
-double MinimizerGenerator::proba(int L, int k) {
+double MinimizerGenerator::proba(unsigned L, unsigned k) {
     double p;
     p = (static_cast<double>(k))/(L-k+1);
     return p;
 }
 
-std::tuple<int, int, int, double> MinimizerGenerator::possibleBetterParameters(int L, int dt, double pt) {
-    int bestK;
-    int bestN;
-    int bestW;
+std::tuple<unsigned, unsigned, unsigned, double> MinimizerGenerator::possibleBetterParameters(unsigned L, uint8_t dt, double pt) {
+    unsigned bestK;
+    unsigned bestN;
+    unsigned bestW;
     double p;
     if (L < 50){
         bestK = 3;
