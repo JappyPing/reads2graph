@@ -25,6 +25,14 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
     auto better_k = static_cast<uint8_t>(better_kk);
     auto better_w = static_cast<uint8_t>(better_ww);
 
+    if (better_k < 4){
+        better_k = 4;
+        Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Better k {} has been changed to 4.", better_k));
+    } else if (better_k >= 28) {
+        better_k = 27;
+        Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Better k {} has been changed to 27 as the maximum size of unggaped shape is stricted by 28 in Seqan3.", better_k));                
+    }
+
     int available_cores = omp_get_max_threads();
     auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
     omp_set_num_threads(num_cores_to_use);
@@ -81,7 +89,7 @@ std::tuple<unsigned, unsigned, unsigned, double> MinimizerGenerator::possibleBet
         bestW = L;
     } else {
         if (dt == 1 || dt == 2){
-            bestN = 2;
+            bestN = 3;
         } else {
             bestN = ceil((static_cast<double>(dt))/2);
         }

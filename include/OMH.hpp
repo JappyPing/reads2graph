@@ -1,6 +1,6 @@
 // OMH.hpp
 
-/*The implementation of Order Min Hash (OMH) is modified based on the original implementation of OMH(https://github.com/Kingsford-Group/omhismb2019). If you want to use the following source codes in your project, please remember to cite the original work listed below.
+/*The implementation of Order Min Hash (OMH) is modified based on the original implementation of OMH(https://github.com/Kingsford-Group/omhismb2019). If you want to use the relevant source codes in your project, please remember to cite the original work listed below.
 Guillaume Marçais, Dan DeBlasio, Prashant Pandey, Carl Kingsford, Locality-sensitive hashing for the edit distance, Bioinformatics, Volume 35, Issue 14, July 2019, Pages i127–i135, https://doi.org/10.1093/bioinformatics/btz354
 */
 
@@ -18,8 +18,8 @@ Guillaume Marçais, Dan DeBlasio, Prashant Pandey, Carl Kingsford, Locality-sens
 #include <random>
 #include <limits>
 
-#include <xxhash.hpp>
-#include <seeded_prg.hpp>
+// #include <xxhash.hpp>
+// #include <seeded_prg.hpp>
 #include <seqan3/alphabet/nucleotide/dna5.hpp>
 
 struct mer_info {

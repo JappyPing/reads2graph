@@ -10,13 +10,13 @@
 #include <seqan3/alphabet/all.hpp>
 // #include <seqan3/utility/views/pairwise_combine.hpp>
 #include <boost/functional/hash.hpp>
-#include <xxhash.h>
+// #include <xxhash.h>
 // #include <seqan3/alphabet/nucleotide/dna5.hpp>
 // #include <seqan3/alphabet/range/hash.hpp>
 // #include <seqan3/utility/container/dynamic_bitset.hpp>
-#include <seqan3/search/views/kmer_hash.hpp>
-#include <boost/functional/hash.hpp>
-#include <seqan3/core/debug_stream.hpp>
+// #include <seqan3/search/views/kmer_hash.hpp>
+// #include <seqan3/core/debug_stream.hpp>
+// #include <seqan3/alphabet/hash.hpp>
 // #include <seqan3/alphabet/hash.hpp>
 // #include <seqan3/alphabet/range/hash.hpp>
 // OMH::OMH(std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : read2count(read2count), args(args) {}
@@ -33,6 +33,14 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::o
     omp_set_num_threads(num_cores_to_use);
 
     auto betterK = omh_k(args.read_length, args.bad_kmer_ratio, args.max_edit_dis);
+    if (betterK < 4){
+        betterK = 4;
+        Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Better k {} has been changed to 4.", betterK));
+    } else if (betterK > (args.read_length - 2)) {
+        betterK = args.read_length/2;
+        Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Better k {} has been changed to {}.", betterK, args.read_length/2));                
+    }
+
     Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("Better k for bucketing by OMH: {}.", betterK));  
     // std::default_random_engine prg;
     // vector<unsigned int> seeds;
@@ -56,15 +64,17 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::o
         Utils::getInstance().logger(LOG_LEVEL_DEBUG, std::format("Current k={} and seed={} for OMH bucketing.", cur_k, cur_seed));
         std::pair<std::uint64_t, unsigned> cur_pair = std::make_pair(cur_seed, cur_k);
         seeds_k.push_back(cur_pair);
-        if (cur_k >= 4 && cur_k < (args.read_length - 1)) {
+        if (cur_k >= 4 && cur_k < (args.read_length - 2)) {
             if (i % 2 == 0){
-                cur_k = even_k + 2;
+                cur_k = even_k + args.omh_k_step_size;
                 even_k = cur_k;
             } else {
-                cur_k = odd_k - 2;
+                cur_k = odd_k - args.omh_k_step_size;
                 odd_k = cur_k;
             }
-        }  
+        } else {
+            cur_k = betterK;
+        }
     }
 
     // auto uniq_num = read2count.size();
@@ -77,18 +87,18 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::o
     #pragma omp parallel for
     for (auto const & read : unique_reads){
         // std::vector<uint64_t> cur_omh_vals;
-        #pragma omp critical
+        
         for(auto &pair : seeds_k){
             std::uint64_t seed = pair.first;
             unsigned k = pair.second;
-            // auto omh_value = omh_pos(read, args.omh_k, args.omh_kmer_n, seed);   
+            // auto omh_value = omh_pos(read, 28, args.omh_kmer_n, seed);   
             auto omh_value = omh_pos(read, k, args.omh_kmer_n, seed);  
             // auto omh_value = omh_pos(read, args.omh_k, seed);  
             // cur_omh_vals.push_back(omh_value); 
-            // #pragma omp critical
-            // {
-            omh2reads[omh_value].push_back(read);
-            // }        
+            #pragma omp critical
+            {
+                omh2reads[omh_value].push_back(read);
+            }        
         } 
     }
         // auto omh_combins = seqan3::views::pairwise_combine(cur_omh_vals);
@@ -121,24 +131,39 @@ uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigne
     if(l == 0) l = 1;
 
     std::vector<mer_info> mers;
-    std::unordered_map<std::uint64_t, unsigned> occurrences;
+    // std::unordered_map<std::uint64_t, unsigned> occurrences;
+    std::unordered_map<std::string, unsigned> occurrences;
     std::uint64_t cur_seed = seed;
+    // in order to hash a kmer using seqan3::views::kmer_hash, here I use k+1 rather than k to calculate the kmers for a reads. using k the shape size may be the same as the kmer size which will be terminated by seqan3
 
-    for (size_t i = 0; i < read.size() - k + 1; ++i)
-    {
-        auto kmer = std::vector<seqan3::dna5>(read.begin() + i, read.begin() + i + k);
-        auto hash_val_range = seqan3::views::kmer_hash(kmer, seqan3::ungapped{static_cast<uint8_t>(k)});
-        std::uint64_t hash_val = *hash_val_range.begin();
-        auto occ = occurrences[hash_val]++;
-        // seqan3::debug_stream << seed << " " << occ << '\n';        
-        boost::hash_combine(cur_seed, hash_val);
+    auto seql = read | seqan3::views::to_char;
+    string read_str(seql.begin(), seql.end());
+    for(size_t i = 0; i < read_str.size() - k + 1; ++i) {
+        string kmer = read_str.substr(i, k);
+        auto occ = occurrences[kmer]++;
+        boost::hash_combine(cur_seed, kmer);
         if (weight)
-            boost::hash_combine(cur_seed, occurrences[hash_val]);
-        // seqan3::debug_stream << i << " " << kmer << " " << hash_val << " " << cur_seed << " " << occ << " " << cur_seed << '\n';
+            boost::hash_combine(cur_seed, occurrences[kmer]);
         mers.emplace_back(i, occ, cur_seed);
-        // minHash = std::min(minHash, cur_seed);
         cur_seed = seed;
     }
+
+    // for (size_t i = 0; i < read.size() - k + 1; ++i)
+    // {
+    //     auto kmer = std::vector<seqan3::dna5>(read.begin() + i, read.begin() + i + k);
+    //     auto hash_val_range = kmer | seqan3::views::kmer_hash(seqan3::ungapped{static_cast<uint8_t>(k)});
+    //     std::uint64_t hash_val = *hash_val_range.begin();
+
+    //     auto occ = occurrences[hash_val]++;
+    //     // seqan3::debug_stream << kmer.size() << " " << k << " " << hash_val_range.size() << '\n';        
+    //     boost::hash_combine(cur_seed, hash_val);
+    //     if (weight)
+    //         boost::hash_combine(cur_seed, occurrences[hash_val]);
+    //     // seqan3::debug_stream << i << " " << kmer << " " << hash_val << " " << cur_seed << " " << occ << " " << cur_seed << '\n';
+    //     mers.emplace_back(i, occ, cur_seed);
+    //     // minHash = std::min(minHash, cur_seed);
+    //     cur_seed = seed;
+    // }
     // return minHash;
     std::partial_sort(mers.begin(), mers.begin() + l, mers.end(), [&](const mer_info& x, const mer_info& y) { return x.hash < y.hash; });
     std::sort(mers.begin(), mers.begin() + l, [&](const mer_info& x, const mer_info& y) { return x.pos < y.pos; });

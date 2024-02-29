@@ -68,7 +68,7 @@ std::pair<std::vector<std::vector<seqan3::dna5>>, std::map<std::vector<seqan3::d
             unique_reads.push_back(record.sequence());
         }
     }
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  "Load data done!");
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  "Loading data done!");
     return {unique_reads, read2count};   
 }
     // OpenMP parallel for loop

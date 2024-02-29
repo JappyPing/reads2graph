@@ -43,6 +43,7 @@ struct cmd_arguments
     bool save_graph{false};
     double sampling_rate{0.01};
     bool minimizer_omh{true};
+    uint8_t omh_k_step_size{1};
 };
 
 class Utils{

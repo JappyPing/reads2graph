@@ -7,16 +7,19 @@ Sharg 1.1.1
 Seqan 3.3.0
 Boost 1.82.0
 OpenMP 9.0.1
-xxhash 0.8.2
-omh 0.0.2 (source code of OMH compute used)
 
 ## Compile
 
 ```
+git clone 
 cd build
 cmake ..
 make
+```
+## Example
 
+
+```
 ../bin/reads2graph -i ../data/umi_SRR1543964.fastq -o ../result -k 15 -w 20 -x 6 -n 1 -g graph.dot
 ```
 2024-01-11 17:53:22 - 2024-01-11 20:37:32 

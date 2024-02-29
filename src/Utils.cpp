@@ -24,8 +24,8 @@
 
 int num_cores_to_use;  // Define the global variable
 
-#define reads2graph_VERSION "0.3.0"
-#define last_update_date "26.02.2024"
+#define reads2graph_VERSION "0.4.0"
+#define last_update_date "29.02.2024"
 
 using namespace std;
 
@@ -225,6 +225,10 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
     parser.add_option(args.minimizer_omh,
                       sharg::config{.long_id = "minimizer_omh",
                                     .description = "If ture, reads2graph employs minimizer bucketing first and then OMH bucketing; otherwise, OMH first then minimizer."});
+
+    parser.add_option(args.omh_k_step_size,
+                      sharg::config{.long_id = "omh_k_step_size",
+                                    .description = "The step size for varied k from the estimated better k for OMH bucketing."});
     // parser.add_option(args.sampling_rate,
     //                   sharg::config{.long_id = "sampling_rate",
     //                                 .description = "Sampling rate for estimating the kmer size."}); 

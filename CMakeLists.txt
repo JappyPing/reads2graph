@@ -60,7 +60,9 @@ link_directories($ENV{CONDA_PREFIX}/lib)
 # set(CMAKE_BUILD_TYPE Debug)
 # set(CMAKE_CXX_EXTENSIONS ON)
 # set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "${CAMKE_CXX_FLAGS} -std=c++20 -fopenmp -static-libgcc -static-libstdc++ -isystem /home/pping/miniconda3/envs/gcc_env/include/seqan3/submodules/sdsl-lite/include -isystem /home/pping/miniconda3/envs/gcc_env/include/seqan3/submodules/cereal/include -fconcepts -g -Wall -lyaml-cpp -lxxhash -Wno-interference-size") #-fsanitize=address
+#set(CMAKE_CXX_FLAGS "${CAMKE_CXX_FLAGS} -std=c++20 -fopenmp -static-libgcc -static-libstdc++ -isystem /home/pping/miniconda3/envs/gcc_env/include/seqan3/submodules/sdsl-lite/include -isystem /home/pping/miniconda3/envs/gcc_env/include/seqan3/submodules/cereal/include -fconcepts -g -Wall -lyaml-cpp -lxxhash -Wno-interference-size") #-fsanitize=address
+
+set(CMAKE_CXX_FLAGS "${CAMKE_CXX_FLAGS} -std=c++20 -fopenmp -static-libgcc -static-libstdc++ -isystem $ENV{CONDA_PREFIX}/include/seqan3/submodules/sdsl-lite/include -isystem $ENV{CONDA_PREFIX}/include/seqan3/submodules/cereal/include -fconcepts -g -Wall -lyaml-cpp -Wno-interference-size") #-fsanitize=address
 
 # set(CMAKE_CXX_FLAGS "${CAMKE_CXX_FLAGS} -std=c++20 -isystem ${CONDA_PREFIX}/envs/gcc_env/include/seqan3/submodules/sdsl-lite/include -isystem ${CONDA_PREFIX}/envs/gcc_env/include/seqan3/submodules/cereal/include -pthread -fconcepts -g -Wall -lyaml-cpp ") #-fsanitize=address
 
