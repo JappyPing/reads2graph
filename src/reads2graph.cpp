@@ -97,8 +97,8 @@ int main(int argc, char** argv) {
     Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The number of threads setted: {} ", num_cores_to_use));
     ////////////////////////////////////////////////////////////////////////////
     // auto read2count = ReadWrite(args).get_unique_reads_counts();
-    auto [unique_reads, read2count] = ReadWrite(args).get_unique_reads_counts();
-
+    auto [unique_reads, read2count, min_read_length] = ReadWrite(args).get_unique_reads_counts();
+    args.read_length = min_read_length;
     auto total_uniq_num = unique_reads.size();
     Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The number of unique reads: {} ", total_uniq_num));
 

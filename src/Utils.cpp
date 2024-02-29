@@ -98,7 +98,7 @@ Utils::Utils() {
 
     char cwd[1024];
     if (getcwd(cwd, sizeof(cwd)) != NULL) {
-        std::string filePath = std::string(cwd) + "/reads2graph_" + oss.str();
+        std::string filePath = std::string(cwd) + "/reads2graph" + oss.str();
         logFile.open(filePath, std::ios::app);
     } else {
         std::cerr << timeString << ": "<< "Error: unable to get current working directory." << std::endl;
@@ -154,7 +154,7 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
     parser.add_option(args.read_length,
                       sharg::config{.short_id = 'r',
                                     .long_id = "read_length",
-                                    .description = "The window size for minimiser."});
+                                    .description = "No need to input this parameter, reads2graph will calculate the minimum read length."});
 
     parser.add_option(args.k_size,
                       sharg::config{.short_id = 'k',

@@ -26,17 +26,17 @@ struct cmd_arguments
 {
     std::filesystem::path input_data{};
     std::filesystem::path output_dir{std::filesystem::current_path()};
-    unsigned read_length{150};
-    uint8_t k_size{4};
-    uint8_t window_size{8};
-    uint8_t max_edit_dis{5};
+    unsigned read_length{};
+    uint8_t k_size{8};
+    uint8_t window_size{33};
+    uint8_t max_edit_dis{2};
     uint8_t min_edit_dis{1};
     int num_process{26};
     bool pair_wise{false};
     unsigned int bin_size_min{500};
     unsigned int bin_size_max{10000};
     unsigned omh_k{25};
-    unsigned omh_times{5};
+    unsigned omh_times{3};
     unsigned omh_kmer_n{3}; // Number of k-mers to consider
     double bad_kmer_ratio{0.3};
     double probability{0.86};
