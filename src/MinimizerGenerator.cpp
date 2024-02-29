@@ -91,7 +91,7 @@ std::tuple<unsigned, unsigned, unsigned, double> MinimizerGenerator::possibleBet
         if (dt == 1 || dt == 2){
             bestN = 3;
         } else {
-            bestN = ceil((static_cast<double>(dt))/2);
+            bestN = ceil((static_cast<double>(dt))/2)+1;
         }
         bestW = round(L/bestN);
         bestK = kSize(bestW, pt);
