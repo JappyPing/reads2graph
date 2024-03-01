@@ -146,6 +146,10 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                                       .long_id = "input_data", 
                                       .description = "Please provide a fasta/fastq/ data file."});
 
+    // parser.add_option(args.chunk_size,
+    //                   sharg::config{.long_id = "chunk_size",
+    //                                 .description = "Reading chunk_size records at a time."});
+
     parser.add_option(args.output_dir,
                       sharg::config{.short_id = 'o',
                                     .long_id = "output_dir",

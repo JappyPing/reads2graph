@@ -25,6 +25,7 @@ using namespace std;
 struct cmd_arguments
 {
     std::filesystem::path input_data{};
+    // unsigned chunk_size{128};
     std::filesystem::path output_dir{std::filesystem::current_path()};
     unsigned read_length{};
     uint8_t k_size{8};
@@ -44,6 +45,7 @@ struct cmd_arguments
     double sampling_rate{0.01};
     bool minimizer_omh{true};
     uint8_t omh_k_step_size{1};
+    
 };
 
 class Utils{

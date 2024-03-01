@@ -186,7 +186,7 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::edges_main()
 
             }        
         }             
-        std::cout << std::endl;
+        // std::cout << std::endl;
         Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise comparison for the small-size-based buckets done!");
     } else {
         Utils::getInstance().logger(LOG_LEVEL_INFO,  "No bucket has a size less than 100!");
