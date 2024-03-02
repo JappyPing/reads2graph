@@ -36,15 +36,16 @@ struct cmd_arguments
     bool pair_wise{false};
     unsigned int bin_size_min{500};
     unsigned int bin_size_max{10000};
-    unsigned omh_k{25};
-    unsigned omh_times{3};
+    unsigned omh_k{};
+    uint8_t omh_k_step_size{3};
+    unsigned omh_times{5};
     unsigned omh_kmer_n{3}; // Number of k-mers to consider
     double bad_kmer_ratio{0.3};
     double probability{0.86};
     bool save_graph{false};
     double sampling_rate{0.01};
     bool minimizer_omh{true};
-    uint8_t omh_k_step_size{1};
+    
     
 };
 

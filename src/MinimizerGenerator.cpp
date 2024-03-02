@@ -9,19 +9,16 @@
 #include <boost/functional/hash.hpp>
 #include <cmath>
 
-MinimizerGenerator::MinimizerGenerator(std::vector<std::vector<seqan3::dna5>> unique_reads, cmd_arguments args) : unique_reads(unique_reads), args(args) {}
+MinimizerGenerator::MinimizerGenerator(cmd_arguments args) : args(args) {}
 // MinimizerGenerator::MinimizerGenerator(std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : read2count(read2count), args(args) {}
 
-std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> MinimizerGenerator::minimizer2reads_main()
+std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> MinimizerGenerator::minimizer2reads_main(std::vector<std::vector<seqan3::dna5>> unique_reads,std::tuple<unsigned, unsigned, unsigned, double> betterParams)
 {   
-    auto betterParams = possibleBetterParameters(args.read_length, args.max_edit_dis, args.bad_kmer_ratio);
-    auto better_n = std::get<0>(betterParams);
+    // auto better_n = std::get<0>(betterParams);
     auto better_ww = std::get<1>(betterParams);
     auto better_kk = std::get<2>(betterParams);
-    auto prob = std::get<3>(betterParams);
-    // auto best_w = round(static_cast<double>(args.read_length) / best_n);
-
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Better number of windows: {}, Better window size: {}, Better K: {} and the probability: {}.", better_n, better_ww, better_kk, prob));     
+    // auto prob = std::get<3>(betterParams);
+    // auto best_w = round(static_cast<double>(args.read_length) / best_n);   
     auto better_k = static_cast<uint8_t>(better_kk);
     auto better_w = static_cast<uint8_t>(better_ww);
 
@@ -78,26 +75,50 @@ double MinimizerGenerator::proba(unsigned L, unsigned k) {
     return p;
 }
 
-std::tuple<unsigned, unsigned, unsigned, double> MinimizerGenerator::possibleBetterParameters(unsigned L, uint8_t dt, double pt) {
-    unsigned bestK;
-    unsigned bestN;
-    unsigned bestW;
+std::tuple<unsigned, unsigned, unsigned, double> MinimizerGenerator::possibleBetterParameters() {
+    unsigned betterK;
+    unsigned betterN;
+    unsigned betterW;
     double p;
-    if (L < 50){
-        bestK = 3;
-        bestN = 1;
-        bestW = L;
-    } else {
-        if (dt == 1 || dt == 2){
-            bestN = 3;
+    if (args.read_length >= 8 && args.read_length <= 16){
+        betterK = 3;
+        betterN = 1;
+        betterW = args.read_length;
+    } else if (args.read_length > 16 && args.read_length <= 50){
+        betterK = 4;
+        betterN = 2;
+        betterW = round(args.read_length/betterN);
+    } else if (args.read_length > 50 && args.read_length <= 300) {
+        if (args.max_edit_dis == 1 || args.max_edit_dis == 2){
+            betterN = 3;
         } else {
-            bestN = ceil((static_cast<double>(dt))/2)+1;
+            betterN = ceil((static_cast<double>(args.max_edit_dis))/2)+1;
         }
-        bestW = round(L/bestN);
-        bestK = kSize(bestW, pt);
+        betterW = round(args.read_length/betterN);
+        betterK = kSize(betterW, args.bad_kmer_ratio);
+    // } else if (args.read_length > 100 && args.read_length <= 200){
+    //     if (args.max_edit_dis == 1 || args.max_edit_dis == 2){
+    //         betterN = 4;
+    //     } else {
+    //         betterN = ceil((static_cast<double>(args.max_edit_dis))/2)+2;
+    //     }
+    //     betterW = round(args.read_length/betterN);
+    //     betterK = kSize(betterW, args.bad_kmer_ratio);
+    // } else if (args.read_length > 200 && args.read_length <= 300){
+    //     if (args.max_edit_dis == 1 || args.max_edit_dis == 2){
+    //         betterN = 5;
+    //     } else {
+    //         betterN = ceil((static_cast<double>(args.max_edit_dis))/2)+3;
+    //     }
+    //     betterW = round(args.read_length/betterN);
+    //     betterK = kSize(betterW, args.bad_kmer_ratio);
+    } else {
+        Utils::getInstance().logger(LOG_LEVEL_ERROR,  "Read length is invalid!");
+        exit(0);
     }
-    p = 1 - std::pow(proba(bestW, bestK), bestN);
-    return std::make_tuple(bestN, bestW, bestK, p);   
+    p = 1 - std::pow(proba(betterW, betterK), betterN);
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Better number of windows: {}, Better window size: {}, Better K: {} and the probability: {}.", betterN, betterW, betterK, p));  
+    return std::make_tuple(betterN, betterW, betterK, p);   
 }
 
 // // Function to sample p percentage of elements

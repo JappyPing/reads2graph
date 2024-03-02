@@ -286,13 +286,20 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::edges_main()
 
     // extra largr group
     if (extra_large_group.size() > 0){
-        
+        std::vector<std::pair<std::uint64_t, unsigned>> seeds_k;
+        std::tuple<unsigned, unsigned, unsigned, double> betterParams;
+        if (args.minimizer_omh){
+           seeds_k = OMH(args).get_seeds_k();
+        } else {
+            betterParams = MinimizerGenerator(args).possibleBetterParameters();
+        }
+
         for (const auto &el_group : extra_large_group){
             std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> cur_hash2reads;
             if (args.minimizer_omh){
-                cur_hash2reads = OMH(el_group, args).omh2read_main();
+                cur_hash2reads = OMH(args).omh2read_main(el_group, seeds_k);
             } else {
-                cur_hash2reads = MinimizerGenerator(el_group, args).minimizer2reads_main();
+                cur_hash2reads = MinimizerGenerator(args).minimizer2reads_main(el_group, betterParams);
             }
             auto cur_bin_n = cur_hash2reads.size();
             // std::cout << "Size of current omh_to_reads: " << cur_bin_n << std::endl;  

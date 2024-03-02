@@ -137,11 +137,20 @@ int main(int argc, char** argv) {
     } else {
         // minimizer grouping first and then omh
         std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> hash2reads;
+        std::vector<std::pair<std::uint64_t, unsigned>> seeds_k;
+        std::tuple<unsigned, unsigned, unsigned, double> betterParams;
+
         if (args.minimizer_omh){
-            hash2reads = MinimizerGenerator(unique_reads, args).minimizer2reads_main();                
+           seeds_k = OMH(args).get_seeds_k();
+        } else {
+            betterParams = MinimizerGenerator(args).possibleBetterParameters();
+        }
+
+        if (args.minimizer_omh){
+            hash2reads = MinimizerGenerator(args).minimizer2reads_main(unique_reads, betterParams);                
         } else {
             // omh grouping first and then minimizer
-            hash2reads = OMH(unique_reads, args).omh2read_main();
+            hash2reads = OMH(args).omh2read_main(unique_reads, seeds_k);
             // auto edge_lst = EdgeConstructor(omh2reads, args).edges_main();
         }
         edge_lst = EdgeConstructor(hash2reads, args).edges_main(); 

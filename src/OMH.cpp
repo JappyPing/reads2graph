@@ -20,23 +20,19 @@
 // #include <seqan3/alphabet/hash.hpp>
 // #include <seqan3/alphabet/range/hash.hpp>
 // OMH::OMH(std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : read2count(read2count), args(args) {}
-OMH::OMH(std::vector<std::vector<seqan3::dna5>> unique_reads, cmd_arguments args) : unique_reads(unique_reads), args(args) {}
+OMH::OMH(cmd_arguments args) : args(args) {}
 
 unsigned OMH::omh_k(unsigned L, double p, uint8_t d) {
     unsigned k = ceil((p*(1+L))/(d+p));
     return k;
 }
 
-std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::omh2read_main(){
-    int available_cores = omp_get_max_threads();
-    auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
-    omp_set_num_threads(num_cores_to_use);
-
+std::vector<std::pair<std::uint64_t, unsigned>> OMH::get_seeds_k(){
     auto betterK = omh_k(args.read_length, args.bad_kmer_ratio, args.max_edit_dis);
     if (betterK < 4){
         betterK = 4;
         Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Better k {} has been changed to 4.", betterK));
-    } else if (betterK > (args.read_length - 2)) {
+    } else if (betterK > (args.read_length / 2)) {
         betterK = args.read_length/2;
         Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Better k {} has been changed to {}.", betterK, args.read_length/2));                
     }
@@ -77,9 +73,23 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::o
         }
     }
 
+    for(auto &pair : seeds_k){
+        std::uint64_t seed = pair.first;
+        unsigned k = pair.second;
+        Utils::getInstance().logger(LOG_LEVEL_INFO, std::format("k={} and seed={} are used for OMH bucketing.", k, seed));
+    }
+    Utils::getInstance().logger(LOG_LEVEL_DEBUG,  "Seeds and kmer-size done!");
+    return seeds_k;
+}
+
+std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::omh2read_main(std::vector<std::vector<seqan3::dna5>> unique_reads, std::vector<std::pair<std::uint64_t, unsigned>> seeds_k){
+    int available_cores = omp_get_max_threads();
+    auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
+    omp_set_num_threads(num_cores_to_use);
+
     // auto uniq_num = read2count.size();
     // auto uniq_num = unique_reads.size();
-    Utils::getInstance().logger(LOG_LEVEL_DEBUG,  "Seeds and kmer-size done!");
+    
     // #pragma omp parallel for
     // for (size_t i = 0; i < uniq_num; ++i) {
     //     auto it = std::next(read2count.begin(), i);
