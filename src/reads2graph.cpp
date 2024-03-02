@@ -141,9 +141,9 @@ int main(int argc, char** argv) {
         std::tuple<unsigned, unsigned, unsigned, double> betterParams;
 
         if (args.minimizer_omh){
-           seeds_k = OMH(args).get_seeds_k();
-        } else {
             betterParams = MinimizerGenerator(args).possibleBetterParameters();
+        } else {
+            seeds_k = OMH(args).get_seeds_k();
         }
 
         if (args.minimizer_omh){
