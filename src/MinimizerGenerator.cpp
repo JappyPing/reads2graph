@@ -72,12 +72,12 @@ std::tuple<unsigned, unsigned, unsigned, double> MinimizerGenerator::possibleBet
     unsigned betterN;
     unsigned betterW;
     double p;
-    if (args.read_length >= 8 && args.read_length <= 16){
+    if (args.read_length >= 8 && args.read_length <= 50){
         betterK = 3;
         betterN = 1;
         betterW = args.read_length;
     } else if (args.read_length > 16 && args.read_length <= 50){
-        betterK = 4;
+        betterK = 3;
         betterN = 2;
         betterW = round(args.read_length/betterN);
     } else if (args.read_length > 50 && args.read_length <= 300) {
