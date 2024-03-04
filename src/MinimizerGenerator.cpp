@@ -22,14 +22,6 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
     auto better_k = static_cast<uint8_t>(better_kk);
     auto better_w = static_cast<uint8_t>(better_ww);
 
-    if (better_k < 4){
-        better_k = 4;
-        Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Better k {} has been changed to 4.", better_k));
-    } else if (better_k >= 28) {
-        better_k = 27;
-        Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Better k {} has been changed to 27 as the maximum size of unggaped shape is stricted by 28 in Seqan3.", better_k));                
-    }
-
     int available_cores = omp_get_max_threads();
     auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
     omp_set_num_threads(num_cores_to_use);
@@ -96,27 +88,37 @@ std::tuple<unsigned, unsigned, unsigned, double> MinimizerGenerator::possibleBet
         }
         betterW = round(args.read_length/betterN);
         betterK = kSize(betterW, args.bad_kmer_ratio);
-    } else if (args.read_length > 100 && args.read_length <= 200){
-        if (args.max_edit_dis == 1 || args.max_edit_dis == 2){
-            betterN = 4;
-        } else {
-            betterN = ceil((static_cast<double>(args.max_edit_dis))/2)+2;
-        }
-        betterW = round(args.read_length/betterN);
-        betterK = kSize(betterW, args.bad_kmer_ratio);
-    } else if (args.read_length > 200 && args.read_length <= 300){
-        if (args.max_edit_dis == 1 || args.max_edit_dis == 2){
-            betterN = 5;
-        } else {
-            betterN = ceil((static_cast<double>(args.max_edit_dis))/2)+3;
-        }
-        betterW = round(args.read_length/betterN);
-        betterK = kSize(betterW, args.bad_kmer_ratio);
-    } else {
-        Utils::getInstance().logger(LOG_LEVEL_ERROR,  "Read length is invalid!");
-        exit(0);
     }
+    // } else if (args.read_length > 100 && args.read_length <= 200){
+    //     if (args.max_edit_dis == 1 || args.max_edit_dis == 2){
+    //         betterN = 4;
+    //     } else {
+    //         betterN = ceil((static_cast<double>(args.max_edit_dis))/2)+2;
+    //     }
+    //     betterW = round(args.read_length/betterN);
+    //     betterK = kSize(betterW, args.bad_kmer_ratio);
+    // } else if (args.read_length > 200 && args.read_length <= 300){
+    //     if (args.max_edit_dis == 1 || args.max_edit_dis == 2){
+    //         betterN = 5;
+    //     } else {
+    //         betterN = ceil((static_cast<double>(args.max_edit_dis))/2)+3;
+    //     }
+    //     betterW = round(args.read_length/betterN);
+    //     betterK = kSize(betterW, args.bad_kmer_ratio);
+    // } else {
+    //     Utils::getInstance().logger(LOG_LEVEL_ERROR,  "Read length is invalid!");
+    //     exit(0);
+    // }
     p = 1 - std::pow(proba(betterW, betterK), betterN);
+
+    if (betterK < 4){
+        betterK = 4;
+        Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Better k {} has been changed to 4.", betterK));
+    } else if (betterK >= 28) {
+        betterK = 27;
+        Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Better k {} has been changed to 27 as the maximum size of unggaped shape is stricted by 28 in Seqan3.", betterK));                
+    }
+
     Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Better number of windows: {}, Better window size: {}, Better K: {} and the probability: {}.", betterN, betterW, betterK, p));  
     return std::make_tuple(betterN, betterW, betterK, p);   
 }

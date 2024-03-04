@@ -142,12 +142,13 @@ int main(int argc, char** argv) {
 
         if (args.minimizer_omh){
             betterParams = MinimizerGenerator(args).possibleBetterParameters();
+            args.omh_k = std::get<2>(betterParams);
         } else {
             seeds_k = OMH(args).get_seeds_k();
         }
 
         if (args.minimizer_omh){
-            hash2reads = MinimizerGenerator(args).minimizer2reads_main(unique_reads, betterParams);                
+            hash2reads = MinimizerGenerator(args).minimizer2reads_main(unique_reads, betterParams);  
         } else {
             // omh grouping first and then minimizer
             hash2reads = OMH(args).omh2read_main(unique_reads, seeds_k);
