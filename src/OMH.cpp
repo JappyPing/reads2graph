@@ -57,7 +57,7 @@ std::vector<std::pair<std::uint64_t, unsigned>> OMH::get_seeds_k(){
         Utils::getInstance().logger(LOG_LEVEL_INFO, std::format("k: {} and seed: {};", k, cur_seed));
         std::pair<std::uint64_t, unsigned> cur_pair = std::make_pair(cur_seed, k);
         seeds_k.push_back(cur_pair);
-        // k = k + args.omh_k_step_size;
+        k = k + args.omh_k_step_size;
     }
     Utils::getInstance().logger(LOG_LEVEL_INFO, "The above k and seed pairs are used for OMH bucketing.");
     return seeds_k;
@@ -195,12 +195,15 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::o
             std::uint64_t seed = pair.first;
             unsigned k = pair.second;
             // auto omh_value = omh_pos(read, 28, args.omh_kmer_n, seed);   
-            auto omh_value = omh_pos(read, k, args.omh_kmer_n, seed);  
+            // auto omh_value = omh_pos(read, k, args.omh_kmer_n, seed);  
             // auto omh_value = omh_pos(read, args.omh_k, seed);  
             // cur_omh_vals.push_back(omh_value); 
+            auto omh_min_max = omh_pos(read, k, args.omh_kmer_n, seed); 
             #pragma omp critical
             {
-                omh2reads[omh_value].push_back(read);
+                // omh2reads[omh_value].push_back(read);
+                omh2reads[omh_min_max.first].push_back(read);
+                omh2reads[omh_min_max.second].push_back(read);
             }        
         } 
     }
@@ -225,7 +228,8 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::o
 }
 
 // uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned l, unsigned int seed) {
-uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned l, std::uint64_t seed) {
+// uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned l, std::uint64_t seed) {
+std::pair<uint64_t, uint64_t> OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned l, std::uint64_t seed) {
 
     if(read.size() < k) return {};
 
@@ -275,8 +279,11 @@ uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigne
     // std::sort(mers.begin(), mers.begin() + l, [&](const mer_info& x, const mer_info& y) { return x.pos < y.pos; });
 
     // return mers[0].hash; // Return the OMH results
-    auto min_hash = std::min_element(hash_vec.begin(), hash_vec.end());
-    return *min_hash;
+    // auto min_hash = std::min_element(hash_vec.begin(), hash_vec.end());    
+    // return *min_hash;
+    auto minMaxPair = std::minmax_element(hash_vec.begin(), hash_vec.end());
+    std::pair<uint64_t, uint64_t> min_max = std::make_pair(*minMaxPair.first, *minMaxPair.second);
+    return min_max;
 }
 
 // uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned l, unsigned int seed) {
