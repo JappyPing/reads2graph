@@ -56,7 +56,10 @@ std::vector<std::pair<std::uint64_t, unsigned>> OMH::get_seeds_k(){
         std::pair<std::uint64_t, unsigned> cur_pair = std::make_pair(cur_seed, k);
         seeds_k.push_back(cur_pair);
         // k = k + args.omh_k_step_size;
-        k++;
+        if (args.read_length > 50) {
+           k++; 
+        }
+        
     }
     Utils::getInstance().logger(LOG_LEVEL_INFO, "The above k and seed pairs are used for OMH bucketing.");
     return seeds_k;
