@@ -24,7 +24,6 @@ OMH::OMH(cmd_arguments args) : args(args) {}
 
 unsigned OMH::omh_k(unsigned L, double p, uint8_t d) {
     unsigned k = ceil((p*(1+L))/(d+p));
-
     if (k < 4){
         k = 4;
         Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Better k {} has been changed to 4.", k));
@@ -32,7 +31,6 @@ unsigned OMH::omh_k(unsigned L, double p, uint8_t d) {
         k = args.read_length/4;
         Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Better k {} has been changed to {}.", k, args.read_length/4));                
     }
-
     return k;
 }
 
@@ -57,11 +55,55 @@ std::vector<std::pair<std::uint64_t, unsigned>> OMH::get_seeds_k(){
         Utils::getInstance().logger(LOG_LEVEL_INFO, std::format("k: {} and seed: {};", k, cur_seed));
         std::pair<std::uint64_t, unsigned> cur_pair = std::make_pair(cur_seed, k);
         seeds_k.push_back(cur_pair);
-        k = k + args.omh_k_step_size;
+        // k = k + args.omh_k_step_size;
+        k++;
     }
     Utils::getInstance().logger(LOG_LEVEL_INFO, "The above k and seed pairs are used for OMH bucketing.");
     return seeds_k;
 }
+
+std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::omh2read_main(std::vector<std::vector<seqan3::dna5>> unique_reads, std::vector<std::pair<std::uint64_t, unsigned>> seeds_k){
+    // int available_cores = omp_get_max_threads();
+    // auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
+    // omp_set_num_threads(num_cores_to_use);
+    #pragma omp parallel for
+    for (auto const & read : unique_reads){
+        
+        for(auto &pair : seeds_k){
+            std::uint64_t seed = pair.first;
+            unsigned k = pair.second;
+            auto omh_value = omh_pos(read, k, seed); 
+            #pragma omp critical
+            {
+                omh2reads[omh_value].push_back(read);
+            }        
+        } 
+    }
+    Utils::getInstance().logger(LOG_LEVEL_DEBUG, "All the unique reads for OMH done.");  
+    return omh2reads;            
+}
+
+// uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned l, std::uint64_t seed) {
+uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, std::uint64_t seed) {
+    if(read.size() < k) return {};
+    std::vector<std::uint64_t> hash_vec;
+    std::unordered_map<std::string, unsigned> occurrences;
+    std::uint64_t cur_seed = seed;
+
+    auto seql = read | seqan3::views::to_char;
+    string read_str(seql.begin(), seql.end());
+    for(size_t i = 0; i < read_str.size() - k + 1; ++i) {
+        string kmer = read_str.substr(i, k);
+        occurrences[kmer]++;
+        boost::hash_combine(cur_seed, kmer);
+        boost::hash_combine(cur_seed, occurrences[kmer]);
+        hash_vec.emplace_back(cur_seed);
+        cur_seed = seed;
+    }
+    auto min_hash = std::min_element(hash_vec.begin(), hash_vec.end());    
+    return *min_hash;
+}
+
 
 // std::vector<std::pair<std::uint64_t, unsigned>> OMH::get_seeds_k(){
 //     // Use a random_device to seed the random number generator
@@ -175,116 +217,116 @@ std::vector<std::pair<std::uint64_t, unsigned>> OMH::get_seeds_k(){
 //     return seeds_k;
 // }
 
-std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::omh2read_main(std::vector<std::vector<seqan3::dna5>> unique_reads, std::vector<std::pair<std::uint64_t, unsigned>> seeds_k){
-    int available_cores = omp_get_max_threads();
-    auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
-    omp_set_num_threads(num_cores_to_use);
+// std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::omh2read_main(std::vector<std::vector<seqan3::dna5>> unique_reads, std::vector<std::pair<std::uint64_t, unsigned>> seeds_k){
+//     int available_cores = omp_get_max_threads();
+//     auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
+//     omp_set_num_threads(num_cores_to_use);
 
-    // auto uniq_num = read2count.size();
-    // auto uniq_num = unique_reads.size();
+//     // auto uniq_num = read2count.size();
+//     // auto uniq_num = unique_reads.size();
     
-    // #pragma omp parallel for
-    // for (size_t i = 0; i < uniq_num; ++i) {
-    //     auto it = std::next(read2count.begin(), i);
-    //     const auto& [read, count] = *it;
-    #pragma omp parallel for
-    for (auto const & read : unique_reads){
-        // std::vector<uint64_t> cur_omh_vals;
+//     // #pragma omp parallel for
+//     // for (size_t i = 0; i < uniq_num; ++i) {
+//     //     auto it = std::next(read2count.begin(), i);
+//     //     const auto& [read, count] = *it;
+//     #pragma omp parallel for
+//     for (auto const & read : unique_reads){
+//         // std::vector<uint64_t> cur_omh_vals;
         
-        for(auto &pair : seeds_k){
-            std::uint64_t seed = pair.first;
-            unsigned k = pair.second;
-            // auto omh_value = omh_pos(read, 28, args.omh_kmer_n, seed);   
-            // auto omh_value = omh_pos(read, k, args.omh_kmer_n, seed);  
-            // auto omh_value = omh_pos(read, args.omh_k, seed);  
-            // cur_omh_vals.push_back(omh_value); 
-            auto omh_min_max = omh_pos(read, k, args.omh_kmer_n, seed); 
-            #pragma omp critical
-            {
-                // omh2reads[omh_value].push_back(read);
-                omh2reads[omh_min_max.first].push_back(read);
-                omh2reads[omh_min_max.second].push_back(read);
-            }        
-        } 
-    }
-        // auto omh_combins = seqan3::views::pairwise_combine(cur_omh_vals);
-        // for (size_t i = 0; i < omh_combins.size(); ++i)
-        // {
-        //     auto const &omh_comb = omh_combins[i];
-        //     auto const &val1 = std::get<0>(omh_comb);
-        //     auto const &val2 = std::get<1>(omh_comb);
-        //     std::size_t new_val = 0;
-        //     boost::hash_combine(new_val, val1);
-        //     boost::hash_combine(new_val, val2);
-        //     // auto new_val = val1 ^ val2;
-        //     #pragma omp critical
-        //     {
-        //         omh2reads[new_val].push_back(read);
-        //     
-        // }
-    // }
-    Utils::getInstance().logger(LOG_LEVEL_DEBUG, "All the unique reads for OMH done.");  
-    return omh2reads;            
-}
+//         for(auto &pair : seeds_k){
+//             std::uint64_t seed = pair.first;
+//             unsigned k = pair.second;
+//             // auto omh_value = omh_pos(read, 28, args.omh_kmer_n, seed);   
+//             auto omh_value = omh_pos(read, k, args.omh_kmer_n, seed);  
+//             // auto omh_value = omh_pos(read, args.omh_k, seed);  
+//             // cur_omh_vals.push_back(omh_value); 
+//             auto omh_min_max = omh_pos(read, k, args.omh_kmer_n, seed); 
+//             #pragma omp critical
+//             {
+//                 omh2reads[omh_value].push_back(read);
+//                 // omh2reads[omh_min_max.first].push_back(read);
+//                 // omh2reads[omh_min_max.second].push_back(read);
+//             }        
+//         } 
+//     }
+//         // auto omh_combins = seqan3::views::pairwise_combine(cur_omh_vals);
+//         // for (size_t i = 0; i < omh_combins.size(); ++i)
+//         // {
+//         //     auto const &omh_comb = omh_combins[i];
+//         //     auto const &val1 = std::get<0>(omh_comb);
+//         //     auto const &val2 = std::get<1>(omh_comb);
+//         //     std::size_t new_val = 0;
+//         //     boost::hash_combine(new_val, val1);
+//         //     boost::hash_combine(new_val, val2);
+//         //     // auto new_val = val1 ^ val2;
+//         //     #pragma omp critical
+//         //     {
+//         //         omh2reads[new_val].push_back(read);
+//         //     
+//         // }
+//     // }
+//     Utils::getInstance().logger(LOG_LEVEL_DEBUG, "All the unique reads for OMH done.");  
+//     return omh2reads;            
+// }
 
-// uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned l, unsigned int seed) {
+// // uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned l, unsigned int seed) {
+// // uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned l, std::uint64_t seed) {
 // uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned l, std::uint64_t seed) {
-std::pair<uint64_t, uint64_t> OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned l, std::uint64_t seed) {
 
-    if(read.size() < k) return {};
+//     if(read.size() < k) return {};
 
-    const bool weight = l > 0;
-    // const bool weight = 1 > 0;
-    if(l == 0) l = 1;
+//     const bool weight = l > 0;
+//     // const bool weight = 1 > 0;
+//     if(l == 0) l = 1;
 
-    std::vector<mer_info> mers;
-    std::vector<std::uint64_t> hash_vec;
-    // std::unordered_map<std::uint64_t, unsigned> occurrences;
-    std::unordered_map<std::string, unsigned> occurrences;
-    std::uint64_t cur_seed = seed;
-    // in order to hash a kmer using seqan3::views::kmer_hash, here I use k+1 rather than k to calculate the kmers for a reads. using k the shape size may be the same as the kmer size which will be terminated by seqan3
+//     std::vector<mer_info> mers;
+//     std::vector<std::uint64_t> hash_vec;
+//     // std::unordered_map<std::uint64_t, unsigned> occurrences;
+//     std::unordered_map<std::string, unsigned> occurrences;
+//     std::uint64_t cur_seed = seed;
+//     // in order to hash a kmer using seqan3::views::kmer_hash, here I use k+1 rather than k to calculate the kmers for a reads. using k the shape size may be the same as the kmer size which will be terminated by seqan3
 
-    auto seql = read | seqan3::views::to_char;
-    string read_str(seql.begin(), seql.end());
-    for(size_t i = 0; i < read_str.size() - k + 1; ++i) {
-        string kmer = read_str.substr(i, k);
-        // auto occ = occurrences[kmer]++;
-        occurrences[kmer]++;
-        boost::hash_combine(cur_seed, kmer);
-        if (weight)
-            boost::hash_combine(cur_seed, occurrences[kmer]);
-        // mers.emplace_back(i, occ, cur_seed);
-        hash_vec.emplace_back(cur_seed);
-        cur_seed = seed;
-    }
+//     auto seql = read | seqan3::views::to_char;
+//     string read_str(seql.begin(), seql.end());
+//     for(size_t i = 0; i < read_str.size() - k + 1; ++i) {
+//         string kmer = read_str.substr(i, k);
+//         // auto occ = occurrences[kmer]++;
+//         occurrences[kmer]++;
+//         boost::hash_combine(cur_seed, kmer);
+//         if (weight)
+//             boost::hash_combine(cur_seed, occurrences[kmer]);
+//         // mers.emplace_back(i, occ, cur_seed);
+//         hash_vec.emplace_back(cur_seed);
+//         cur_seed = seed;
+//     }
 
-    // for (size_t i = 0; i < read.size() - k + 1; ++i)
-    // {
-    //     auto kmer = std::vector<seqan3::dna5>(read.begin() + i, read.begin() + i + k);
-    //     auto hash_val_range = kmer | seqan3::views::kmer_hash(seqan3::ungapped{static_cast<uint8_t>(k)});
-    //     std::uint64_t hash_val = *hash_val_range.begin();
+//     // for (size_t i = 0; i < read.size() - k + 1; ++i)
+//     // {
+//     //     auto kmer = std::vector<seqan3::dna5>(read.begin() + i, read.begin() + i + k);
+//     //     auto hash_val_range = kmer | seqan3::views::kmer_hash(seqan3::ungapped{static_cast<uint8_t>(k)});
+//     //     std::uint64_t hash_val = *hash_val_range.begin();
 
-    //     auto occ = occurrences[hash_val]++;
-    //     // seqan3::debug_stream << kmer.size() << " " << k << " " << hash_val_range.size() << '\n';        
-    //     boost::hash_combine(cur_seed, hash_val);
-    //     if (weight)
-    //         boost::hash_combine(cur_seed, occurrences[hash_val]);
-    //     // seqan3::debug_stream << i << " " << kmer << " " << hash_val << " " << cur_seed << " " << occ << " " << cur_seed << '\n';
-    //     mers.emplace_back(i, occ, cur_seed);
-    //     // minHash = std::min(minHash, cur_seed);
-    //     cur_seed = seed;
-    // }
-    // return minHash;
-    // std::partial_sort(mers.begin(), mers.begin() + l, mers.end(), [&](const mer_info& x, const mer_info& y) { return x.hash < y.hash; });
-    // std::sort(mers.begin(), mers.begin() + l, [&](const mer_info& x, const mer_info& y) { return x.pos < y.pos; });
+//     //     auto occ = occurrences[hash_val]++;
+//     //     // seqan3::debug_stream << kmer.size() << " " << k << " " << hash_val_range.size() << '\n';        
+//     //     boost::hash_combine(cur_seed, hash_val);
+//     //     if (weight)
+//     //         boost::hash_combine(cur_seed, occurrences[hash_val]);
+//     //     // seqan3::debug_stream << i << " " << kmer << " " << hash_val << " " << cur_seed << " " << occ << " " << cur_seed << '\n';
+//     //     mers.emplace_back(i, occ, cur_seed);
+//     //     // minHash = std::min(minHash, cur_seed);
+//     //     cur_seed = seed;
+//     // }
+//     // return minHash;
+//     // std::partial_sort(mers.begin(), mers.begin() + l, mers.end(), [&](const mer_info& x, const mer_info& y) { return x.hash < y.hash; });
+//     // std::sort(mers.begin(), mers.begin() + l, [&](const mer_info& x, const mer_info& y) { return x.pos < y.pos; });
 
-    // return mers[0].hash; // Return the OMH results
-    // auto min_hash = std::min_element(hash_vec.begin(), hash_vec.end());    
-    // return *min_hash;
-    auto minMaxPair = std::minmax_element(hash_vec.begin(), hash_vec.end());
-    std::pair<uint64_t, uint64_t> min_max = std::make_pair(*minMaxPair.first, *minMaxPair.second);
-    return min_max;
-}
+//     // return mers[0].hash; // Return the OMH results
+//     auto min_hash = std::min_element(hash_vec.begin(), hash_vec.end());    
+//     return *min_hash;
+//     // auto minMaxPair = std::minmax_element(hash_vec.begin(), hash_vec.end());
+//     // std::pair<uint64_t, uint64_t> min_max = std::make_pair(*minMaxPair.first, *minMaxPair.second);
+//     // return min_max;
+// }
 
 // uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned l, unsigned int seed) {
 // // uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned int seed) {
@@ -319,4 +361,55 @@ std::pair<uint64_t, uint64_t> OMH::omh_pos(const std::vector<seqan3::dna5>& read
 //     std::sort(mers.begin(), mers.begin() + l, [&](const mer_info& x, const mer_info& y) { return x.pos < y.pos; });
 
 //     return mers[0].hash; // Return the OMH results
+// }
+// std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::omh2read_main(std::vector<std::vector<seqan3::dna5>> unique_reads, std::vector<std::pair<std::uint64_t, unsigned>> seeds_k){
+//     int available_cores = omp_get_max_threads();
+//     auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
+//     omp_set_num_threads(num_cores_to_use);
+
+//     // auto uniq_num = read2count.size();
+//     // auto uniq_num = unique_reads.size();
+    
+//     // #pragma omp parallel for
+//     // for (size_t i = 0; i < uniq_num; ++i) {
+//     //     auto it = std::next(read2count.begin(), i);
+//     //     const auto& [read, count] = *it;
+//     #pragma omp parallel for
+//     for (auto const & read : unique_reads){
+//         // std::vector<uint64_t> cur_omh_vals;
+        
+//         for(auto &pair : seeds_k){
+//             std::uint64_t seed = pair.first;
+//             unsigned k = pair.second;
+//             // auto omh_value = omh_pos(read, 28, args.omh_kmer_n, seed);   
+//             // auto omh_value = omh_pos(read, k, args.omh_kmer_n, seed);  
+//             // auto omh_value = omh_pos(read, args.omh_k, seed);  
+//             // cur_omh_vals.push_back(omh_value); 
+//             auto omh_min_max = omh_pos(read, k, seed); 
+//             #pragma omp critical
+//             {
+//                 omh2reads[omh_value].push_back(read);
+//                 // omh2reads[omh_min_max.first].push_back(read);
+//                 // omh2reads[omh_min_max.second].push_back(read);
+//             }        
+//         } 
+//     }
+//         // auto omh_combins = seqan3::views::pairwise_combine(cur_omh_vals);
+//         // for (size_t i = 0; i < omh_combins.size(); ++i)
+//         // {
+//         //     auto const &omh_comb = omh_combins[i];
+//         //     auto const &val1 = std::get<0>(omh_comb);
+//         //     auto const &val2 = std::get<1>(omh_comb);
+//         //     std::size_t new_val = 0;
+//         //     boost::hash_combine(new_val, val1);
+//         //     boost::hash_combine(new_val, val2);
+//         //     // auto new_val = val1 ^ val2;
+//         //     #pragma omp critical
+//         //     {
+//         //         omh2reads[new_val].push_back(read);
+//         //     
+//         // }
+//     // }
+//     Utils::getInstance().logger(LOG_LEVEL_DEBUG, "All the unique reads for OMH done.");  
+//     return omh2reads;            
 // }
