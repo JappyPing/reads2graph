@@ -69,7 +69,8 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::o
     // int available_cores = omp_get_max_threads();
     // auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
     // omp_set_num_threads(num_cores_to_use);
-    #pragma omp parallel for
+    // #pragma omp parallel for
+    #pragma omp parallel for num_threads(args.num_process) schedule(static, 1)
     for (auto const & read : unique_reads){
         
         for(auto &pair : seeds_k){

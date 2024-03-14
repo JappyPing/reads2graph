@@ -22,15 +22,16 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
     auto better_k = static_cast<uint8_t>(better_kk);
     auto better_w = static_cast<uint8_t>(better_ww);
 
-    int available_cores = omp_get_max_threads();
-    auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
-    omp_set_num_threads(num_cores_to_use);
+    // int available_cores = omp_get_max_threads();
+    // auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
+    // omp_set_num_threads(num_cores_to_use);
 
     // #pragma omp parallel for
     // for (size_t i = 0; i < read2count.size(); ++i) {
     //     auto it = std::next(read2count.begin(), i);
     //     const auto& [read, count] = *it;
-    #pragma omp parallel for
+    // #pragma omp parallel for
+    #pragma omp parallel for num_threads(args.num_process) schedule(static, 1)
     for (auto const & read : unique_reads){
         // auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{args.k_size}) | seqan3::views::minimiser(args.window_size - args.k_size + 1);
         auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{better_k}) | seqan3::views::minimiser(better_w - better_k + 1);   

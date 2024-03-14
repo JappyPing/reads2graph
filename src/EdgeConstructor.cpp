@@ -76,10 +76,11 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::edges_main()
     std::vector<std::vector<std::vector<seqan3::dna5>>> large_group;
     std::vector<std::vector<std::vector<seqan3::dna5>>> extra_large_group;
 
-    int available_cores = omp_get_max_threads();
-    auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
-    omp_set_num_threads(num_cores_to_use);
-    #pragma omp parallel for
+    // int available_cores = omp_get_max_threads();
+    // auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
+    // omp_set_num_threads(num_cores_to_use);
+    // #pragma omp parallel for
+    #pragma omp parallel for num_threads(args.num_process) schedule(static, 1)
     for (auto i = 0u; i < key2reads_.size(); ++i) {
         const auto &entry = *std::next(key2reads_.begin(), i);
         const std::vector<std::vector<seqan3::dna5>> &reads_vec = entry.second;
@@ -108,16 +109,18 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::edges_main()
         }
     }
     // small group
-    omp_set_num_threads(num_cores_to_use);
+    // omp_set_num_threads(num_cores_to_use);
     if (small_group.size() > 0){
-        #pragma omp parallel for
+        // #pragma omp parallel for
+        #pragma omp parallel for num_threads(args.num_process) schedule(static, 1)
         for (const auto &group : small_group)
         {
             auto config = seqan3::align_cfg::method_global{} | seqan3::align_cfg::edit_scheme | seqan3::align_cfg::min_score{min_s} | seqan3::align_cfg::output_score{};
 
             auto pairwise_combinations = seqan3::views::pairwise_combine(group);
             // std::cout << group.size() << " " << pairwise_combinations.size() << endl;
-            #pragma omp parallel for
+            // #pragma omp parallel for
+            #pragma omp parallel for num_threads(args.num_process) schedule(static, 1)
             for (size_t i = 0; i < pairwise_combinations.size(); ++i)
             {
                 auto const &combination = pairwise_combinations[i];
@@ -199,9 +202,10 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::edges_main()
 
             auto pairwise_combinations = seqan3::views::pairwise_combine(group);
 
-            omp_set_num_threads(num_cores_to_use);
+            // omp_set_num_threads(num_cores_to_use);
 
-            #pragma omp parallel for
+            // #pragma omp parallel for
+            #pragma omp parallel for num_threads(args.num_process) schedule(static, 1)
             for (size_t i = 0; i < pairwise_combinations.size(); ++i)
             {
                 auto const &combination = pairwise_combinations[i];
@@ -308,9 +312,10 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::edges_main()
             std::vector<std::vector<std::vector<seqan3::dna5>>> small_cur_hash2reads;
             std::vector<std::vector<std::vector<seqan3::dna5>>> large_cur_hash2reads;
 
-            omp_set_num_threads(num_cores_to_use);
+            // omp_set_num_threads(num_cores_to_use);
 
-            #pragma omp parallel for
+            // #pragma omp parallel for
+            #pragma omp parallel for num_threads(args.num_process) schedule(static, 1)
             for (auto i = 0u; i < cur_bin_n; ++i) {
                 const auto &cur_entry = *std::next(cur_hash2reads.begin(), i);
                 const std::vector<std::vector<seqan3::dna5>> &cur_reads_vec = cur_entry.second;
@@ -344,13 +349,15 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::edges_main()
                 // }
             }
             if (small_cur_hash2reads.size() > 0){
-                #pragma omp parallel for
+                // #pragma omp parallel for
+                #pragma omp parallel for num_threads(args.num_process) schedule(static, 1)
                 for (const auto &cur_reads_vec : small_cur_hash2reads){
                     auto config = seqan3::align_cfg::method_global{} | seqan3::align_cfg::edit_scheme | seqan3::align_cfg::min_score{min_s} | seqan3::align_cfg::output_score{};
 
                     auto pairwise_combinations = seqan3::views::pairwise_combine(cur_reads_vec);
 
-                    #pragma omp parallel for
+                    // #pragma omp parallel for
+                    #pragma omp parallel for num_threads(args.num_process) schedule(static, 1)
                     for (size_t i = 0; i < pairwise_combinations.size(); ++i)
                     {
                         auto const &combination = pairwise_combinations[i];
@@ -383,7 +390,8 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::edges_main()
 
                     auto pairwise_combinations = seqan3::views::pairwise_combine(cur_reads_vec);
 
-                    #pragma omp parallel for
+                    // #pragma omp parallel for
+                    #pragma omp parallel for num_threads(args.num_process) schedule(static, 1)
                     for (size_t i = 0; i < pairwise_combinations.size(); ++i)
                     {
                         auto const &combination = pairwise_combinations[i];

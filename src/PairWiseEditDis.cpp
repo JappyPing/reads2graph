@@ -38,7 +38,7 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> PairWiseEditDis::compute_pair
     // int num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
 
     // // Set the number of threads for OpenMP
-    // omp_set_num_threads(num_cores_to_use);
+    omp_set_num_threads(args.num_process);
 
     #pragma omp parallel for
     for (size_t i = 0; i < pairwise_combinations.size(); ++i)
