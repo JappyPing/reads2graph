@@ -31,7 +31,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
     //     auto it = std::next(read2count.begin(), i);
     //     const auto& [read, count] = *it;
     // #pragma omp parallel for
-    #pragma omp parallel for num_threads(args.num_process) schedule(static, 1)
+    #pragma omp parallel for num_threads(args.num_process) schedule(static)
     for (auto const & read : unique_reads){
         // auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{args.k_size}) | seqan3::views::minimiser(args.window_size - args.k_size + 1);
         auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{better_k}) | seqan3::views::minimiser(better_w - better_k + 1);   
