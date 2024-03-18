@@ -52,7 +52,7 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::edges_main()
     std::vector<std::vector<std::vector<seqan3::dna5>>> large_group;
     std::vector<std::vector<std::vector<seqan3::dna5>>> extra_large_group;
 
-    std::map<std::set<std::vector<seqan3::dna5>>, int> large_ed_dict;
+    // std::map<std::set<std::vector<seqan3::dna5>>, int> large_ed_dict;
 
     // int available_cores = omp_get_max_threads();
     // auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
@@ -122,12 +122,13 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::edges_main()
                         {
                             edge_lst[read_pair_set] = edit_distance;
                         }                    
-                    } else {
-                        #pragma omp critical
-                        {
-                            large_ed_dict[read_pair_set] = edit_distance;
-                        }  
-                    }
+                    } 
+                    // else {
+                    //     #pragma omp critical
+                    //     {
+                    //         large_ed_dict[read_pair_set] = edit_distance;
+                    //     }  
+                    // }
                 }
             }        
         }             
@@ -172,12 +173,13 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::edges_main()
                         {
                             edge_lst[read_pair_set] = edit_distance;
                         }                    
-                    } else {
-                        #pragma omp critical
-                        {
-                            large_ed_dict[read_pair_set] = edit_distance;
-                        }  
-                    }
+                    } 
+                    // else {
+                    //     #pragma omp critical
+                    //     {
+                    //         large_ed_dict[read_pair_set] = edit_distance;
+                    //     }  
+                    // }
                 }
             }   
         }     
@@ -283,12 +285,13 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::edges_main()
                                 {
                                     edge_lst[read_pair_set] = edit_distance;
                                 }                    
-                            } else {
-                                #pragma omp critical
-                                {
-                                    large_ed_dict[read_pair_set] = edit_distance;
-                                }  
-                            }
+                            } 
+                            // else {
+                            //     #pragma omp critical
+                            //     {
+                            //         large_ed_dict[read_pair_set] = edit_distance;
+                            //     }  
+                            // }
                         }
                     }    
                 }
@@ -322,12 +325,13 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::edges_main()
                                 {
                                     edge_lst[read_pair_set] = edit_distance;
                                 }                    
-                            } else {
-                                #pragma omp critical
-                                {
-                                    large_ed_dict[read_pair_set] = edit_distance;
-                                }  
-                            }
+                            } 
+                            // else {
+                            //     #pragma omp critical
+                            //     {
+                            //         large_ed_dict[read_pair_set] = edit_distance;
+                            //     }  
+                            // }
                         }
                         // }
                     }    
