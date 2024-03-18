@@ -191,8 +191,8 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::edges_main()
 
 
     display_edge_summary(edge_lst);
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  "Large-edit-distance edge appeared in buckets:");
-    display_edge_summary(large_ed_dict);
+    // Utils::getInstance().logger(LOG_LEVEL_INFO,  "Large-edit-distance edge appeared in buckets:");
+    // display_edge_summary(large_ed_dict);
 
     // extra largr group
     if (extra_large_group.size() > 0){
@@ -341,8 +341,8 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::edges_main()
     Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise comparison for the extra-large-size-based buckets done!");
     }
 display_edge_summary(edge_lst);
-Utils::getInstance().logger(LOG_LEVEL_INFO,  "Large-edit-distance edge appeared in buckets:");
-display_edge_summary(large_ed_dict);
+// Utils::getInstance().logger(LOG_LEVEL_INFO,  "Large-edit-distance edge appeared in buckets:");
+// display_edge_summary(large_ed_dict);
 return edge_lst;
 }
 
