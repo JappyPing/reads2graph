@@ -95,8 +95,8 @@ int main(int argc, char** argv) {
     // Set the number of threads for OpenMP
     // omp_set_num_threads(num_cores_to_use);
     args.num_process = num_cores_to_use;
-    // std::cout << "The number of threads setted:" << num_cores_to_use << std::endl;
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The number of threads setted: {} ", num_cores_to_use));
+    // std::cout << "The number of threads :" << num_cores_to_use << std::endl;
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The number of threads: {} ", num_cores_to_use));
     ////////////////////////////////////////////////////////////////////////////
     // auto read2count = ReadWrite(args).get_unique_reads_counts();
     auto [unique_reads, read2count, min_read_length] = ReadWrite(args).get_unique_reads_counts();
