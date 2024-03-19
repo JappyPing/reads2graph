@@ -160,7 +160,9 @@ int main(int argc, char** argv) {
         Utils::getInstance().logger(LOG_LEVEL_INFO,  "Edit-distance-based edges calculation done!");
     }
     if (args.save_graph){
-        GraphManager(edge_lst, read2count, args).construct_graph();
+        GraphManager graph_manager(edge_lst, read2count, args);
+        graph_manager.construct_graph();
+        graph_manager.save_graph();
     }
     // Utils::getInstance().logger(LOG_LEVEL_INFO,  "edit-distance-based graph construction done!");
     //Print the stored read pairs and edit distances

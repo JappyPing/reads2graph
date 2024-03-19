@@ -44,9 +44,7 @@ struct cmd_arguments
     double probability{0.86};
     bool save_graph{false};
     double sampling_rate{0.01};
-    bool minimizer_omh{true};
-    
-    
+    bool minimizer_omh{true}; 
 };
 
 class Utils{

@@ -83,7 +83,7 @@ public:
     GraphManager(std::map<std::set<std::vector<seqan3::dna5>>, int> edge_lst, std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args); 
     // Destructor
     ~GraphManager();
-    void construct_graph();
+    Graph construct_graph();
     void save_graph() const;
     // Graph read_graph_from_dot(const std::string& filename);
 

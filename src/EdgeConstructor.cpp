@@ -52,11 +52,6 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::edges_main()
     std::vector<std::vector<std::vector<seqan3::dna5>>> large_group;
     std::vector<std::vector<std::vector<seqan3::dna5>>> extra_large_group;
 
-    // std::map<std::set<std::vector<seqan3::dna5>>, int> large_ed_dict;
-
-    // int available_cores = omp_get_max_threads();
-    // auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
-    // omp_set_num_threads(num_cores_to_use);
     // #pragma omp parallel for
     #pragma omp parallel for num_threads(args.num_process) schedule(static, 1)
     for (auto i = 0u; i < key2reads_.size(); ++i) {
@@ -117,18 +112,13 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::edges_main()
                     int edit_distance = result.score();
                     // std::cout << edit_distance << endl;
                     if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+                    // if ((edit_distance > max_s))
                     {
                         #pragma omp critical
                         {
                             edge_lst[read_pair_set] = edit_distance;
                         }                    
                     } 
-                    // else {
-                    //     #pragma omp critical
-                    //     {
-                    //         large_ed_dict[read_pair_set] = edit_distance;
-                    //     }  
-                    // }
                 }
             }        
         }             
@@ -168,18 +158,13 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::edges_main()
                     int edit_distance = result.score();
                     // std::cout << edit_distance << endl;
                     if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+                    // if ((edit_distance < min_s) && (edit_distance > max_s))
                     {
                         #pragma omp critical
                         {
                             edge_lst[read_pair_set] = edit_distance;
                         }                    
                     } 
-                    // else {
-                    //     #pragma omp critical
-                    //     {
-                    //         large_ed_dict[read_pair_set] = edit_distance;
-                    //     }  
-                    // }
                 }
             }   
         }     
@@ -189,10 +174,7 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::edges_main()
         Utils::getInstance().logger(LOG_LEVEL_INFO,  format("No bucket with size larger than {}!", args.bin_size_min));
     }
 
-
     display_edge_summary(edge_lst);
-    // Utils::getInstance().logger(LOG_LEVEL_INFO,  "Large-edit-distance edge appeared in buckets:");
-    // display_edge_summary(large_ed_dict);
 
     // extra largr group
     if (extra_large_group.size() > 0){
@@ -280,18 +262,13 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::edges_main()
                             int edit_distance = result.score();
                             // std::cout << edit_distance << endl;
                             if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+                            // if ((edit_distance < min_s) && (edit_distance > max_s))
                             {
                                 #pragma omp critical
                                 {
                                     edge_lst[read_pair_set] = edit_distance;
                                 }                    
                             } 
-                            // else {
-                            //     #pragma omp critical
-                            //     {
-                            //         large_ed_dict[read_pair_set] = edit_distance;
-                            //     }  
-                            // }
                         }
                     }    
                 }
@@ -320,18 +297,13 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::edges_main()
                             int edit_distance = result.score();
                             // std::cout << edit_distance << endl;
                             if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+                            // if ((edit_distance < min_s) && (edit_distance > max_s))
                             {
                                 #pragma omp critical
                                 {
                                     edge_lst[read_pair_set] = edit_distance;
                                 }                    
                             } 
-                            // else {
-                            //     #pragma omp critical
-                            //     {
-                            //         large_ed_dict[read_pair_set] = edit_distance;
-                            //     }  
-                            // }
                         }
                         // }
                     }    
@@ -341,8 +313,6 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> EdgeConstructor::edges_main()
     Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise comparison for the extra-large-size-based buckets done!");
     }
 display_edge_summary(edge_lst);
-// Utils::getInstance().logger(LOG_LEVEL_INFO,  "Large-edit-distance edge appeared in buckets:");
-// display_edge_summary(large_ed_dict);
 return edge_lst;
 }
 

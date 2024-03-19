@@ -9,7 +9,7 @@
 GraphManager::GraphManager(std::map<std::set<std::vector<seqan3::dna5>>, int> edge_lst, std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : edge_lst_(std::move(edge_lst)), read2count(read2count), args(args) {}
 GraphManager::~GraphManager(){}
 
-void GraphManager::construct_graph()
+Graph GraphManager::construct_graph()
 {
     for (const auto& [read, count] : read2count) {
         auto v = boost::add_vertex({read, count}, graph);
@@ -27,7 +27,8 @@ void GraphManager::construct_graph()
         // auto v2_iter = read2vertex[read_pair.second];
         boost::add_edge(v1_iter, v2_iter, {first_read, second_read, edit_distance}, graph);
     }
-    save_graph();
+    return graph;
+    // save_graph();
     // auto graph_full_path_ = args.output_dir / args.graph_filename;
     // Graph originalGraph = read_graph_from_dot(graph_full_path_);
     // Iterate over vertices and print their attributes
