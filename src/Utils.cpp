@@ -24,8 +24,8 @@
 
 int num_cores_to_use;  // Define the global variable
 
-#define reads2graph_VERSION "0.8.0"
-#define last_update_date "20.03.2024"
+#define reads2graph_VERSION "0.9.0"
+#define last_update_date "28.03.2024"
 
 using namespace std;
 
@@ -211,9 +211,9 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                       sharg::config{.long_id = "omh_times",
                                     .description = "The number of times to perform permutation in order min hashing."});
 
-    // parser.add_option(args.omh_kmer_n,
-    //                   sharg::config{.long_id = "omh_kmer_n",
-    //                                 .description = "The number of kmers considered in order min hashing."});
+    parser.add_option(args.omh_seed,
+                      sharg::config{.long_id = "omh_seed",
+                                    .description = "The seed to generate a series of seeds for OMH bucketing."});
 
     parser.add_option(args.bad_kmer_ratio,
                       sharg::config{.long_id = "bad_kmer_ratio",

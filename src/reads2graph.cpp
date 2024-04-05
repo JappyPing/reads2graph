@@ -153,7 +153,7 @@ int main(int argc, char** argv) {
             hash2reads = MinimizerGenerator(args).minimizer2reads_main(unique_reads, betterParams);  
         } else {
             // omh grouping first and then minimizer
-            hash2reads = OMH(args).omh2read_main(unique_reads, seeds_k);
+            // hash2reads = OMH(args).omh2read_main(unique_reads, seeds_k);
             // auto edge_lst = EdgeConstructor(omh2reads, args).edges_main();
         }
         edge_lst = EdgeConstructor(hash2reads, args).edges_main(); 

@@ -11,14 +11,6 @@
 // #include <seqan3/utility/views/pairwise_combine.hpp>
 #include <boost/functional/hash.hpp>
 // #include <xxhash.h>
-// #include <seqan3/alphabet/nucleotide/dna5.hpp>
-// #include <seqan3/alphabet/range/hash.hpp>
-// #include <seqan3/utility/container/dynamic_bitset.hpp>
-// #include <seqan3/search/views/kmer_hash.hpp>
-// #include <seqan3/core/debug_stream.hpp>
-// #include <seqan3/alphabet/hash.hpp>
-// #include <seqan3/alphabet/hash.hpp>
-// #include <seqan3/alphabet/range/hash.hpp>
 // OMH::OMH(std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : read2count(read2count), args(args) {}
 OMH::OMH(cmd_arguments args) : args(args) {}
 
@@ -59,20 +51,46 @@ std::vector<std::pair<std::uint64_t, unsigned>> OMH::get_seeds_k(){
         if (args.read_length > 50) {
            k++; 
         }
-        
     }
     Utils::getInstance().logger(LOG_LEVEL_INFO, "The above k and seed pairs are used for OMH bucketing.");
     return seeds_k;
 }
 
-std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::omh2read_main(std::vector<std::vector<seqan3::dna5>> unique_reads, std::vector<std::pair<std::uint64_t, unsigned>> seeds_k){
-    // int available_cores = omp_get_max_threads();
-    // auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
-    // omp_set_num_threads(num_cores_to_use);
-    // #pragma omp parallel for
+std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::omh2reads_main(std::vector<std::vector<seqan3::dna5>> unique_reads, std::uint64_t seed, unsigned k){
     #pragma omp parallel for num_threads(args.num_process) schedule(static)
     for (auto const & read : unique_reads){
-        
+        auto omh_value = omh_pos(read, k, seed); 
+        #pragma omp critical
+        {
+            omh2reads[omh_value].push_back(read);
+        }        
+    }
+    Utils::getInstance().logger(LOG_LEVEL_DEBUG, "All the unique reads for OMH done.");  
+    return omh2reads;            
+}
+
+// std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::omh2read_main(std::vector<std::vector<seqan3::dna5>> unique_reads, std::vector<std::uint64_t> seeds, unsigned k){
+
+//     #pragma omp parallel for num_threads(args.num_process) schedule(static)
+//     for (auto const & read : unique_reads){
+//         #pragma omp parallel for num_threads(args.num_process) schedule(static)
+//         for(auto &seed : seeds){
+//             auto omh_value = omh_pos(read, k, seed); 
+//             #pragma omp critical
+//             {
+//                 omh2reads[omh_value].push_back(read);
+//             }        
+//         } 
+//     }
+//     Utils::getInstance().logger(LOG_LEVEL_DEBUG, "All the unique reads for OMH done.");  
+//     return omh2reads;            
+// }
+
+
+std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::omh2read_main(std::vector<std::vector<seqan3::dna5>> unique_reads, std::vector<std::pair<std::uint64_t, unsigned>> seeds_k){
+    #pragma omp parallel for num_threads(args.num_process) schedule(static)
+    for (auto const & read : unique_reads){
+        #pragma omp parallel for num_threads(args.num_process) schedule(static)
         for(auto &pair : seeds_k){
             std::uint64_t seed = pair.first;
             unsigned k = pair.second;
@@ -87,7 +105,6 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::o
     return omh2reads;            
 }
 
-// uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned l, std::uint64_t seed) {
 uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, std::uint64_t seed) {
     if(read.size() < k) return {};
     std::vector<std::uint64_t> hash_vec;
@@ -96,8 +113,19 @@ uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, std::ui
 
     auto seql = read | seqan3::views::to_char;
     string read_str(seql.begin(), seql.end());
-    for(size_t i = 0; i < read_str.size() - k + 1; ++i) {
-        string kmer = read_str.substr(i, k);
+
+    size_t ll = read_str.size();
+
+    // for(size_t i = 0; i < read_str.size() - k + 1; ++i) {
+    for(size_t i = 0; i < ll; i += k) {
+        // string kmer = read_str.substr(i, k);
+        string kmer;
+        size_t remaining_length = ll - i;
+        if (remaining_length >= k) {
+            kmer = read_str.substr(i, k);
+        } else if (remaining_length >= k/2){
+            kmer = read_str.substr(i);
+        } 
         occurrences[kmer]++;
         boost::hash_combine(cur_seed, kmer);
         boost::hash_combine(cur_seed, occurrences[kmer]);
@@ -107,8 +135,46 @@ uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, std::ui
     auto min_hash = std::min_element(hash_vec.begin(), hash_vec.end());    
     return *min_hash;
 }
+/////////////////////////////////////////////////////////////////////////////////////////
+// std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::omhs2read_main(std::vector<std::vector<seqan3::dna5>> unique_reads, unsigned k, std::uint64_t seed, int m){
+//     #pragma omp parallel for num_threads(args.num_process) schedule(static)
+//     for (auto const & read : unique_reads){
+//         auto omh_values = omh_pos(read, k, seed, m);
+//         for(auto &omh_val : omh_values){
+//             #pragma omp critical
+//             {
+//                 omh2reads[omh_val].push_back(read);
+//             }        
+//         } 
+//     }
+//     Utils::getInstance().logger(LOG_LEVEL_DEBUG, "All the unique reads for OMH done.");  
+//     return omh2reads;            
+// }
 
+// std::vector<uint64_t> OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, std::uint64_t seed, int m) {
+//     if(read.size() < k) return {};
+//     std::vector<std::uint64_t> hash_vec;
+//     std::unordered_map<std::string, unsigned> occurrences;
+//     std::uint64_t cur_seed = seed;
 
+//     auto seql = read | seqan3::views::to_char;
+//     string read_str(seql.begin(), seql.end());
+//     for(size_t i = 0; i < read_str.size() - k + 1; ++i) {
+//         string kmer = read_str.substr(i, k);
+//         occurrences[kmer]++;
+//         boost::hash_combine(cur_seed, kmer);
+//         boost::hash_combine(cur_seed, occurrences[kmer]);
+//         hash_vec.emplace_back(cur_seed);
+//         cur_seed = seed;
+//     }
+//     std::vector<uint64_t> min_hashes = hash_vec;
+//     std::partial_sort(min_hashes.begin(), min_hashes.begin() + m, min_hashes.end());
+//     min_hashes.resize(m);
+//     return min_hashes;
+//     // auto min_hash = std::min_element(hash_vec.begin(), hash_vec.end());    
+//     // return *min_hash;
+// }
+/////////////////////////////////////////////////////////////////////////////////////////
 // std::vector<std::pair<std::uint64_t, unsigned>> OMH::get_seeds_k(){
 //     // Use a random_device to seed the random number generator
 //     std::random_device rd;

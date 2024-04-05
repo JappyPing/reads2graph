@@ -39,6 +39,8 @@ struct cmd_arguments
     unsigned omh_k{15};
     uint8_t omh_k_step_size{3};
     unsigned omh_times{3};
+    // bool omh_seed_default{true};
+    std::uint_least32_t omh_seed{2024};
     // unsigned omh_kmer_n{3}; // Number of k-mers to consider
     double bad_kmer_ratio{0.3};
     double probability{0.86};
@@ -46,6 +48,8 @@ struct cmd_arguments
     double sampling_rate{0.01};
     bool minimizer_omh{true}; 
 };
+
+
 
 class Utils{
     public:

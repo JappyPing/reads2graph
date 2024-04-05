@@ -40,10 +40,15 @@ public:
     OMH(cmd_arguments args);
     std::vector<std::pair<std::uint64_t, unsigned>> get_seeds_k();
     std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> omh2read_main(std::vector<std::vector<seqan3::dna5>> unique_reads, std::vector<std::pair<std::uint64_t, unsigned>> seeds_k);
-    // uint64_t omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned l, unsigned int seed);
-    // uint64_t omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned l, std::uint64_t seed);
     uint64_t omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, std::uint64_t seed);
+    
     unsigned omh_k(unsigned L, double p, uint8_t d);
+    std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> omh2reads_main(std::vector<std::vector<seqan3::dna5>> unique_reads, std::uint64_t seed, unsigned k);
+    ////////////////////////////////
+    // std::vector<uint64_t> omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, std::uint64_t seed, int m);
+    // std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> omhs2read_main(std::vector<std::vector<seqan3::dna5>> unique_reads, unsigned k, std::uint64_t seed, int m);
+    ////////////////////////////////
+    // std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> omh2read_main(std::vector<std::vector<seqan3::dna5>> unique_reads, std::vector<std::uint64_t> seeds, unsigned k);
     
     // uint64_t omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, unsigned int seed);
 private:
