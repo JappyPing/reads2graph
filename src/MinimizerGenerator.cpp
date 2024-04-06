@@ -1,6 +1,5 @@
 // MinimizerGenerator.cpp
 #include "MinimizerGenerator.hpp"
-#include "GraphManager.hpp"
 #include "ReadWrite.hpp"
 #include <algorithm>
 #include <execution>

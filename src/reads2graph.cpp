@@ -11,8 +11,8 @@
 #include "LoggingLevels.hpp"
 #include "ReadWrite.hpp"
 #include "MinimizerGenerator.hpp"
-#include "EdgeConstructor.hpp"
-#include "GraphManager.hpp"
+#include "GraphConstructor.hpp"
+// #include "GraphManager.hpp"
 #include "PairWiseEditDis.hpp"
 #include "OMH.hpp"
 
@@ -132,8 +132,8 @@ int main(int argc, char** argv) {
     std::map<std::set<std::vector<seqan3::dna5>>, int> edge_lst;
     if (args.pair_wise) {
             // Create an instance of PairwiseEditDistance
-            edge_lst = PairWiseEditDis(unique_reads, args).compute_pairwise_edit_distance();
-            Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise (brute force) edit-distance-based edges calculation done");
+            // edge_lst = PairWiseEditDis(unique_reads, args).compute_pairwise_edit_distance();
+            // Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise (brute force) edit-distance-based edges calculation done");
             // GraphManager(edge_lst, read2count, args).construct_graph();
             // GraphManager(edge_lst, read2count, read2id, args).construct_graph();
     } else {
@@ -156,14 +156,20 @@ int main(int argc, char** argv) {
             // hash2reads = OMH(args).omh2read_main(unique_reads, seeds_k);
             // auto edge_lst = EdgeConstructor(omh2reads, args).edges_main();
         }
-        edge_lst = EdgeConstructor(hash2reads, args).edges_main(); 
+        // edge_lst = EdgeConstructor(hash2reads, args).edges_main();
+        GraphConstructor graph_constructor(hash2reads, read2count, args);
+        graph_constructor.construct_graph();
+        if (args.save_graph){
+            graph_constructor.save_graph();
+        }
         Utils::getInstance().logger(LOG_LEVEL_INFO,  "Edit-distance-based edges calculation done!");
     }
-    if (args.save_graph){
-        GraphManager graph_manager(edge_lst, read2count, args);
-        graph_manager.construct_graph();
-        graph_manager.save_graph();
-    }
+    // if (args.save_graph){
+    //     GraphManager graph_manager(edge_lst, read2count, args);
+    //     graph_manager.construct_graph();
+    //     graph_manager.save_graph();
+    // }
+    ////////////////////////////////////////////////////////////////////////////////////////////
     // Utils::getInstance().logger(LOG_LEVEL_INFO,  "edit-distance-based graph construction done!");
     //Print the stored read pairs and edit distances
     // for (const auto &[read_pair, edit_distance] : edge_lst)

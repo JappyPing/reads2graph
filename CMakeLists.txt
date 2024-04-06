@@ -21,9 +21,8 @@ set(SOURCES
     Utils.cpp
     reads2graph.cpp
     ReadWrite.cpp
-    GraphManager.cpp
     MinimizerGenerator.cpp
-    EdgeConstructor.cpp
+    GraphConstructor.cpp
     PairWiseEditDis.cpp
     OMH.cpp
 )

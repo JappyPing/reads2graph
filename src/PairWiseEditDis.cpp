@@ -1,4 +1,6 @@
 #include "PairWiseEditDis.hpp"
+#include "Utils.hpp"
+#include "LoggingLevels.hpp"
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -11,6 +13,8 @@
 #include <seqan3/alignment/scoring/nucleotide_scoring_scheme.hpp>
 #include <seqan3/core/debug_stream.hpp>
 #include <seqan3/utility/views/pairwise_combine.hpp>
+
+using namespace std;
 
 // PairWiseEditDis::PairWiseEditDis(std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : read2count(read2count), args(args) {}
 PairWiseEditDis::PairWiseEditDis(std::vector<std::vector<seqan3::dna5>> unique_reads, cmd_arguments args) : unique_reads(unique_reads), args(args) {}
@@ -38,9 +42,9 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> PairWiseEditDis::compute_pair
     // int num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
 
     // // Set the number of threads for OpenMP
-    omp_set_num_threads(args.num_process);
+    // omp_set_num_threads(args.num_process);
 
-    #pragma omp parallel for
+    #pragma omp parallel for num_threads(args.num_process) schedule(static, 1)
     for (size_t i = 0; i < pairwise_combinations.size(); ++i)
     {
         auto const &combination = pairwise_combinations[i];
@@ -93,11 +97,11 @@ std::map<std::set<std::vector<seqan3::dna5>>, int> PairWiseEditDis::compute_pair
     }        
 
     // std::cout << "Number of total read edges: " << edge_lst.size() << std::endl; 
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Number of total read edges: {}.", edge_lst.size()));
+    // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Number of total read edges: {}.", edge_lst.size()));
     for (const auto & [distance, count] : edit_distance_counts_)
     {
         // std::cout << "Edit distance by Brute_Force" << distance << ": " << count << " pairs" << std::endl;
-        Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Edit distance by Brute_Force {}: {} pairs.", distance, count));
+        // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Edit distance by Brute_Force {}: {} pairs.", distance, count));
     }
     auto filename = args.output_dir / "Brute_Force_pairwise_edit_distance_counts.txt";
     std::ofstream file(filename);
