@@ -21,7 +21,7 @@
 #include <deque>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/depth_first_search.hpp>
-
+using namespace boost;
 GraphConstructor::GraphConstructor(std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> key2reads, std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : key2reads_(std::move(key2reads)), read2count_(std::move(read2count)), args(args) {}
 
 void GraphConstructor::init_graph()
@@ -71,8 +71,8 @@ void GraphConstructor::construct_graph()
 {
     init_graph();
 
-    int min_s = -1 * args.max_edit_dis;
-    int max_s = -1 * args.min_edit_dis;
+    // int min_s = -1 * args.max_edit_dis;
+    // int max_s = -1 * args.min_edit_dis;
 
     std::vector<std::vector<std::vector<seqan3::dna5>>> small_group;
     std::vector<std::vector<std::vector<seqan3::dna5>>> medium_group;
@@ -107,7 +107,7 @@ void GraphConstructor::construct_graph()
             }
         }
     }
-    auto config = seqan3::align_cfg::method_global{} | seqan3::align_cfg::edit_scheme | seqan3::align_cfg::min_score{min_s} | seqan3::align_cfg::output_score{};
+    auto config = seqan3::align_cfg::method_global{} | seqan3::align_cfg::edit_scheme | seqan3::align_cfg::min_score{-1 * args.max_edit_dis} | seqan3::align_cfg::output_score{};
     // small group
     
     if (small_group.size() > 0){
@@ -126,9 +126,10 @@ void GraphConstructor::construct_graph()
                 // Iterate over alignment results and access the scores
                 for (auto const &result : alignment_results)
                 {
-                    int edit_distance = result.score();
+                    int edit_distance = -1 * result.score();
                     // std::cout << edit_distance << endl;
-                    if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+                    //if ((edit_distance >= min_s) && (edit_distance <= max_s))
+                    if ((edit_distance >= args.min_edit_dis) && (edit_distance <= args.max_edit_dis)) 
                     // if ((edit_distance > max_s))
                     {
                         #pragma omp critical
@@ -161,9 +162,10 @@ void GraphConstructor::construct_graph()
                 // Iterate over alignment results and access the scores
                 for (auto const &result : alignment_results)
                 {
-                    int edit_distance = result.score();
+                    int edit_distance = -1 * result.score();
                     // std::cout << edit_distance << endl;
-                    if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+                    //if ((edit_distance >= min_s) && (edit_distance <= max_s))
+                    if ((edit_distance >= args.min_edit_dis) && (edit_distance <= args.max_edit_dis)) 
                     // if ((edit_distance < min_s) && (edit_distance > max_s))
                     {
                         #pragma omp critical
@@ -259,9 +261,10 @@ void GraphConstructor::construct_graph()
                     // Iterate over alignment results and access the scores
                     for (auto const &result : alignment_results)
                     {
-                        int edit_distance = result.score();
+                        int edit_distance = -1 * result.score();
                         // std::cout << edit_distance << endl;
-                        if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+                        //if ((edit_distance >= min_s) && (edit_distance <= max_s))
+                        if ((edit_distance >= args.min_edit_dis) && (edit_distance <= args.max_edit_dis)) 
                         // if ((edit_distance < min_s) && (edit_distance > max_s))
                         {
                             #pragma omp critical
@@ -273,7 +276,9 @@ void GraphConstructor::construct_graph()
                     }
                 }    
             }
+            Utils::getInstance().logger(LOG_LEVEL_INFO,  "Graph update for the small-size-based buckets of further bucketing done!");    
         }
+        
         if (m_group.size() > 0){
             for (const auto &cur_reads_vec : m_group){
 
@@ -290,9 +295,10 @@ void GraphConstructor::construct_graph()
                     // Iterate over alignment results and access the scores
                     for (auto const &result : alignment_results)
                     {
-                        int edit_distance = result.score();
+                        int edit_distance = -1 * result.score();
                         // std::cout << edit_distance << endl;
-                        if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+                        //if ((edit_distance >= min_s) && (edit_distance <= max_s))
+                        if ((edit_distance >= args.min_edit_dis) && (edit_distance <= args.max_edit_dis)) 
                         // if ((edit_distance < min_s) && (edit_distance > max_s))
                         {
                             #pragma omp critical
@@ -305,7 +311,9 @@ void GraphConstructor::construct_graph()
                     // }
                 }    
             }
+            Utils::getInstance().logger(LOG_LEVEL_INFO,  "Graph update for the medium-size-based buckets of further bucketing done!");   
         }
+        edge_summary();
         if (l_group.size() > 0){
 
             auto unique_reads = mergeUniqueReads(l_group);
@@ -314,13 +322,18 @@ void GraphConstructor::construct_graph()
             #pragma omp parallel for num_threads(args.num_process) schedule(static)
             for (const auto &cur_read : unique_reads){
                 auto cur_v = read2vertex_[cur_read];
-                Vertex start_vertex = vertex(cur_v, graph_);
+                // Vertex start_vertex = vertex(cur_v, graph_);
                 
-                auto vertices = visitNeighbors(graph_, start_vertex, args.max_edit_dis);
-                for (auto v : vertices){
-                    std::pair<int, int> cur_pair = std::make_pair(cur_v, v);
-                    #pragma omp critical
-                    v_pairs.emplace_back(cur_pair);
+                // auto vertices = findIndirectNeighbors( start_vertex, args.max_edit_dis);
+                // auto indirect_neighbors = findIndirectNeighbors(graph_, start_vertex, args.max_edit_dis);
+                auto indirect_neighbors = visitNeighborsOfNeighborsWithThreshold(graph_, cur_v, args.max_edit_dis);
+                if (!indirect_neighbors.empty()) {
+                    for (auto v : indirect_neighbors){
+                        std::pair<int, int> cur_pair = std::make_pair(cur_v, v);
+                        #pragma omp critical
+                        v_pairs.emplace_back(cur_pair);
+                    }
+                    std::cout << "good" << endl;
                 }
             }
             #pragma omp parallel for num_threads(args.num_process) schedule(static)
@@ -331,8 +344,9 @@ void GraphConstructor::construct_graph()
                 // Iterate over alignment results and access the scores
                 for (auto const &result : alignment_results)
                 {
-                    int edit_distance = result.score();
-                    if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+                    int edit_distance = -1 * result.score();
+                    //if ((edit_distance >= min_s) && (edit_distance <= max_s))
+                    if ((edit_distance >= args.min_edit_dis) && (edit_distance <= args.max_edit_dis)) 
                     {
                         #pragma omp critical
                         {
@@ -342,7 +356,6 @@ void GraphConstructor::construct_graph()
                 } 
             } 
         }
-
         Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise comparison for the large-size-based buckets done!");
     }
     edge_summary();
@@ -393,13 +406,82 @@ std::vector<std::vector<seqan3::dna5>> GraphConstructor::mergeUniqueReads(const 
     }
 }
 
-// Perform DFS traversal with custom visitor
-std::unordered_set<Vertex> GraphConstructor::visitNeighbors(const Graph& g, Vertex start_vertex, uint8_t dis) {
-    // uint8_t remaining_value = dis;
-    MyDFSVisitor visitor(const_cast<Graph&>(g), start_vertex, dis);
-    depth_first_search(g, visitor);
-    return visitor.savedVertices;
+// Function to find indirect neighbors based on conditions
+// std::vector<Vertex> GraphConstructor::findIndirectNeighbors(const Graph& g, Vertex start, int threshold) {
+//     std::vector<Vertex> indirect_neighbors;
+//     IndirectNeighborVisitor visitor(threshold, indirect_neighbors, g);
+//     breadth_first_search(g, start, visitor);
+//     return indirect_neighbors;
+// }
+
+
+// Function to visit neighbors of a given node until distance exceeds threshold
+void GraphConstructor::visitNeighborsWithThreshold(const Graph& g, Vertex node, int distance_threshold, int current_distance, std::vector<Vertex>& indirect_neighbors, std::vector<bool>& visited) {
+    // Mark the current node as visited
+    visited[node] = true;
+
+    // Iterate over the adjacent vertices of the given node
+    graph_traits<Graph>::adjacency_iterator ai, ai_end;
+    for (boost::tie(ai, ai_end) = adjacent_vertices(node, g); ai != ai_end; ++ai) {
+        Vertex neighbor = *ai;
+        // Visit neighbor if not visited and distance does not exceed threshold
+        if (!visited[neighbor] && current_distance + 1 <= distance_threshold) {
+            indirect_neighbors.push_back(neighbor);
+            // Recursively visit neighbors of neighbors
+            visitNeighborsWithThreshold(g, neighbor, distance_threshold, current_distance + 1, 
+                                         indirect_neighbors, visited);
+        } else {
+            return;
+        }
+    }
 }
+
+
+// Function to visit neighbors of neighbors until distance exceeds a threshold
+std::vector<Vertex> GraphConstructor::visitNeighborsOfNeighborsWithThreshold(const Graph& g, Vertex node, int distance_threshold) {
+    std::vector<Vertex> indirect_neighbors;
+    std::vector<bool> visited(num_vertices(g), false); // Initialize visited array
+
+    // Visit neighbors of neighbors with the specified threshold
+    visitNeighborsWithThreshold(g, node, distance_threshold, 0, indirect_neighbors, visited);
+
+    return indirect_neighbors;
+}
+
+// Function to find neighboring nodes of vertex A with a shortest path weight not larger than the threshold using custom DFS visitor
+// std::vector<Vertex> GraphConstructor::findIndirectNeighbors(Vertex startVertex, int threshold) {
+//     std::vector<Vertex> indirectNeighbors;
+
+//     // Create a vector to track the visited vertices
+//     std::vector<Vertex> visited_nodes;
+
+//     auto neighbours = boost::adjacent_vertices(startVertex, graph_);
+
+//     for (auto vd : make_iterator_range(neighbours)){
+//         visited_nodes.emblace_back(vd);
+//         int cur_dis = 1;
+//         int cur_weight = 0;
+//         auto edge_descriptor = boost::edge(vd, startVertex, graph_);
+
+//         if (edge_descriptor.second) {
+//             auto weight = boost::get(boost::edge_weight, graph_, edge_descriptor.first);
+//             cur_weight += weight;
+//         }
+//         while ((cur_weight <= threshold) || cur_dis <= threshold){
+//             auto neighours2 = boost::adjacent_vertices(vd, graph_);
+//             for (auto vd2 : make_iterator_range(neighbours)){
+//                 if (std::ranges::contains(visited_nodes, vd2)){
+//                     indirectNeighbors.emblace_back(vd2);
+//                 }
+//                 visited_nodes.emblace_back(vd2);   
+//             }         
+//             cur_dis += 1;
+
+//         }
+//     }
+
+//     return indirectNeighbors;
+// }
 
 void GraphConstructor::save_graph() const {
     // std::ofstream out(graph_full_path_);
@@ -524,7 +606,8 @@ void GraphConstructor::save_graph() const {
 //                 {
 //                     int edit_distance = result.score();
 //                     // std::cout << edit_distance << endl;
-//                     if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+//                     //if ((edit_distance >= min_s) && (edit_distance <= max_s))
+                    // if ((edit_distance >= args.min_edit_dis) && (edit_distance <= args.max_edit_dis)) 
 //                     // if ((edit_distance > max_s))
 //                     {
 //                         #pragma omp critical
@@ -570,7 +653,8 @@ void GraphConstructor::save_graph() const {
 //                 {
 //                     int edit_distance = result.score();
 //                     // std::cout << edit_distance << endl;
-//                     if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+//                     //if ((edit_distance >= min_s) && (edit_distance <= max_s))
+// if ((edit_distance >= args.min_edit_dis) && (edit_distance <= args.max_edit_dis)) 
 //                     // if ((edit_distance < min_s) && (edit_distance > max_s))
 //                     {
 //                         #pragma omp critical
@@ -674,7 +758,8 @@ void GraphConstructor::save_graph() const {
 //                         {
 //                             int edit_distance = result.score();
 //                             // std::cout << edit_distance << endl;
-//                             if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+//                             //if ((edit_distance >= min_s) && (edit_distance <= max_s))
+// if ((edit_distance >= args.min_edit_dis) && (edit_distance <= args.max_edit_dis)) 
 //                             // if ((edit_distance < min_s) && (edit_distance > max_s))
 //                             {
 //                                 #pragma omp critical
@@ -709,7 +794,8 @@ void GraphConstructor::save_graph() const {
 //                         {
 //                             int edit_distance = result.score();
 //                             // std::cout << edit_distance << endl;
-//                             if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+//                             //if ((edit_distance >= min_s) && (edit_distance <= max_s))
+// if ((edit_distance >= args.min_edit_dis) && (edit_distance <= args.max_edit_dis)) 
 //                             // if ((edit_distance < min_s) && (edit_distance > max_s))
 //                             {
 //                                 #pragma omp critical
@@ -807,7 +893,8 @@ void GraphConstructor::save_graph() const {
 //                 {
 //                     int edit_distance = result.score();
 //                     // std::cout << edit_distance << endl;
-//                     if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+//                     //if ((edit_distance >= min_s) && (edit_distance <= max_s))
+// if ((edit_distance >= args.min_edit_dis) && (edit_distance <= args.max_edit_dis)) 
 //                     {
 //                         #pragma omp critical
 //                         {
@@ -845,7 +932,8 @@ void GraphConstructor::save_graph() const {
 //                 {
 //                     int edit_distance = result.score();
 //                     std::cout << edit_distance << endl;
-//                     if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+//                     //if ((edit_distance >= min_s) && (edit_distance <= max_s))
+// if ((edit_distance >= args.min_edit_dis) && (edit_distance <= args.max_edit_dis)) 
 //                     {
 //                         // #pragma omp critical
 //                         {
@@ -892,7 +980,8 @@ void GraphConstructor::save_graph() const {
 //                 {
 //                     int edit_distance = result.score();
 //                     // std::cout << edit_distance << endl;
-//                     if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+//                     //if ((edit_distance >= min_s) && (edit_distance <= max_s))
+// if ((edit_distance >= args.min_edit_dis) && (edit_distance <= args.max_edit_dis)) 
 //                     {
 //                         #pragma omp critical
 //                         {
@@ -929,7 +1018,8 @@ void GraphConstructor::save_graph() const {
 //                     {
 //                         int edit_distance = result.score();
 
-//                         if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+//                         //if ((edit_distance >= min_s) && (edit_distance <= max_s))
+// if ((edit_distance >= args.min_edit_dis) && (edit_distance <= args.max_edit_dis)) 
 //                         {
 //                             #pragma omp critical
 //                             {
@@ -1020,7 +1110,7 @@ void GraphConstructor::save_graph() const {
 //                         {
 //                             int edit_distance = result.score();
 //                             // std::cout << edit_distance << endl;
-//                             if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+//                             //if ((edit_distance >= min_s) && (edit_distance <= max_s))
 //                             {
 //                                 #pragma omp critical
 //                                 {
@@ -1056,7 +1146,7 @@ void GraphConstructor::save_graph() const {
 //                         {
 //                             int edit_distance = result.score();
 //                             // std::cout << edit_distance << endl;
-//                             if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+//                             //if ((edit_distance >= min_s) && (edit_distance <= max_s))
 //                             {
 //                                 #pragma omp critical
 //                                 {
@@ -1143,7 +1233,7 @@ void GraphConstructor::save_graph() const {
 //                 {
 //                     int edit_distance = result.score();
 //                     // std::cout << edit_distance << endl;
-//                     if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+//                     //if ((edit_distance >= min_s) && (edit_distance <= max_s))
 //                     {
 //                         #pragma omp critical
 //                         {
@@ -1187,7 +1277,7 @@ void GraphConstructor::save_graph() const {
 //                 {
 //                     int edit_distance = result.score();
 //                     // std::cout << edit_distance << endl;
-//                     if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+//                     //if ((edit_distance >= min_s) && (edit_distance <= max_s))
 //                     {
 //                         #pragma omp critical
 //                         {
@@ -1286,7 +1376,7 @@ void GraphConstructor::save_graph() const {
 //                         {
 //                             int edit_distance = result.score();
 //                             // std::cout << edit_distance << endl;
-//                             if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+//                             //if ((edit_distance >= min_s) && (edit_distance <= max_s))
 //                             {
 //                                 #pragma omp critical
 //                                 {
@@ -1322,7 +1412,7 @@ void GraphConstructor::save_graph() const {
 //                         {
 //                             int edit_distance = result.score();
 //                             // std::cout << edit_distance << endl;
-//                             if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+//                             //if ((edit_distance >= min_s) && (edit_distance <= max_s))
 //                             {
 //                                 #pragma omp critical
 //                                 {
@@ -1401,7 +1491,7 @@ void GraphConstructor::save_graph() const {
 //                         {
 //                             int edit_distance = result.score();
 //                             // std::cout << edit_distance << endl;
-//                             if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+//                             //if ((edit_distance >= min_s) && (edit_distance <= max_s))
 //                             {
 //                                 #pragma omp critical
 //                                 {
@@ -1439,7 +1529,7 @@ void GraphConstructor::save_graph() const {
 //                         for (auto const &result : alignment_results)
 //                         {
 //                             int edit_distance = result.score();
-//                             if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+//                             //if ((edit_distance >= min_s) && (edit_distance <= max_s))
 //                             {
 //                                 #pragma omp critical
 //                                 {
@@ -2059,7 +2149,7 @@ void GraphConstructor::process_blocks_in_parallel()
                 {
                     int edit_distance = result.score();
                     std::cout << edit_distance << endl;
-                    if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+                    //if ((edit_distance >= min_s) && (edit_distance <= max_s))
                     {
                         // #pragma omp critical
                         {
@@ -2098,7 +2188,7 @@ void GraphConstructor::process_blocks_in_parallel()
                     {
                         int edit_distance = result.score();
 
-                        if ((edit_distance >= min_s) && (edit_distance <= max_s)) 
+                        //if ((edit_distance >= min_s) && (edit_distance <= max_s))
                         {
                             #pragma omp critical
                             {

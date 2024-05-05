@@ -102,7 +102,7 @@ int main(int argc, char** argv) {
     auto [unique_reads, read2count, min_read_length] = ReadWrite(args).get_unique_reads_counts();
     args.read_length = min_read_length;
     auto total_uniq_num = unique_reads.size();
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The number of unique reads: {} ", total_uniq_num));
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The number of unique reads: {}, minimum read length: {}.", total_uniq_num, min_read_length));
 
     // auto uniq_num = unique_reads.size();
     // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The number of unique reads: {} ", uniq_num));

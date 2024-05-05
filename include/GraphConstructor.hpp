@@ -91,41 +91,6 @@ private:
     Name name;
 };
 
-// Custom DFS visitor with edge condition and vertex saving
-struct MyDFSVisitor : default_dfs_visitor {
-    MyDFSVisitor(Graph& g, Vertex start_vertex, int max_L)
-        : graph(g), startVertex(start_vertex), remainingValue(max_L) {}
-
-    template <typename Vertex, typename Graph>
-    void discover_vertex(Vertex u, const Graph& g) const {
-        if (u != startVertex) {
-            // Check if remaining value allows visiting this vertex
-            for (auto it = adjacent_vertices(u, g); it.first != it.second; ++it.first) {
-                auto v = *it.first;
-                Edge e;
-                bool exists;
-                tie(e, exists) = edge(u, v, g);
-                if (exists) {
-                    EdgeProperties edge_props = g[e];
-                    int edge_weight = edge_props.weight;
-
-                    // Check if visiting this neighbor does not exceed remaining value
-                    if (remainingValue - edge_weight >= 0) {
-                        // Save the vertex as a potential new edge
-                        savedVertices.insert(v);
-                    }
-                }
-            }
-        }
-    }
-
-    std::unordered_set<Vertex> savedVertices; // Container to store saved vertices
-
-private:
-    Graph& graph;
-    Vertex startVertex;
-    mutable uint8_t remainingValue;
-};
 
 
 class GraphConstructor
@@ -137,7 +102,10 @@ public:
     void insert_edge(std::vector<seqan3::dna5> read1, std::vector<seqan3::dna5> read2, int edit_dis);
     std::vector<std::vector<seqan3::dna5>> mergeUniqueReads(const std::vector<std::vector<std::vector<seqan3::dna5>>>& read_vectors);
     void construct_graph();
-    std::unordered_set<Vertex> visitNeighbors(const Graph& g, Vertex start_vertex, uint8_t dis);
+    // std::unordered_set<Vertex> visitNeighbors(const Graph& g, Vertex start_vertex, uint8_t dis);
+    // std::vector<Vertex> findIndirectNeighbors(const Graph& g, Vertex start, int threshold);
+    void visitNeighborsWithThreshold(const Graph& g, Vertex node, int distance_threshold, int current_distance, std::vector<Vertex>& indirect_neighbors, std::vector<bool>& visited);
+    std::vector<Vertex> visitNeighborsOfNeighborsWithThreshold(const Graph& g, Vertex node, int distance_threshold);
     void save_graph() const;
     void edge_summary();
     // void process_block();
@@ -157,8 +125,8 @@ private:
     std::map<std::vector<seqan3::dna5>, uint32_t> read2count_;
     cmd_arguments args;
     std::filesystem::path graph_full_path_;
-    std::unordered_map<std::vector<seqan3::dna5>, boost::graph_traits<Graph>::vertex_descriptor, std::hash<std::vector<seqan3::dna5>>> read2vertex_;
-    std::unordered_map<boost::graph_traits<Graph>::vertex_descriptor, std::vector<seqan3::dna5>, std::hash<boost::graph_traits<Graph>::vertex_descriptor>> vertex2read_;
+    std::unordered_map<std::vector<seqan3::dna5>, Vertex, std::hash<std::vector<seqan3::dna5>>> read2vertex_;
+    std::unordered_map<Vertex, std::vector<seqan3::dna5>, std::hash<Vertex>> vertex2read_;
     Graph graph_;
 
     // std::map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, pair_comparator> edge_lst;
