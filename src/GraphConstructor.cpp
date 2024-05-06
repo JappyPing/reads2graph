@@ -107,9 +107,14 @@ void GraphConstructor::construct_graph()
             }
         }
     }
+    ///////////////////////////
+    // test the following function
+    // auto unique_reads = mergeUniqueReads(medium_group);
+    // Utils::getInstance().logger(LOG_LEVEL_INFO,  format("Test passed, unique number {}!", unique_reads.size()));
+
+    /////////////////////////////
     auto config = seqan3::align_cfg::method_global{} | seqan3::align_cfg::edit_scheme | seqan3::align_cfg::min_score{-1 * args.max_edit_dis} | seqan3::align_cfg::output_score{};
     // small group
-    
     if (small_group.size() > 0){
         #pragma omp parallel for num_threads(args.num_process) schedule(dynamic)
         for (const auto &group : small_group)
@@ -314,11 +319,13 @@ void GraphConstructor::construct_graph()
             Utils::getInstance().logger(LOG_LEVEL_INFO,  "Graph update for the medium-size-based buckets of further bucketing done!");   
         }
         edge_summary();
+
+        //////////////////////////////////////////////////////////////////////////////////////////////
         if (l_group.size() > 0){
-
             auto unique_reads = mergeUniqueReads(l_group);
-            std::vector<std::pair<int, int>> v_pairs;
+            Utils::getInstance().logger(LOG_LEVEL_INFO,   std::format("Remaining unprocessed unique reads number: {} ", unique_reads.size()));
 
+            std::vector<std::pair<int, int>> v_pairs;
             #pragma omp parallel for num_threads(args.num_process) schedule(static)
             for (const auto &cur_read : unique_reads){
                 auto cur_v = read2vertex_[cur_read];
@@ -326,14 +333,14 @@ void GraphConstructor::construct_graph()
                 
                 // auto vertices = findIndirectNeighbors( start_vertex, args.max_edit_dis);
                 // auto indirect_neighbors = findIndirectNeighbors(graph_, start_vertex, args.max_edit_dis);
-                auto indirect_neighbors = visitNeighborsOfNeighborsWithThreshold(graph_, cur_v, args.max_edit_dis);
+                auto indirect_neighbors = visitNeighborsOfNeighborsWithThreshold(graph_, cur_v, args.max_edit_dis * 2);
                 if (!indirect_neighbors.empty()) {
                     for (auto v : indirect_neighbors){
                         std::pair<int, int> cur_pair = std::make_pair(cur_v, v);
                         #pragma omp critical
                         v_pairs.emplace_back(cur_pair);
                     }
-                    std::cout << "good" << endl;
+                    // std::cout << "good" << endl;
                 }
             }
             #pragma omp parallel for num_threads(args.num_process) schedule(static)
@@ -362,16 +369,10 @@ void GraphConstructor::construct_graph()
 }
 
 std::vector<std::vector<seqan3::dna5>> GraphConstructor::mergeUniqueReads(const std::vector<std::vector<std::vector<seqan3::dna5>>>& read_vectors) {
-    if (read_vectors.empty()) {
-        return {}; // Return an empty vector if there are no read vectors
-    }
-
-    // Directly return the single vector of reads if there's only one read vector
     if (read_vectors.size() == 1) {
         return read_vectors[0];
     } else {
         std::vector<std::vector<seqan3::dna5>> merged_reads;
-        // Determine the total number of reads to allocate space efficiently
         size_t total_reads_count = 0;
         for (const auto& read_vector : read_vectors) {
             total_reads_count += read_vector.size();
@@ -379,10 +380,21 @@ std::vector<std::vector<seqan3::dna5>> GraphConstructor::mergeUniqueReads(const 
         merged_reads.reserve(total_reads_count);
 
         // Merge all read vectors into the merged_reads vector in parallel
-        #pragma omp parallel for schedule(static)
-        for (size_t i = 0; i < read_vectors.size(); ++i) {
-            const auto& read_vector = read_vectors[i];
-            merged_reads.insert(merged_reads.end(), read_vector.begin(), read_vector.end());
+        #pragma omp parallel
+        {
+            #pragma omp single nowait
+            {
+                for (size_t i = 0; i < read_vectors.size(); ++i) {
+                    #pragma omp task
+                    {
+                        const auto& read_vector = read_vectors[i];
+                        for (const auto& read : read_vector) {
+                            #pragma omp critical
+                            merged_reads.push_back(read);
+                        }
+                    }
+                }
+            }
         }
 
         // Sort the merged vector of reads in parallel
@@ -402,9 +414,55 @@ std::vector<std::vector<seqan3::dna5>> GraphConstructor::mergeUniqueReads(const 
                 merged_reads.erase(last, merged_reads.end());
             }
         }
+
         return merged_reads;
     }
 }
+
+
+// std::vector<std::vector<seqan3::dna5>> GraphConstructor::mergeUniqueReads(const std::vector<std::vector<std::vector<seqan3::dna5>>>& read_vectors) {
+//     // if (read_vectors.empty()) {
+//     //     return {}; // Return an empty vector if there are no read vectors
+//     // }
+//     // Directly return the single vector of reads if there's only one read vector
+//     if (read_vectors.size() == 1) {
+//         return read_vectors[0];
+//     } else {
+//         std::vector<std::vector<seqan3::dna5>> merged_reads;
+//         // Determine the total number of reads to allocate space efficiently
+//         size_t total_reads_count = 0;
+//         for (const auto& read_vector : read_vectors) {
+//             total_reads_count += read_vector.size();
+//         }
+//         merged_reads.reserve(total_reads_count);
+
+//         // Merge all read vectors into the merged_reads vector in parallel
+//         #pragma omp parallel for schedule(static)
+//         for (size_t i = 0; i < read_vectors.size(); ++i) {
+//             const auto& read_vector = read_vectors[i];
+//             merged_reads.insert(merged_reads.end(), read_vector.begin(), read_vector.end());
+//         }
+
+//         // Sort the merged vector of reads in parallel
+//         #pragma omp parallel
+//         {
+//             #pragma omp single nowait
+//             std::sort(merged_reads.begin(), merged_reads.end());
+//         }
+
+//         // Remove duplicates using std::unique and erase idiom in parallel
+//         #pragma omp parallel
+//         {
+//             #pragma omp single nowait
+//             {
+//                 auto last = std::unique(merged_reads.begin(), merged_reads.end());
+//                 #pragma omp task
+//                 merged_reads.erase(last, merged_reads.end());
+//             }
+//         }
+//         return merged_reads;
+//     }
+// }
 
 // Function to find indirect neighbors based on conditions
 // std::vector<Vertex> GraphConstructor::findIndirectNeighbors(const Graph& g, Vertex start, int threshold) {
