@@ -43,6 +43,7 @@ public:
     uint64_t omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, std::uint64_t seed);
     
     unsigned omh_k(unsigned L, double p, uint8_t d);
+    std::string getGappedSubstring(const std::string& str, size_t startPos, size_t length);
     std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> omh2reads_main(std::vector<std::vector<seqan3::dna5>> unique_reads, std::uint64_t seed, unsigned k);
     ////////////////////////////////
     // std::vector<uint64_t> omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, std::uint64_t seed, int m);

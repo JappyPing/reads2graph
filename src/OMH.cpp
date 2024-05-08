@@ -15,7 +15,8 @@
 OMH::OMH(cmd_arguments args) : args(args) {}
 
 unsigned OMH::omh_k(unsigned L, double p, uint8_t d) {
-    unsigned k = ceil((p*(1+L))/(d+p));
+    // unsigned k = ceil((p*(1+L))/(d+p));
+    unsigned k = ceil(((1-p)*(1+L))/(d+1-p));
     if (k < 4){
         k = 4;
         Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Better k {} has been changed to 4.", k));
@@ -105,6 +106,17 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::o
     return omh2reads;            
 }
 
+std::string OMH::getGappedSubstring(const std::string& str, size_t startPos, size_t length) {
+    std::string gappedSubstring;
+
+    for (size_t i = startPos, count = 0; i < str.size() && count < length; i=i+2) {
+        gappedSubstring += str[i];
+        ++count;
+    }
+
+    return gappedSubstring;
+}
+
 uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, std::uint64_t seed) {
     if(read.size() < k) return {};
     std::vector<std::uint64_t> hash_vec;
@@ -117,21 +129,32 @@ uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, std::ui
     size_t ll = read_str.size();
 
     // for(size_t i = 0; i < read_str.size() - k + 1; ++i) {
-    for(size_t i = 0; i < ll; i += k) {
-        // string kmer = read_str.substr(i, k);
-        string kmer;
-        size_t remaining_length = ll - i;
-        if (remaining_length >= k) {
-            kmer = read_str.substr(i, k);
-        } else if (remaining_length >= k/2){
-            kmer = read_str.substr(i);
-        } 
+    //////////////////
+    // for(size_t i = 0; i < ll; i += k) {
+    //     string kmer;
+    //     size_t remaining_length = ll - i;
+
+    //     if (remaining_length >= k) {
+    //         kmer = read_str.substr(i, k);
+    //     } else if (remaining_length >= k/2){
+    //         kmer = read_str.substr(i);
+    //     } 
+    //     occurrences[kmer]++;
+    //     boost::hash_combine(cur_seed, kmer);
+    //     boost::hash_combine(cur_seed, occurrences[kmer]);
+    //     hash_vec.emplace_back(cur_seed);
+    //     cur_seed = seed;
+    // }
+
+    for(size_t i = 0; i <= ll - 2*k + 1; ++i) {
+        string kmer = getGappedSubstring(read_str, i, k);
         occurrences[kmer]++;
         boost::hash_combine(cur_seed, kmer);
         boost::hash_combine(cur_seed, occurrences[kmer]);
         hash_vec.emplace_back(cur_seed);
         cur_seed = seed;
     }
+
     auto min_hash = std::min_element(hash_vec.begin(), hash_vec.end());    
     return *min_hash;
 }
