@@ -67,6 +67,14 @@ void GraphConstructor::edge_summary(){
     Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The total number of edges: {}.", edge_num));
 }
 
+// Function to find all nodes in subgraph containing node "a"
+std::set<Vertex> GraphConstructor::find_subgraph(Graph& g, Vertex a) {
+    std::set<Vertex> nodes;
+    read2graph_Visitor<Vertex> vis(nodes);
+    depth_first_search(g, visitor(vis).root_vertex(a));
+    return nodes;
+}
+
 void GraphConstructor::construct_graph()
 {
     init_graph();
@@ -338,16 +346,14 @@ void GraphConstructor::construct_graph()
         if (l_group.size() > 0){
             auto unique_reads = mergeUniqueReads(l_group);
             Utils::getInstance().logger(LOG_LEVEL_INFO,   std::format("Remaining unprocessed unique reads number: {} ", unique_reads.size()));
-
+            //////////////////////////
+            // Method 1
+            /*
             std::vector<std::pair<int, int>> v_pairs;
             #pragma omp parallel for num_threads(args.num_process) schedule(static)
             for (const auto &cur_read : unique_reads){
                 auto cur_v = read2vertex_[cur_read];
-                // Vertex start_vertex = vertex(cur_v, graph_);
-                
-                // auto vertices = findIndirectNeighbors( start_vertex, args.max_edit_dis);
-                // auto indirect_neighbors = findIndirectNeighbors(graph_, start_vertex, args.max_edit_dis);
-                auto indirect_neighbors = visitNeighborsOfNeighborsWithThreshold(graph_, cur_v, args.max_edit_dis * 2);
+                auto indirect_neighbors = visitNeighborsOfNeighborsWithThreshold(graph_, cur_v, args.max_edit_dis * 3);
                 if (!indirect_neighbors.empty()) {
                     for (auto v : indirect_neighbors){
                         std::pair<int, int> cur_pair = std::make_pair(cur_v, v);
@@ -376,6 +382,38 @@ void GraphConstructor::construct_graph()
                     } 
                 } 
             } 
+
+            */
+            //////////////////////////////////////////////
+            // Method 2
+            std::set<std::pair<int, int>> v_pairs;
+            #pragma omp parallel for num_threads(args.num_process) schedule(static)
+            for (const auto &cur_read : unique_reads){
+                auto cur_v = read2vertex_[cur_read];
+                auto subgraph_nodes = find_subgraph(graph_, cur_v);
+                if (!subgraph_nodes.empty()) {
+                    for (const auto& v : subgraph_nodes){
+
+                        auto edge = boost::edge(cur_v, v, graph_);
+                        if (!edge.second){
+                            auto nei_seq = vertex2read_[v];
+                            auto alignment_results = seqan3::align_pairwise(std::tie(cur_read, nei_seq), config);
+                            // Iterate over alignment results and access the scores
+                            for (auto const &result : alignment_results)
+                            {
+                                int edit_distance = -1 * result.score();
+                                if ((edit_distance >= args.min_edit_dis) && (edit_distance <= args.max_edit_dis)) 
+                                {
+                                    #pragma omp critical
+                                    {
+                                        insert_edge(cur_read, nei_seq, edit_distance);
+                                    }                    
+                                } 
+                            } 
+                        }
+                    }
+                }
+            }
         }
         Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise comparison for the large-size-based buckets done!");
     }

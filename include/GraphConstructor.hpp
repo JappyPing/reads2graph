@@ -91,7 +91,16 @@ private:
     Name name;
 };
 
+// Define DFS visitor to collect visited nodes
+template <typename Vertex>
+struct read2graph_Visitor : default_dfs_visitor {
+    std::set<Vertex>& nodes;
+    read2graph_Visitor(std::set<Vertex>& nodes) : nodes(nodes) {}
 
+    void discover_vertex(Vertex v, const Graph& g) const {
+        nodes.insert(v);
+    }
+};
 
 class GraphConstructor
 {
@@ -102,8 +111,8 @@ public:
     void insert_edge(std::vector<seqan3::dna5> read1, std::vector<seqan3::dna5> read2, int edit_dis);
     std::vector<std::vector<seqan3::dna5>> mergeUniqueReads(const std::vector<std::vector<std::vector<seqan3::dna5>>>& read_vectors);
     void construct_graph();
-    // std::unordered_set<Vertex> visitNeighbors(const Graph& g, Vertex start_vertex, uint8_t dis);
-    // std::vector<Vertex> findIndirectNeighbors(const Graph& g, Vertex start, int threshold);
+    std::set<Vertex> find_subgraph(Graph& g, Vertex a);
+
     void visitNeighborsWithThreshold(const Graph& g, Vertex node, int distance_threshold, int current_distance, std::vector<Vertex>& indirect_neighbors, std::vector<bool>& visited);
     std::vector<Vertex> visitNeighborsOfNeighborsWithThreshold(const Graph& g, Vertex node, int distance_threshold);
     void save_graph() const;
