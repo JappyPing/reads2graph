@@ -43,7 +43,7 @@ struct cmd_arguments
     std::uint64_t omh_seed{2024};
     // unsigned omh_kmer_n{3}; // Number of k-mers to consider
     double bad_kmer_ratio{0.3};
-    double probability{0.7};
+    double probability{0.8};
     bool save_graph{false};
     double sampling_rate{0.01};
     bool minimizer_omh{true}; 
