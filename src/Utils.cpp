@@ -24,8 +24,8 @@
 
 int num_cores_to_use;  // Define the global variable
 
-#define reads2graph_VERSION "0.9.2"
-#define last_update_date "28.03.2024"
+#define reads2graph_VERSION "1.0.0"
+#define last_update_date "09.05.2024"
 
 using namespace std;
 
@@ -72,7 +72,7 @@ void Utils::logger(int log_level, const std::string& message){
         break;
     }
     logFile << timeString << ": " << log_prefix << message << endl;
-    std::cout << timeString << ": " << log_color << log_prefix << message << COLOR_RESET << std::endl;
+    std::cout << timeString << ": " << log_color << log_prefix << COLOR_RESET << message << std::endl;
     // if(logFile.is_open()){
     //     logFile << timeString << ": " << log_prefix << message << endl;
     //     logFile.close();

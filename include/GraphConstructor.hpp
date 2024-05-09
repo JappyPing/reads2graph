@@ -91,88 +91,28 @@ private:
     Name name;
 };
 
-// Define DFS visitor to collect visited nodes
-template <typename Vertex>
-struct read2graph_Visitor : default_dfs_visitor {
-    std::set<Vertex>& nodes;
-    read2graph_Visitor(std::set<Vertex>& nodes) : nodes(nodes) {}
-
-    void discover_vertex(Vertex v, const Graph& g) const {
-        nodes.insert(v);
-    }
-};
-
 class GraphConstructor
 {
 public:
-    // GraphConstructor(std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> key2reads, cmd_arguments args);
-    GraphConstructor(std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> key2reads, std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args);
+    GraphConstructor(std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args);
     void init_graph();
     void insert_edge(std::vector<seqan3::dna5> read1, std::vector<seqan3::dna5> read2, int edit_dis);
     std::vector<std::vector<seqan3::dna5>> mergeUniqueReads(const std::vector<std::vector<std::vector<seqan3::dna5>>>& read_vectors);
-    void construct_graph();
-    std::set<Vertex> find_subgraph(Graph& g, Vertex a);
+    void construct_graph(std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> key2reads);
 
     void visitNeighborsWithThreshold(const Graph& g, Vertex node, int distance_threshold, int current_distance, std::vector<Vertex>& indirect_neighbors, std::vector<bool>& visited);
     std::vector<Vertex> visitNeighborsOfNeighborsWithThreshold(const Graph& g, Vertex node, int distance_threshold);
     void save_graph() const;
     void edge_summary();
-    // void process_block();
-    // void process_block(const std::vector<std::vector<seqan3::dna5>> &reads_vec, int min_s, int max_s);
-    // std::map<std::set<std::vector<seqan3::dna5>>, int> minimizer_omh();
-    // std::map<std::set<std::vector<seqan3::dna5>>, int> omh_minimizer();
-    // std::map<std::set<std::vector<seqan3::dna5>>, int> edges_main();
-    // std::map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, pair_comparator> get_edge_lst();
-    // std::unordered_map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, unordered_pair> get_edge_lst();
-    // void display_edge_summary(std::map<std::set<std::vector<seqan3::dna5>>, int> edge_lst);
-    // std::vector<std::pair<uint64_t, uint64_t>> get_combinations(const std::vector<uint64_t>& a);
-    // std::unordered_set<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, customHash> unique_combination();
+    void construt_graph_via_pairwise_comparison(std::vector<std::vector<seqan3::dna5>> unique_reads);
+
 private:
-    // std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> minimiser_to_reads_;
-    // std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> omh2reads_;
-    std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> key2reads_;
+    // std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> key2reads_;
     std::map<std::vector<seqan3::dna5>, uint32_t> read2count_;
     cmd_arguments args;
     std::filesystem::path graph_full_path_;
     std::unordered_map<std::vector<seqan3::dna5>, Vertex, std::hash<std::vector<seqan3::dna5>>> read2vertex_;
     std::unordered_map<Vertex, std::vector<seqan3::dna5>, std::hash<Vertex>> vertex2read_;
     Graph graph_;
-
-    // std::map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, pair_comparator> edge_lst;
-    // std::unordered_map<std::pair<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>>, int, unordered_pair> edge_lst;
-    // std::map<std::set<std::vector<seqan3::dna5>>, int> edge_lst;    
-    // std::map<int, size_t> edit_distance_counts_;
 };
 #endif // GraphConstructor_H
-
-
-
-// Define a custom comparator for pairs that considers the order of elements
-// struct pair_comparator
-// {
-//     template <typename T1, typename T2>
-//     bool operator()(const std::pair<T1, T2> &lhs, const std::pair<T1, T2> &rhs) const
-//     {
-//         return std::tie(lhs.first, lhs.second) < std::tie(rhs.first, rhs.second);
-//     }
-// };
-
-// Improved unordered_pair using boost::hash_combine
-// struct customHash {
-//     template <class T1, class T2>
-//     std::size_t operator () (const std::pair<T1, T2> &p) const {
-//         std::size_t seed = 0;
-//         auto seq1 = p.first | seqan3::views::to_char;
-//         string seq_str1(seq1.begin(), seq1.end());
-//         auto seq2 = p.second | seqan3::views::to_char;
-//         string seq_str2(seq2.begin(), seq2.end());
-//         // compare 
-//         // // auto seq1_hash = boost::hash_combine(static_cast<std::size_t>(1), seq_str1);
-//         // // auto seq2_hash = boost::hash_combine(static_cast<std::size_t>(1), seq_str2);
-//         // std::size_t seq1_hash = std::hash<std::string>{}(seq_str1);
-//         // std::size_t seq2_hash = std::hash<std::string>{}(seq_str2);
-//         boost::hash_combine(seed, seq_str1);
-//         boost::hash_combine(seed, seq_str2);
-//         return seed;
-//     }
-// };

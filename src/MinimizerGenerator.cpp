@@ -81,34 +81,15 @@ std::tuple<unsigned, unsigned, unsigned, double> MinimizerGenerator::possibleBet
         betterN = 2;
         betterW = round(args.read_length/betterN);
     } else if (args.read_length >= 50 && args.read_length <= 300) {
-        if (args.max_edit_dis == 1 || args.max_edit_dis == 2){
-            betterN = 3;
-        } else {
-            betterN = ceil((static_cast<double>(args.max_edit_dis))/2)+1;
-        }
+        // if (args.max_edit_dis == 1 || args.max_edit_dis == 2){
+        //     betterN = 3;
+        // } else {
+        //     betterN = ceil((static_cast<double>(args.max_edit_dis))/2)+1;
+        // }
+        betterN = 3;
         betterW = round(args.read_length/betterN);
         betterK = kSize(betterW, args.bad_kmer_ratio);
-    }
-    // } else if (args.read_length > 100 && args.read_length <= 200){
-    //     if (args.max_edit_dis == 1 || args.max_edit_dis == 2){
-    //         betterN = 4;
-    //     } else {
-    //         betterN = ceil((static_cast<double>(args.max_edit_dis))/2)+2;
-    //     }
-    //     betterW = round(args.read_length/betterN);
-    //     betterK = kSize(betterW, args.bad_kmer_ratio);
-    // } else if (args.read_length > 200 && args.read_length <= 300){
-    //     if (args.max_edit_dis == 1 || args.max_edit_dis == 2){
-    //         betterN = 5;
-    //     } else {
-    //         betterN = ceil((static_cast<double>(args.max_edit_dis))/2)+3;
-    //     }
-    //     betterW = round(args.read_length/betterN);
-    //     betterK = kSize(betterW, args.bad_kmer_ratio);
-    // } else {
-    //     Utils::getInstance().logger(LOG_LEVEL_ERROR,  "Read length is invalid!");
-    //     exit(0);
-    // }
+    } 
     p = 1 - std::pow(proba(betterW, betterK), betterN);
 
     if (betterK < 4){

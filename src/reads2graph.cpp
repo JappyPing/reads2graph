@@ -13,7 +13,7 @@
 #include "MinimizerGenerator.hpp"
 #include "GraphConstructor.hpp"
 // #include "GraphManager.hpp"
-#include "PairWiseEditDis.hpp"
+// #include "PairWiseEditDis.hpp"
 #include "OMH.hpp"
 
 #include <time.h>
@@ -131,44 +131,30 @@ int main(int argc, char** argv) {
     // }
     std::map<std::set<std::vector<seqan3::dna5>>, int> edge_lst;
     if (args.pair_wise) {
-            // Create an instance of PairwiseEditDistance
-            // edge_lst = PairWiseEditDis(unique_reads, args).compute_pairwise_edit_distance();
-            // Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise (brute force) edit-distance-based edges calculation done");
-            // GraphManager(edge_lst, read2count, args).construct_graph();
-            // GraphManager(edge_lst, read2count, read2id, args).construct_graph();
-    } else {
-        // minimizer grouping first and then omh
-        std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> hash2reads;
-        std::vector<std::pair<std::uint64_t, unsigned>> seeds_k;
-        std::tuple<unsigned, unsigned, unsigned, double> betterParams;
-
-        if (args.minimizer_omh){
-            betterParams = MinimizerGenerator(args).possibleBetterParameters();
-            args.omh_k = std::get<2>(betterParams);
-        } else {
-            seeds_k = OMH(args).get_seeds_k();
-        }
-
-        if (args.minimizer_omh){
-            hash2reads = MinimizerGenerator(args).minimizer2reads_main(unique_reads, betterParams);  
-        } else {
-            // omh grouping first and then minimizer
-            // hash2reads = OMH(args).omh2read_main(unique_reads, seeds_k);
-            // auto edge_lst = EdgeConstructor(omh2reads, args).edges_main();
-        }
-        // edge_lst = EdgeConstructor(hash2reads, args).edges_main();
-        GraphConstructor graph_constructor(hash2reads, read2count, args);
-        graph_constructor.construct_graph();
+        GraphConstructor graph_constructor(read2count, args);
+        graph_constructor.construt_graph_via_pairwise_comparison(unique_reads);
         if (args.save_graph){
             graph_constructor.save_graph();
         }
-        Utils::getInstance().logger(LOG_LEVEL_INFO,  "Edit-distance-based edges calculation done!");
+        // Create an instance of PairwiseEditDistance
+        // edge_lst = PairWiseEditDis(unique_reads, args).compute_pairwise_edit_distance();
+        // Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise (brute force) edit-distance-based edges calculation done");
+        // GraphManager(edge_lst, read2count, args).construct_graph();
+        // GraphManager(edge_lst, read2count, read2id, args).construct_graph();
+    } else {
+        // minimizer grouping first and then omh
+        auto betterParams = MinimizerGenerator(args).possibleBetterParameters();
+        args.omh_k = std::get<2>(betterParams);
+
+        auto hash2reads = MinimizerGenerator(args).minimizer2reads_main(unique_reads, betterParams);  
+
+        GraphConstructor graph_constructor(read2count, args);
+        graph_constructor.construct_graph(hash2reads);
+        if (args.save_graph){
+            graph_constructor.save_graph();
+        }
     }
-    // if (args.save_graph){
-    //     GraphManager graph_manager(edge_lst, read2count, args);
-    //     graph_manager.construct_graph();
-    //     graph_manager.save_graph();
-    // }
+
     ////////////////////////////////////////////////////////////////////////////////////////////
     // Utils::getInstance().logger(LOG_LEVEL_INFO,  "edit-distance-based graph construction done!");
     //Print the stored read pairs and edit distances
