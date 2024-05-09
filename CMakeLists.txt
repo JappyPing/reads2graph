@@ -23,7 +23,7 @@ set(SOURCES
     ReadWrite.cpp
     MinimizerGenerator.cpp
     GraphConstructor.cpp
-    PairWiseEditDis.cpp
+    # PairWiseEditDis.cpp
     OMH.cpp
 )
 

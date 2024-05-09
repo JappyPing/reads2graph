@@ -12,8 +12,6 @@
 #include "ReadWrite.hpp"
 #include "MinimizerGenerator.hpp"
 #include "GraphConstructor.hpp"
-// #include "GraphManager.hpp"
-// #include "PairWiseEditDis.hpp"
 #include "OMH.hpp"
 
 #include <time.h>
