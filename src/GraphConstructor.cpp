@@ -208,19 +208,35 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
         // std::uint64_t new_k = omh_k;
         uint8_t d_t = args.max_edit_dis;
 
-        // unsigned int times = std::min(args.omh_times, args.max_edit_dis - 2);
-        // for (unsigned int i = 0; i < args.omh_times; ++i) {
-        for (unsigned int cur_d = d_t; cur_d >= 1; cur_d--) {
-            // for (unsigned j = 0; j < args.omh_times; ++j) {
-            std::uint64_t cur_seed = distribution(generator);
-            std::uint64_t cur_k = OMH(args).omh_k(args.read_length, args.probability, cur_d);
-            std::pair<std::uint64_t, unsigned> cur_pair = std::make_pair(cur_seed, cur_k);
-            // std::pair<std::uint64_t, unsigned> cur_pair = std::make_pair(seeds[i], new_k);
-            seeds_k.push_back(cur_pair);                
-            // if (args.read_length > 50) {
-            //     new_k++; 
-            // }            
-            // }
+        if (args.max_edit_dis == 1 ){
+            for (unsigned int cur_d = d_t; cur_d >= 1; cur_d--) {
+                for (unsigned j = 0; j < args.omh_times; ++j) {
+                    std::uint64_t cur_seed = distribution(generator);
+                    std::uint64_t cur_k = OMH(args).omh_k(args.read_length, args.probability, cur_d);
+                    std::pair<std::uint64_t, unsigned> cur_pair = std::make_pair(cur_seed, cur_k);
+                    // std::pair<std::uint64_t, unsigned> cur_pair = std::make_pair(seeds[i], new_k);
+                    seeds_k.push_back(cur_pair);                
+                    // if (args.read_length > 50) {
+                    //     new_k++; 
+                    // }            
+                } 
+            }           
+        } else if (args.max_edit_dis == 2){
+            for (unsigned int cur_d = d_t; cur_d >= 1; cur_d--) {
+                for (unsigned j = 0; j < args.omh_times-1; ++j) {
+                    std::uint64_t cur_seed = distribution(generator);
+                    std::uint64_t cur_k = OMH(args).omh_k(args.read_length, args.probability, cur_d);
+                    std::pair<std::uint64_t, unsigned> cur_pair = std::make_pair(cur_seed, cur_k);
+                    seeds_k.push_back(cur_pair);                
+                }
+            }
+        } else {
+            for (unsigned int cur_d = d_t; cur_d >= 1; cur_d--) {
+                std::uint64_t cur_seed = distribution(generator);
+                std::uint64_t cur_k = OMH(args).omh_k(args.read_length, args.probability, cur_d);
+                std::pair<std::uint64_t, unsigned> cur_pair = std::make_pair(cur_seed, cur_k);
+                seeds_k.push_back(cur_pair);                   
+            }
         }
         // unsigned omh_k = args.omh_k;
         // #pragma omp parallel for num_threads(args.num_process) schedule(dynamic)
