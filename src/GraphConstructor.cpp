@@ -196,56 +196,35 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
         // Specify the range of values for your seeds
         std::uniform_int_distribution<std::uint64_t> distribution(std::numeric_limits<std::uint64_t>::min(), std::numeric_limits<std::uint64_t>::max());
 
-        // unsigned omh_k = args.omh_k + args.omh_k_step_size;
-
         std::vector<std::vector<std::vector<seqan3::dna5>>> s_group;
         std::vector<std::vector<std::vector<seqan3::dna5>>> m_group;
         std::vector<std::vector<std::vector<seqan3::dna5>>> l_group;
 
-        // std::vector<uint64_t> new_seeds(args.omh_times);
-
         std::vector<std::pair<std::uint64_t, unsigned>> seeds_k;
-        // std::uint64_t new_k = omh_k;
         uint8_t d_t = args.max_edit_dis;
-
-        if (args.max_edit_dis == 1 ){
+        uint8_t dis_dif = args.max_edit_dis - args.min_edit_dis;
+        if (dis_dif >= 0){
+            uint8_t times;
+            if (dis_dif < (args.omh_times - 1)){
+                times = args.omh_times - dis_dif;
+            } else {
+                times = 1;
+            }
             for (unsigned int cur_d = d_t; cur_d >= 1; cur_d--) {
-                for (unsigned j = 0; j < args.omh_times; ++j) {
+                for (unsigned j = 0; j < times; ++j) {
                     std::uint64_t cur_seed = distribution(generator);
                     std::uint64_t cur_k = OMH(args).omh_k(args.read_length, args.probability, cur_d);
                     std::pair<std::uint64_t, unsigned> cur_pair = std::make_pair(cur_seed, cur_k);
-                    // std::pair<std::uint64_t, unsigned> cur_pair = std::make_pair(seeds[i], new_k);
-                    seeds_k.push_back(cur_pair);                
-                    // if (args.read_length > 50) {
-                    //     new_k++; 
-                    // }            
+                    seeds_k.push_back(cur_pair);                   
                 } 
             }           
-        } else if (args.max_edit_dis == 2){
-            for (unsigned int cur_d = d_t; cur_d >= 1; cur_d--) {
-                for (unsigned j = 0; j < args.omh_times-1; ++j) {
-                    std::uint64_t cur_seed = distribution(generator);
-                    std::uint64_t cur_k = OMH(args).omh_k(args.read_length, args.probability, cur_d);
-                    std::pair<std::uint64_t, unsigned> cur_pair = std::make_pair(cur_seed, cur_k);
-                    seeds_k.push_back(cur_pair);                
-                }
-            }
         } else {
-            for (unsigned int cur_d = d_t; cur_d >= 1; cur_d--) {
-                std::uint64_t cur_seed = distribution(generator);
-                std::uint64_t cur_k = OMH(args).omh_k(args.read_length, args.probability, cur_d);
-                std::pair<std::uint64_t, unsigned> cur_pair = std::make_pair(cur_seed, cur_k);
-                seeds_k.push_back(cur_pair);                   
-            }
+            Utils::getInstance().logger(LOG_LEVEL_ERROR,  std::format("min_edit_dis({}) should not larger than max_edit_dis({}) ", args.min_edit_dis, args.max_edit_dis));
         }
-        // unsigned omh_k = args.omh_k;
+
         // #pragma omp parallel for num_threads(args.num_process) schedule(dynamic)
         for (const auto &el_group : large_group){
-
-            // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("seed: {}, k {} ", seeds[seed_idx], omh_k));
-            // auto cur_hash2reads = OMH(args).omh2reads_main(el_group, seeds[seed_idx], omh_k);
             auto cur_hash2reads = OMH(args).omh2read_main(el_group, seeds_k);
-            // auto cur_hash2reads = OMH(args).omhs2read_main(el_group, omh_k, args.omh_seed, 2);
 
             auto cur_bin_n = cur_hash2reads.size();
             #pragma omp parallel for num_threads(args.num_process) schedule(static)

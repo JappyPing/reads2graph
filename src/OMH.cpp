@@ -16,12 +16,13 @@ OMH::OMH(cmd_arguments args) : args(args) {}
 
 unsigned OMH::omh_k(unsigned L, double p, uint8_t d) {
     // unsigned k = ceil((p*(1+L))/(d+p));
-    unsigned k = ceil(((1-p)*(1+L))/(d+1-p));
+    // unsigned k = ceil(((1-p)*(1+L))/(d+1-p));
+    unsigned k = ceil(((1-p)*(2+L))/(d+2-2*p));
     if (k < 4){
         k = 4;
         Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Better k {} has been changed to 4.", k));
-    } else if (k > (args.read_length / 4)) {
-        k = args.read_length/4;
+    } else if (k > 27) {
+        k = 27;
         Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Better k {} has been changed to {}.", k, args.read_length/4));                
     }
     return k;
@@ -118,7 +119,7 @@ std::string OMH::getGappedSubstring(const std::string& str, size_t startPos, siz
 }
 
 uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, std::uint64_t seed) {
-    if(read.size() < k) return {};
+    if(read.size() < 2*k - 1) return {};
     std::vector<std::uint64_t> hash_vec;
     std::unordered_map<std::string, unsigned> occurrences;
     std::uint64_t cur_seed = seed;
