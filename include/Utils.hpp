@@ -28,25 +28,26 @@ struct cmd_arguments
     // unsigned chunk_size{128};
     std::filesystem::path output_dir{std::filesystem::current_path()};
     unsigned read_length{};
-    uint8_t k_size{8};
-    uint8_t window_size{33};
+    // uint8_t k_size{8};
+    // uint8_t window_size{33};
     uint8_t max_edit_dis{2};
     uint8_t min_edit_dis{1};
     int num_process{26};
     bool pair_wise{false};
-    unsigned int bin_size_min{500};
+    // unsigned int bin_size_min{500};
     unsigned int bin_size_max{10000};
-    unsigned omh_k{15};
-    uint8_t omh_k_step_size{3};
-    unsigned omh_times{2};
+    // unsigned omh_k{15};
+    // uint8_t omh_k_step_size{3};
+    unsigned omh_times{3};
     // bool omh_seed_default{true};
     std::uint64_t omh_seed{2024};
     // unsigned omh_kmer_n{3}; // Number of k-mers to consider
     double bad_kmer_ratio{0.3};
     double probability{0.86};
+    unsigned visit_depth{15};
     bool save_graph{false};
-    double sampling_rate{0.01};
-    bool minimizer_omh{true}; 
+    // double sampling_rate{0.01};
+    // bool minimizer_omh{true}; 
 };
 
 

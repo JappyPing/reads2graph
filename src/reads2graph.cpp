@@ -142,7 +142,6 @@ int main(int argc, char** argv) {
     } else {
         // minimizer grouping first and then omh
         auto betterParams = MinimizerGenerator(args).possibleBetterParameters();
-        args.omh_k = std::get<2>(betterParams);
 
         auto hash2reads = MinimizerGenerator(args).minimizer2reads_main(unique_reads, betterParams);  
 

@@ -340,7 +340,7 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
             #pragma omp parallel for num_threads(args.num_process) schedule(static)
             for (const auto &cur_read : unique_reads){
                 auto cur_v = read2vertex_[cur_read];
-                auto indirect_neighbors = visitNeighborsOfNeighborsWithThreshold(graph_, cur_v, args.max_edit_dis * 3);
+                auto indirect_neighbors = visitNeighborsOfNeighborsWithThreshold(graph_, cur_v, args.visit_depth);
                 if (!indirect_neighbors.empty()) {
                     for (auto v : indirect_neighbors){
                         std::pair<int, int> cur_pair = std::make_pair(cur_v, v);

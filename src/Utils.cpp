@@ -160,15 +160,15 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                                     .long_id = "read_length",
                                     .description = "No need to input this parameter, reads2graph will calculate the minimum read length."});
 
-    parser.add_option(args.k_size,
-                      sharg::config{.short_id = 'k',
-                                    .long_id = "k_size",
-                                    .description = "The size for minimiser."});
+    // parser.add_option(args.k_size,
+    //                   sharg::config{.short_id = 'k',
+    //                                 .long_id = "k_size",
+    //                                 .description = "The size for minimiser."});
 
-    parser.add_option(args.window_size,
-                      sharg::config{.short_id = 'w',
-                                    .long_id = "window_size",
-                                    .description = "The window size for minimiser."});
+    // parser.add_option(args.window_size,
+    //                   sharg::config{.short_id = 'w',
+    //                                 .long_id = "window_size",
+    //                                 .description = "The window size for minimiser."});
 
     parser.add_option(args.max_edit_dis,
                       sharg::config{.short_id = 'x',
@@ -195,17 +195,17 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                                     .long_id = "pair_wise",
                                     .description = "Brute Force calcualte the pairwise edit distance."});
 
-    parser.add_option(args.bin_size_min,
-                      sharg::config{.long_id = "bin_size_min",
-                                    .description = "The smaller threshold used to group buckets of different sizes."});
+    // parser.add_option(args.bin_size_min,
+    //                   sharg::config{.long_id = "bin_size_min",
+    //                                 .description = "The smaller threshold used to group buckets of different sizes."});
 
     parser.add_option(args.bin_size_max,
                       sharg::config{.long_id = "bin_size_max",
                                     .description = "The larger threshold used to group buckets of different sizes."});
 
-    parser.add_option(args.omh_k,
-                      sharg::config{.long_id = "omh_k",
-                                    .description = "K-mer size used in order min hashing."});
+    // parser.add_option(args.omh_k,
+    //                   sharg::config{.long_id = "omh_k",
+    //                                 .description = "K-mer size used in order min hashing."});
 
     parser.add_option(args.omh_times,
                       sharg::config{.long_id = "omh_times",
@@ -223,16 +223,20 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                       sharg::config{.long_id = "probability",
                                     .description = "The expected probability P for grouping two similar reads into same bucket by at least one minimiser that does not include the different bases"});
 
+    parser.add_option(args.visit_depth,
+                      sharg::config{.long_id = "visit_depth",
+                                    .description = "The maximum distance of nodes from the give node for updating more potential edges."});
+
     parser.add_option(args.save_graph,
                       sharg::config{.long_id = "save_graph",
                                     .description = "If ture, reads2graph will save graph to file in graphviz dot format."});
-    parser.add_option(args.minimizer_omh,
-                      sharg::config{.long_id = "minimizer_omh",
-                                    .description = "If ture, reads2graph employs minimizer bucketing first and then OMH bucketing; otherwise, OMH first then minimizer."});
+    // parser.add_option(args.minimizer_omh,
+    //                   sharg::config{.long_id = "minimizer_omh",
+    //                                 .description = "If ture, reads2graph employs minimizer bucketing first and then OMH bucketing; otherwise, OMH first then minimizer."});
 
-    parser.add_option(args.omh_k_step_size,
-                      sharg::config{.long_id = "omh_k_step_size",
-                                    .description = "The step size for varied k from the estimated better k for OMH bucketing."});
+    // parser.add_option(args.omh_k_step_size,
+    //                   sharg::config{.long_id = "omh_k_step_size",
+    //                                 .description = "The step size for varied k from the estimated better k for OMH bucketing."});
     // parser.add_option(args.sampling_rate,
     //                   sharg::config{.long_id = "sampling_rate",
     //                                 .description = "Sampling rate for estimating the kmer size."}); 

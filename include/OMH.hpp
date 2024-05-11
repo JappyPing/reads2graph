@@ -38,7 +38,7 @@ class OMH
 public:
     // OMH(std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args);
     OMH(cmd_arguments args);
-    std::vector<std::pair<std::uint64_t, unsigned>> get_seeds_k();
+    // std::vector<std::pair<std::uint64_t, unsigned>> get_seeds_k();
     std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> omh2read_main(std::vector<std::vector<seqan3::dna5>> unique_reads, std::vector<std::pair<std::uint64_t, unsigned>> seeds_k);
     uint64_t omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, std::uint64_t seed);
     

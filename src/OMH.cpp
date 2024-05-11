@@ -27,7 +27,7 @@ unsigned OMH::omh_k(unsigned L, double p, uint8_t d) {
     }
     return k;
 }
-
+/*
 std::vector<std::pair<std::uint64_t, unsigned>> OMH::get_seeds_k(){
     unsigned k;
     if (args.minimizer_omh) {
@@ -57,7 +57,7 @@ std::vector<std::pair<std::uint64_t, unsigned>> OMH::get_seeds_k(){
     Utils::getInstance().logger(LOG_LEVEL_INFO, "The above k and seed pairs are used for OMH bucketing.");
     return seeds_k;
 }
-
+*/
 std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::omh2reads_main(std::vector<std::vector<seqan3::dna5>> unique_reads, std::uint64_t seed, unsigned k){
     #pragma omp parallel for num_threads(args.num_process) schedule(static)
     for (auto const & read : unique_reads){
