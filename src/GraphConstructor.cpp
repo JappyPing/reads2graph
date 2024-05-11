@@ -72,7 +72,7 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
 {
     init_graph();
 
-    std::vector<std::vector<std::vector<seqan3::dna5>>> small_group;
+    // std::vector<std::vector<std::vector<seqan3::dna5>>> small_group;
     std::vector<std::vector<std::vector<seqan3::dna5>>> medium_group;
     std::vector<std::vector<std::vector<seqan3::dna5>>> large_group;
 
@@ -84,12 +84,14 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
         auto cur_read_num = reads_vec.size();
         if ( cur_read_num == 1){
             continue;
-        } else if ( cur_read_num >= 2 && cur_read_num < args.bin_size_min){
-            #pragma omp critical
-            {
-                small_group.emplace_back(reads_vec);
-            } 
-        } else if ( cur_read_num >= args.bin_size_min && cur_read_num < args.bin_size_max){
+        } 
+        // else if ( cur_read_num >= 2 && cur_read_num < args.bin_size_min){
+        //     #pragma omp critical
+        //     {
+        //         small_group.emplace_back(reads_vec);
+        //     } 
+        // } 
+        else if ( cur_read_num >= 2 && cur_read_num < args.bin_size_max){
             #pragma omp critical
             {
                 // std::cout << cur_read_num << " ";
@@ -113,41 +115,41 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
     /////////////////////////////
     auto config = seqan3::align_cfg::method_global{} | seqan3::align_cfg::edit_scheme | seqan3::align_cfg::min_score{-1 * args.max_edit_dis} | seqan3::align_cfg::output_score{};
     // small group
-    if (small_group.size() > 0){
-        #pragma omp parallel for num_threads(args.num_process) schedule(dynamic)
-        for (const auto &group : small_group)
-        {
-            auto pairwise_combinations = seqan3::views::pairwise_combine(group);
-            // #pragma omp parallel for num_threads(args.num_process) schedule(static)
-            for (size_t i = 0; i < pairwise_combinations.size(); ++i)
-            {
-                auto const &combination = pairwise_combinations[i];
-                auto const &seq1 = std::get<0>(combination);
-                auto const &seq2 = std::get<1>(combination);
+    // if (small_group.size() > 0){
+    //     #pragma omp parallel for num_threads(args.num_process) schedule(dynamic)
+    //     for (const auto &group : small_group)
+    //     {
+    //         auto pairwise_combinations = seqan3::views::pairwise_combine(group);
+    //         // #pragma omp parallel for num_threads(args.num_process) schedule(static)
+    //         for (size_t i = 0; i < pairwise_combinations.size(); ++i)
+    //         {
+    //             auto const &combination = pairwise_combinations[i];
+    //             auto const &seq1 = std::get<0>(combination);
+    //             auto const &seq2 = std::get<1>(combination);
 
-                auto alignment_results = seqan3::align_pairwise(std::tie(seq1, seq2), config);
-                // Iterate over alignment results and access the scores
-                for (auto const &result : alignment_results)
-                {
-                    int edit_distance = -1 * result.score();
-                    // std::cout << edit_distance << endl;
-                    //if ((edit_distance >= min_s) && (edit_distance <= max_s))
-                    if ((edit_distance >= args.min_edit_dis) && (edit_distance <= args.max_edit_dis)) 
-                    // if ((edit_distance > max_s))
-                    {
-                        #pragma omp critical
-                        {
-                            insert_edge(seq1, seq2, edit_distance);
-                        }                    
-                    } 
-                }
-            }        
-        }             
-        // std::cout << std::endl;
-        Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise comparison for the small-size-based buckets done!");
-    } else {
-        Utils::getInstance().logger(LOG_LEVEL_INFO,  format("No bucket has a size less than {}!", args.bin_size_min));
-    }
+    //             auto alignment_results = seqan3::align_pairwise(std::tie(seq1, seq2), config);
+    //             // Iterate over alignment results and access the scores
+    //             for (auto const &result : alignment_results)
+    //             {
+    //                 int edit_distance = -1 * result.score();
+    //                 // std::cout << edit_distance << endl;
+    //                 //if ((edit_distance >= min_s) && (edit_distance <= max_s))
+    //                 if ((edit_distance >= args.min_edit_dis) && (edit_distance <= args.max_edit_dis)) 
+    //                 // if ((edit_distance > max_s))
+    //                 {
+    //                     #pragma omp critical
+    //                     {
+    //                         insert_edge(seq1, seq2, edit_distance);
+    //                     }                    
+    //                 } 
+    //             }
+    //         }        
+    //     }             
+    //     // std::cout << std::endl;
+    //     Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise comparison for the small-size-based buckets done!");
+    // } else {
+    //     Utils::getInstance().logger(LOG_LEVEL_INFO,  format("No bucket has a size less than {}!", args.bin_size_min));
+    // }
     // large group
     if (medium_group.size() > 0){
         for (const auto &group : medium_group)
@@ -179,10 +181,10 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
                 }
             }   
         }     
-        Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise comparison for the medium-size-based buckets done!");       
+        Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise comparison for the small- or medium-size-based buckets done!");       
     } else {
         // Utils::getInstance().logger(LOG_LEVEL_INFO,  "No bucket has a size larger than 100!");
-        Utils::getInstance().logger(LOG_LEVEL_INFO,  format("No bucket with size larger than {}!", args.bin_size_min));
+        Utils::getInstance().logger(LOG_LEVEL_INFO,  format("No bucket with size between 2 and {}!", args.bin_size_max));
     }
     edge_summary();
     // extra largr group
@@ -196,7 +198,7 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
         // Specify the range of values for your seeds
         std::uniform_int_distribution<std::uint64_t> distribution(std::numeric_limits<std::uint64_t>::min(), std::numeric_limits<std::uint64_t>::max());
 
-        std::vector<std::vector<std::vector<seqan3::dna5>>> s_group;
+        // std::vector<std::vector<std::vector<seqan3::dna5>>> s_group;
         std::vector<std::vector<std::vector<seqan3::dna5>>> m_group;
         std::vector<std::vector<std::vector<seqan3::dna5>>> l_group;
 
@@ -234,12 +236,14 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
                 auto cur_num = cur_reads_vec.size();
                 if ( cur_num == 1){
                     continue;
-                } else if ( cur_bin_n >= 2 && cur_bin_n < args.bin_size_min){
-                    #pragma omp critical
-                    {
-                        s_group.emplace_back(cur_reads_vec);
-                    } 
-                } else if (cur_bin_n >= args.bin_size_min && cur_bin_n < args.bin_size_max){
+                } 
+                // else if ( cur_bin_n >= 2 && cur_bin_n < args.bin_size_min){
+                //     #pragma omp critical
+                //     {
+                //         s_group.emplace_back(cur_reads_vec);
+                //     } 
+                // } 
+                else if (cur_bin_n >= 2 && cur_bin_n < args.bin_size_max){
                     #pragma omp critical
                     {
                         // std::cout << cur_num << " ";
@@ -254,41 +258,41 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
         }
 
         Utils::getInstance().logger(LOG_LEVEL_INFO,  "Bucketing large-size-based bins using OMH done!");
-        if (s_group.size() > 0){
-            // #pragma omp parallel for
-            #pragma omp parallel for num_threads(args.num_process) schedule(dynamic)
-            for (const auto &cur_reads_vec : s_group){
+        // if (s_group.size() > 0){
+        //     // #pragma omp parallel for
+        //     #pragma omp parallel for num_threads(args.num_process) schedule(dynamic)
+        //     for (const auto &cur_reads_vec : s_group){
                 
-                auto pairwise_combinations = seqan3::views::pairwise_combine(cur_reads_vec);
+        //         auto pairwise_combinations = seqan3::views::pairwise_combine(cur_reads_vec);
 
-                // #pragma omp parallel for
-                #pragma omp parallel for num_threads(args.num_process) schedule(static)
-                for (size_t i = 0; i < pairwise_combinations.size(); ++i)
-                {
-                    auto const &combination = pairwise_combinations[i];
-                    auto const &seq1 = std::get<0>(combination);
-                    auto const &seq2 = std::get<1>(combination);
-                    auto alignment_results = seqan3::align_pairwise(std::tie(seq1, seq2), config);
-                    // Iterate over alignment results and access the scores
-                    for (auto const &result : alignment_results)
-                    {
-                        int edit_distance = -1 * result.score();
-                        // std::cout << edit_distance << endl;
-                        //if ((edit_distance >= min_s) && (edit_distance <= max_s))
-                        if ((edit_distance >= args.min_edit_dis) && (edit_distance <= args.max_edit_dis)) 
-                        // if ((edit_distance < min_s) && (edit_distance > max_s))
-                        {
-                            #pragma omp critical
-                            {
-                                // edge_lst[read_pair_set] = edit_distance;
-                                insert_edge(seq1, seq2, edit_distance);
-                            }                    
-                        } 
-                    }
-                }    
-            }
-            Utils::getInstance().logger(LOG_LEVEL_INFO,  "Graph update for the small-size-based buckets generated by OMH bucketing done!");    
-        }
+        //         // #pragma omp parallel for
+        //         #pragma omp parallel for num_threads(args.num_process) schedule(static)
+        //         for (size_t i = 0; i < pairwise_combinations.size(); ++i)
+        //         {
+        //             auto const &combination = pairwise_combinations[i];
+        //             auto const &seq1 = std::get<0>(combination);
+        //             auto const &seq2 = std::get<1>(combination);
+        //             auto alignment_results = seqan3::align_pairwise(std::tie(seq1, seq2), config);
+        //             // Iterate over alignment results and access the scores
+        //             for (auto const &result : alignment_results)
+        //             {
+        //                 int edit_distance = -1 * result.score();
+        //                 // std::cout << edit_distance << endl;
+        //                 //if ((edit_distance >= min_s) && (edit_distance <= max_s))
+        //                 if ((edit_distance >= args.min_edit_dis) && (edit_distance <= args.max_edit_dis)) 
+        //                 // if ((edit_distance < min_s) && (edit_distance > max_s))
+        //                 {
+        //                     #pragma omp critical
+        //                     {
+        //                         // edge_lst[read_pair_set] = edit_distance;
+        //                         insert_edge(seq1, seq2, edit_distance);
+        //                     }                    
+        //                 } 
+        //             }
+        //         }    
+        //     }
+        //     Utils::getInstance().logger(LOG_LEVEL_INFO,  "Graph update for the small-size-based buckets generated by OMH bucketing done!");    
+        // }
         
         if (m_group.size() > 0){
             for (const auto &cur_reads_vec : m_group){
@@ -322,7 +326,7 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
                     // }
                 }    
             }
-            Utils::getInstance().logger(LOG_LEVEL_INFO,  "Graph update for the medium-size-based buckets generated by OMH bucketing done!");   
+            Utils::getInstance().logger(LOG_LEVEL_INFO,  "Graph update for the small- or medium-size-based buckets generated by OMH bucketing done!");   
         }
         edge_summary();
 
