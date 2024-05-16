@@ -170,7 +170,7 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
                     int edit_distance = -1 * result.score();
                     // std::cout << edit_distance << endl;
                     //if ((edit_distance >= min_s) && (edit_distance <= max_s))
-                    if ((edit_distance >= args.min_edit_dis) && (edit_distance <= args.max_edit_dis)) 
+                    if ((edit_distance >= 1) && (edit_distance <= args.max_edit_dis)) 
                     // if ((edit_distance < min_s) && (edit_distance > max_s))
                     {
                         #pragma omp critical
@@ -204,11 +204,10 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
 
         std::vector<std::pair<std::uint64_t, unsigned>> seeds_k;
         uint8_t d_t = args.max_edit_dis;
-        uint8_t dis_dif = args.max_edit_dis - args.min_edit_dis;
-        if (dis_dif >= 0){
+        if (args.min_edit_dis <= args.max_edit_dis){
             uint8_t times;
-            if (dis_dif < (args.omh_times - 1)){
-                times = args.omh_times - dis_dif;
+            if (args.max_edit_dis == 1 || args.max_edit_dis == 2){
+                times = args.omh_times - args.max_edit_dis + 1;
             } else {
                 times = 1;
             }
@@ -223,6 +222,26 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
         } else {
             Utils::getInstance().logger(LOG_LEVEL_ERROR,  std::format("min_edit_dis({}) should not larger than max_edit_dis({}) ", args.min_edit_dis, args.max_edit_dis));
         }
+
+        // uint8_t dis_dif = args.max_edit_dis - args.min_edit_dis;
+        // if (dis_dif >= 0){
+        //     uint8_t times;
+        //     if (dis_dif < (args.omh_times - 1)){
+        //         times = args.omh_times - dis_dif;
+        //     } else {
+        //         times = 1;
+        //     }
+        //     for (unsigned int cur_d = d_t; cur_d >= 1; cur_d--) {
+        //         for (unsigned j = 0; j < times; ++j) {
+        //             std::uint64_t cur_seed = distribution(generator);
+        //             std::uint64_t cur_k = OMH(args).omh_k(args.read_length, args.probability, cur_d);
+        //             std::pair<std::uint64_t, unsigned> cur_pair = std::make_pair(cur_seed, cur_k);
+        //             seeds_k.push_back(cur_pair);                   
+        //         } 
+        //     }           
+        // } else {
+        //     Utils::getInstance().logger(LOG_LEVEL_ERROR,  std::format("min_edit_dis({}) should not larger than max_edit_dis({}) ", args.min_edit_dis, args.max_edit_dis));
+        // }
 
         // #pragma omp parallel for num_threads(args.num_process) schedule(dynamic)
         for (const auto &el_group : large_group){
@@ -313,7 +332,7 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
                         int edit_distance = -1 * result.score();
                         // std::cout << edit_distance << endl;
                         //if ((edit_distance >= min_s) && (edit_distance <= max_s))
-                        if ((edit_distance >= args.min_edit_dis) && (edit_distance <= args.max_edit_dis)) 
+                        if ((edit_distance >= 1) && (edit_distance <= args.max_edit_dis)) 
                         // if ((edit_distance < min_s) && (edit_distance > max_s))
                         {
                             #pragma omp critical
@@ -360,7 +379,7 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
                 {
                     int edit_distance = -1 * result.score();
                     //if ((edit_distance >= min_s) && (edit_distance <= max_s))
-                    if ((edit_distance >= args.min_edit_dis) && (edit_distance <= args.max_edit_dis)) 
+                    if ((edit_distance >= 1) && (edit_distance <= args.max_edit_dis)) 
                     {
                         #pragma omp critical
                         {
@@ -370,6 +389,10 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
                 } 
             } 
         Utils::getInstance().logger(LOG_LEVEL_INFO,  "Graph update for the remaining unprocessed unique reads done!");
+        }
+        if (args.min_edit_dis != 1) {
+            remove_edges_in_interval(graph_, 1, args.min_edit_dis - 1);
+            Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Graph update for removing the edges with weights less than {}.", args.min_edit_dis));
         }
     }
     Utils::getInstance().logger(LOG_LEVEL_INFO,  "Edit-distance-based read graph construction done!");
