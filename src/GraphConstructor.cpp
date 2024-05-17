@@ -390,12 +390,12 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
             } 
         Utils::getInstance().logger(LOG_LEVEL_INFO,  "Graph update for the remaining unprocessed unique reads done!");
         }
-        if (args.min_edit_dis != 1) {
-            remove_edges_in_interval(graph_, 1, args.min_edit_dis - 1);
-            Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Graph update for removing the edges with weights less than {}.", args.min_edit_dis));
-        }
     }
     Utils::getInstance().logger(LOG_LEVEL_INFO,  "Edit-distance-based read graph construction done!");
+    if (args.min_edit_dis > 1) {
+        remove_edges_in_interval(graph_, 1, args.min_edit_dis - 1);
+        Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Graph update for removing the edges with weights less than {}.", args.min_edit_dis));
+    }
     edge_summary();
 }
 

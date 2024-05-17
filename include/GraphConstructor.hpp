@@ -95,8 +95,10 @@ private:
 template <typename Graph>
 void remove_edges_in_interval(Graph& g, int lower_bound, int upper_bound) {
     // Iterate over all edges in the graph
-    typename graph_traits<Graph>::edge_iterator ei, ei_end;
-    for (tie(ei, ei_end) = edges(g); ei != ei_end; ++ei) {
+    typename graph_traits<Graph>::edge_iterator ei, ei_end, next;
+    for (tie(ei, ei_end) = edges(g); ei != ei_end; ei = next) {
+        next = ei;
+        ++next;
         // Check if the weight of the current edge falls within the specified interval
         if (g[*ei].weight >= lower_bound && g[*ei].weight <= upper_bound) {
             // If the weight is within the interval, remove the edge
