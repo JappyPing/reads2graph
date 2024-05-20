@@ -92,15 +92,16 @@ std::tuple<unsigned, unsigned, unsigned, double> MinimizerGenerator::possibleBet
     //     betterK = kSize(betterW, args.bad_kmer_ratio);
     // } 
     if (args.read_length < 10){
-        betterK = 3;
+        betterK = 4;
         betterN = 1;
         betterW = args.read_length;
     } else if (args.read_length >= 10 && args.read_length < 16){
-        betterK = 3;
+        betterK = 4;
         betterN = 2;
+        // betterW = args.read_length;
         betterW = round(args.read_length/betterN);
     } else if (args.read_length >= 16 && args.read_length < 50){
-        betterK = 3;
+        betterK = 4;
         betterN = 3;
         betterW = round(args.read_length/betterN);
     } else if (args.read_length >= 50 && args.read_length <= 300) {
@@ -112,20 +113,29 @@ std::tuple<unsigned, unsigned, unsigned, double> MinimizerGenerator::possibleBet
         betterN = 3;
         betterW = round(args.read_length/betterN);
         betterK = kSize(betterW, args.bad_kmer_ratio);
+        if (betterK < 4){
+            Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Estimated k={} has been changed to 4.", betterK));
+            betterK = 4;
+        } else 
+        if (betterK >= 28) {
+            Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Estimated k={} has been changed to 27 as the maximum size of unggaped shape is stricted by 28 in Seqan3.", betterK));  
+            betterK = 27;             
+        }
     } 
-
-    p = 1 - std::pow(proba(betterW, betterK), betterN);
-
-    if (betterK < 3){
-        betterK = 3;
-        Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Better k {} has been changed to 3.", betterK));
-    } else 
-    if (betterK >= 28) {
-        betterK = 27;
-        Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Better k {} has been changed to 27 as the maximum size of unggaped shape is stricted by 28 in Seqan3.", betterK));                
+    // if (betterK < 4){
+    //     Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Better k {} has been changed to 4.", betterK));
+    //     betterK = 4;
+    // } else 
+    // if (betterK >= 28) {
+    //     Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Better k {} has been changed to 27 as the maximum size of unggaped shape is stricted by 28 in Seqan3.", betterK));  
+    //     betterK = 27;             
+    // }
+    if (args.read_length >= 50 && args.read_length <= 300){
+        p = 1 - std::pow(proba(betterW, betterK), betterN);
+        Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Better number of windows: {}, Better window size: {}, Better K: {} and the probability: {}.", betterN, betterW, betterK, p)); 
+    } else {
+        Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Better number of windows: {}, Better window size: {}, Better K: {}.", betterN, betterW, betterK));         
     }
-
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Better number of windows: {}, Better window size: {}, Better K: {} and the probability: {}.", betterN, betterW, betterK, p));  
     return std::make_tuple(betterN, betterW, betterK, p);   
 }
 

@@ -18,12 +18,12 @@ unsigned OMH::omh_k(unsigned L, double p, uint8_t d) {
     // unsigned k = ceil((p*(1+L))/(d+p));
     // unsigned k = ceil(((1-p)*(1+L))/(d+1-p));
     unsigned k = ceil(((1-p)*(2+L))/(d+2-2*p));
-    if (k < 3){
-        k = 3;
-        Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Better k {} has been changed to 3.", k));
+    if (k < 4){
+        Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Estimated k={} has been changed to 4.", k));
+        k = 4;
     } else if (k > 27) {
-        k = 27;
-        Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Better k {} has been changed to {}.", k, args.read_length/4));                
+        Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Estimated k={} has been changed to 27.", k)); 
+        k = 27;               
     }
     return k;
 }
