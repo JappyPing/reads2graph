@@ -147,7 +147,7 @@ int main(int argc, char** argv) {
 
         GraphConstructor graph_constructor(read2count, args);
         graph_constructor.construct_graph(hash2reads);
-        if (args.read_length < 50){
+        if (args.read_length < 16){
             graph_constructor.update_graph_omh(unique_reads); 
         }
         Utils::getInstance().logger(LOG_LEVEL_INFO,  "Edit-distance-based read graph construction done!");
