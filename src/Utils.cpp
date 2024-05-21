@@ -160,10 +160,15 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                                     .long_id = "read_length",
                                     .description = "No need to input this parameter, reads2graph will calculate the minimum read length."});
 
-    // parser.add_option(args.k_size,
-    //                   sharg::config{.short_id = 'k',
-    //                                 .long_id = "k_size",
-    //                                 .description = "The size for minimiser."});
+    parser.add_option(args.k_size,
+                      sharg::config{.short_id = 'k',
+                                    .long_id = "k_size",
+                                    .description = "The size for minimiser."});
+
+    parser.add_option(args.window_number,
+                      sharg::config{.short_id = 'w',
+                                    .long_id = "window_number",
+                                    .description = "The window number for minimiser."});
 
     // parser.add_option(args.window_size,
     //                   sharg::config{.short_id = 'w',

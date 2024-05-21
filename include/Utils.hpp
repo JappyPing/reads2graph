@@ -28,8 +28,9 @@ struct cmd_arguments
     // unsigned chunk_size{128};
     std::filesystem::path output_dir{std::filesystem::current_path()};
     unsigned read_length{};
-    // uint8_t k_size{8};
-    // uint8_t window_size{33};
+    uint8_t k_size{4};
+    uint8_t window_number{3};
+    uint8_t window_size{33};
     uint8_t max_edit_dis{2};
     uint8_t min_edit_dis{1};
     int num_process{26};
