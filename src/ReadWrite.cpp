@@ -69,7 +69,11 @@ std::tuple<std::vector<std::vector<seqan3::dna5>>, std::map<std::vector<seqan3::
         std::vector<seqan3::dna5> cur_seq = record.sequence();
         if (!read2count[cur_seq]++) {
             unique_reads.push_back(cur_seq);
-            min_read_length = std::min(min_read_length, static_cast<unsigned>(cur_seq.size()));
+            auto cur_read_len = cur_seq.size();
+            if (cur_read_len < 6 || cur_read_len > 300){
+                Utils::getInstance().logger(LOG_LEVEL_ERROR,  "Read length should not less than 6 and larger than 300.");
+            }
+            min_read_length = std::min(min_read_length, static_cast<unsigned>(cur_read_len));
         }
     }
 

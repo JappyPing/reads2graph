@@ -208,9 +208,9 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                       sharg::config{.long_id = "bin_size_max",
                                     .description = "The larger threshold used to group buckets of different sizes."});
 
-    // parser.add_option(args.omh_k,
-    //                   sharg::config{.long_id = "omh_k",
-    //                                 .description = "K-mer size used in order min hashing."});
+    parser.add_option(args.omh_k,
+                      sharg::config{.long_id = "omh_k",
+                                    .description = "K-mer size used in order min hashing."});
 
     parser.add_option(args.omh_times,
                       sharg::config{.long_id = "omh_times",

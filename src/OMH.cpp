@@ -17,15 +17,22 @@ OMH::OMH(cmd_arguments args) : args(args) {}
 unsigned OMH::omh_k(unsigned L, double p, uint8_t d) {
     // unsigned k = ceil((p*(1+L))/(d+p));
     // unsigned k = ceil(((1-p)*(1+L))/(d+1-p));
-    unsigned k = ceil(((1-p)*(2+L))/(d+2-2*p));
-    if (k < 4){
-        Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Estimated k={} has been changed to 4.", k));
-        k = 4;
-    } else if (k > 27) {
-        Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Estimated k={} has been changed to 27.", k)); 
-        k = 27;               
+    if (args.read_length >= 6 && args.read_length < 50){
+        if ((args.read_length- 2 * args.omh_k + 1) < 3 ){
+            Utils::getInstance().logger(LOG_LEVEL_ERROR,  "kmer size for gOMH bucketing is invalid.");
+        }        
+        return args.omh_k;
+    } else if (args.read_length >= 50 && args.read_length <= 300){
+        unsigned k = ceil(((1-p)*(2+L))/(d+2-2*p));
+        if (k < 4){
+            Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Estimated k={} has been changed to 4.", k));
+            k = 4;
+        } else if (k > 27) {
+            Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Estimated k={} has been changed to 27.", k)); 
+            k = 27;               
+        }
+        return k;
     }
-    return k;
 }
 /*
 std::vector<std::pair<std::uint64_t, unsigned>> OMH::get_seeds_k(){

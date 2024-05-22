@@ -30,14 +30,14 @@ struct cmd_arguments
     unsigned read_length{};
     uint8_t k_size{4};
     uint8_t window_number{3};
-    uint8_t window_size{33};
+    // uint8_t window_size{};
     uint8_t max_edit_dis{2};
     uint8_t min_edit_dis{1};
     int num_process{26};
     bool pair_wise{false};
     // unsigned int bin_size_min{500};
     unsigned int bin_size_max{10000};
-    // unsigned omh_k{15};
+    unsigned omh_k{4};
     // uint8_t omh_k_step_size{3};
     unsigned omh_times{3};
     // bool omh_seed_default{true};
