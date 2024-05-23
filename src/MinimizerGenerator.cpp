@@ -136,8 +136,9 @@ std::tuple<unsigned, unsigned, unsigned, double> MinimizerGenerator::possibleBet
     } else {
         Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Number of windows: {}, Window size: {}, K size: {}.", betterN, betterW, betterK));         
     }
-    if ((betterW - betterK + 1) < 3 ){
-        Utils::getInstance().logger(LOG_LEVEL_ERROR,  "kmer size for minimizer bucketing is invalid.");
+    auto number_kmer = betterW - betterK + 1;
+    if ((number_kmer) < 3 ){
+        Utils::getInstance().logger(LOG_LEVEL_WARNING,  std::format("only {} kmers setted for minimizer selection.", number_kmer));
     }
 
     return std::make_tuple(betterN, betterW, betterK, p);   
