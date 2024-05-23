@@ -162,7 +162,8 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
         if (args.min_edit_dis <= args.max_edit_dis){
             uint8_t times;
             if (args.max_edit_dis == 1 || args.max_edit_dis == 2){
-                times = args.omh_times - args.max_edit_dis + 1;
+                // times = args.omh_times - args.max_edit_dis + 1;
+                times = args.omh_times;
             } else {
                 times = 1;
             }
