@@ -220,6 +220,10 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                       sharg::config{.long_id = "omh_seed",
                                     .description = "The seed to generate a series of seeds for OMH bucketing."});
 
+    parser.add_option(args.omh_flag,
+                      sharg::config{.long_id = "omh_flag",
+                                    .description = "Do not set this flag by yourself. When the permutation_times larger than the number of k-mer candidates and the kmer size are the same one, bucketing the reads using each kmer candidate."});
+
     parser.add_option(args.bad_kmer_ratio,
                       sharg::config{.long_id = "bad_kmer_ratio",
                                     .description = "The maximum ratio of bad k-mers out of total number of kmers in a window of a read."});

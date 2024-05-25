@@ -21,7 +21,7 @@ unsigned OMH::omh_k(unsigned L, double p, uint8_t d) {
     if (args.read_length >= 6 && args.read_length < 50){
         auto omh_kmer_n = args.read_length- 2 * args.omh_k + 1;
         if (omh_kmer_n < 3 ){
-            Utils::getInstance().logger(LOG_LEVEL_WARNING,  std::format("only {} kmers setted for minimizer selection.", omh_kmer_n));
+            Utils::getInstance().logger(LOG_LEVEL_WARNING,  std::format("only {} kmers setted for gOMH selection.", omh_kmer_n));
         }        
         k = args.omh_k;
     } else if (args.read_length >= 50 && args.read_length <= 300){
@@ -99,18 +99,35 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::o
 
 
 std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::omh2read_main(std::vector<std::vector<seqan3::dna5>> unique_reads, std::vector<std::pair<std::uint64_t, unsigned>> seeds_k){
-    #pragma omp parallel for num_threads(args.num_process) schedule(static)
-    for (auto const & read : unique_reads){
+    if (args.omh_flag){
+        // When the permutation_times larger than the number of k-mer candidates and the kmer size are the same one, bucketing the reads using each kmer candidate
+        auto first_pair = seeds_k[0];
+        std::uint64_t seed = first_pair.first;
+        unsigned k = first_pair.second;
         #pragma omp parallel for num_threads(args.num_process) schedule(static)
-        for(auto &pair : seeds_k){
-            std::uint64_t seed = pair.first;
-            unsigned k = pair.second;
-            auto omh_value = omh_pos(read, k, seed); 
-            #pragma omp critical
-            {
-                omh2reads[omh_value].push_back(read);
-            }        
-        } 
+        for (auto const & read : unique_reads){  
+            auto omh_values = omh_pos2(read, k, seed);
+            for (auto const & omh_val : omh_values){
+                #pragma omp critical
+                {
+                    omh2reads[omh_val].push_back(read);
+                }                    
+            }
+        }  
+    } else {
+        #pragma omp parallel for num_threads(args.num_process) schedule(static)
+        for (auto const & read : unique_reads){
+            #pragma omp parallel for num_threads(args.num_process) schedule(static)
+            for(auto &pair : seeds_k){
+                std::uint64_t seed = pair.first;
+                unsigned k = pair.second;
+                auto omh_value = omh_pos(read, k, seed); 
+                #pragma omp critical
+                {
+                    omh2reads[omh_value].push_back(read);
+                }        
+            } 
+        }        
     }
     Utils::getInstance().logger(LOG_LEVEL_DEBUG, "All the unique reads for OMH done.");  
     return omh2reads;            
@@ -168,6 +185,31 @@ uint64_t OMH::omh_pos(const std::vector<seqan3::dna5>& read, unsigned k, std::ui
     auto min_hash = std::min_element(hash_vec.begin(), hash_vec.end());    
     return *min_hash;
 }
+
+// using each of all the kmers for bucketing
+std::vector<std::uint64_t> OMH::omh_pos2(const std::vector<seqan3::dna5>& read, unsigned k, std::uint64_t seed) {
+    if(read.size() < 2*k - 1) return {};
+    std::vector<std::uint64_t> hash_vec;
+    std::unordered_map<std::string, unsigned> occurrences;
+    std::uint64_t cur_seed = seed;
+
+    auto seql = read | seqan3::views::to_char;
+    string read_str(seql.begin(), seql.end());
+
+    size_t ll = read_str.size();
+
+    for(size_t i = 0; i <= ll - 2*k + 1; ++i) {
+        string kmer = getGappedSubstring(read_str, i, k);
+        occurrences[kmer]++;
+        boost::hash_combine(cur_seed, kmer);
+        boost::hash_combine(cur_seed, occurrences[kmer]);
+        hash_vec.emplace_back(cur_seed);
+        cur_seed = seed;
+    }
+    return hash_vec;
+}
+
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::omhs2read_main(std::vector<std::vector<seqan3::dna5>> unique_reads, unsigned k, std::uint64_t seed, int m){
 //     #pragma omp parallel for num_threads(args.num_process) schedule(static)
