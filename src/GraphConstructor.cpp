@@ -19,8 +19,8 @@
 #include <boost/functional/hash.hpp>
 #include <seqan3/alphabet/all.hpp>
 #include <deque>
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/depth_first_search.hpp>
+// #include <boost/graph/adjacency_list.hpp>
+// #include <boost/graph/depth_first_search.hpp>
 using namespace boost;
 // GraphConstructor::GraphConstructor(std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> key2reads, std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : key2reads_(std::move(key2reads)), read2count_(std::move(read2count)), args(args) {}
 GraphConstructor::GraphConstructor(std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : read2count_(std::move(read2count)), args(args) {}
@@ -183,7 +183,6 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
             /////////////////////////////////////////////////////
             // When the permutation_times larger than the number of k-mer candidates and the kmer size are the same one, bucketing the reads using each kmer candidate
             int flag = 0;
-            std::uint64_t k_val;
             unsigned first_k = seeds_k.front().second;
             for (const auto& pair : seeds_k) {
                 if (pair.second != first_k) {
@@ -309,12 +308,12 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
         }
     }
     /////////////////////////////////////////////////////////////////////////////////////////
-    if (args.read_length < 16){
-        if (medium_group.size() > 0){
-            auto medium_unique_reads = mergeUniqueReads(medium_group);
-            update_graph_omh(medium_unique_reads); 
-        }
-    }
+    // if (args.read_length < 16){
+    //     if (medium_group.size() > 0){
+    //         auto medium_unique_reads = mergeUniqueReads(medium_group);
+    //         update_graph_omh(medium_unique_reads); 
+    //     }
+    // }
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     if (args.min_edit_dis > 1 && args.read_length >= 50) {
         remove_edges_in_interval(graph_, 1, args.min_edit_dis - 1);
@@ -354,7 +353,6 @@ void GraphConstructor::update_graph_omh(std::vector<std::vector<seqan3::dna5>> u
         /////////////////////////////////////////////////////
         // When the permutation_times larger than the number of k-mer candidates and the kmer size are the same one, bucketing the reads using each kmer candidate
         int flag = 0;
-        std::uint64_t k_val;
         unsigned first_k = seeds_k.front().second;
         for (const auto& pair : seeds_k) {
             if (pair.second != first_k) {
@@ -478,7 +476,7 @@ void GraphConstructor::update_graph_omh(std::vector<std::vector<seqan3::dna5>> u
         } 
         Utils::getInstance().logger(LOG_LEVEL_INFO,  "Graph update for the remaining unprocessed unique reads done!");
     }
-    // edge_summary();
+    edge_summary();
 }
 
 std::vector<std::vector<seqan3::dna5>> GraphConstructor::mergeUniqueReads(const std::vector<std::vector<std::vector<seqan3::dna5>>>& read_vectors) {

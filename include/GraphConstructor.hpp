@@ -21,12 +21,12 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/properties.hpp>
-#include <boost/graph/graphml.hpp>
+// #include <boost/graph/graphml.hpp>
 #include <seqan3/core/debug_stream.hpp> // for debug_stream
-#include <boost/graph/adjacency_list.hpp>
+// #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graph_utility.hpp>
 #include <boost/property_map/dynamic_property_map.hpp>
-#include <boost/graph/depth_first_search.hpp>
+// #include <boost/graph/depth_first_search.hpp>
 
 using namespace std;
 using namespace seqan3::literals;
