@@ -308,18 +308,18 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
         }
     }
     /////////////////////////////////////////////////////////////////////////////////////////
-    // if (args.read_length < 16){
-    //     if (medium_group.size() > 0){
-    //         auto medium_unique_reads = mergeUniqueReads(medium_group);
-    //         update_graph_omh(medium_unique_reads); 
-    //     }
-    // }
+    if (args.read_length < 16){
+        if (medium_group.size() > 0){
+            auto medium_unique_reads = mergeUniqueReads(medium_group);
+            update_graph_omh(medium_unique_reads); 
+        }
+    }
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     if (args.min_edit_dis > 1 && args.read_length >= 50) {
         remove_edges_in_interval(graph_, 1, args.min_edit_dis - 1);
         Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Graph update for removing the edges with weights less than {}.", args.min_edit_dis));
     }
-    // Utils::getInstance().logger(LOG_LEVEL_INFO,  "Edit-distance-based read graph construction done!");
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  "Edit-distance-based read graph construction done!");
     edge_summary();
 }
 
@@ -476,7 +476,7 @@ void GraphConstructor::update_graph_omh(std::vector<std::vector<seqan3::dna5>> u
         } 
         Utils::getInstance().logger(LOG_LEVEL_INFO,  "Graph update for the remaining unprocessed unique reads done!");
     }
-    edge_summary();
+    // edge_summary();
 }
 
 std::vector<std::vector<seqan3::dna5>> GraphConstructor::mergeUniqueReads(const std::vector<std::vector<std::vector<seqan3::dna5>>>& read_vectors) {
