@@ -20,6 +20,7 @@ conda install cmake==3.27.6 gxx_linux-64==13.2.0 sharg==1.1.1 seqan3==3.3.0 boos
 #### Compile read2graph
 ```
 git clone https://github.com/Jappy0/reads2graph.git
+cd reads2graph
 mkdir build
 cd build
 cmake ..
