@@ -3,7 +3,6 @@ data/
 CMakeFiles/
 result/
 archive/
-ReadGraph.log
 test/
 *log
 logs/
