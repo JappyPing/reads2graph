@@ -1,5 +1,5 @@
 {% set name = "reads2graph" %}
-{% set version = "v1.0.0" %}
+{% set version = "1.0.0" %}
 {% set sha256 = "6bf8594de980e63109d10580a7a7fb459ffd613c95bd9e3cfa6a01f16890db7a" %}
 
 package:
@@ -7,13 +7,15 @@ package:
   version: {{ version }}
 
 source:
-  url: https://github.com/Jappy0/reads2graph/archive/refs/tags/{{name}-{version}}.tar.gz
+  url: "https://github.com/Jappy0/reads2graph/archive/refs/tags/{{name}}-v{version}}.tar.gz"
   sha256: {{ sha256 }}
 
 build:
   number: 0
   script: build.sh
   noarch: generic  # Noarch because it's a C++ software built from source
+  run_exports:
+    - {{ pin_subpackage("reads2graph", max_pin="x.x.x") }}
 
 requirements:
   build:
@@ -44,6 +46,6 @@ about:
 
 extra:
   identifiers:
-    - biotools: reads2graph
+    - biotools:reads2graph
   recipe-maintainers:
     - Jappy0  # Replace with your Bioconda username
