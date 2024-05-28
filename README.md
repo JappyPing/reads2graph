@@ -1,6 +1,5 @@
 # reads2graph
-Generate edit-distance-based read graph from short reads via looped minimiser and locality-sensitive hashing
-
+reads2graph is a practical method for constructing an edit-distance-based read graph for a short-read sequencing dataset via minimizer and order min hash bucketing and graph traversal.
 
 ## Dependencies
     - cmake >=3.21
