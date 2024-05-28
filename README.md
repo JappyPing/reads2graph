@@ -11,8 +11,10 @@ reads2graph is a practical method for constructing an edit-distance-based read g
 
 ## Installation
 ### From bioconda
-
+#### Create an environment and install reads2graph via conda
 ```
+conda create -n reads2graph-env
+conda activate reads2graph-env
 conda install bioconda::reads2graph
 ```
 
