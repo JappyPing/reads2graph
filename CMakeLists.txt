@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.21)
 project(reads2graph CXX)
 find_package(seqan3 REQUIRED)
 find_package(sharg REQUIRED)
-find_package(boost REQUIRED)
+
 # Add your source files
 set(SOURCES
     LoggingLevels.cpp
@@ -16,14 +16,12 @@ set(SOURCES
     OMH.cpp
 )
 #include_directories
-include_directories(include $ENV{CONDA_PREFIX}/include)
-link_directories($ENV{CONDA_PREFIX}/lib)
+include_directories(include)
 
-set(CMAKE_CXX_FLAGS "${CAMKE_CXX_FLAGS} -std=c++20 -fopenmp -static-libgcc -static-libstdc++ -isystem $ENV{CONDA_PREFIX}/include/seqan3/submodules/sdsl-lite/include -isystem $ENV{CONDA_PREFIX}/include/seqan3/submodules/cereal/include -fconcepts -g -Wall -lyaml-cpp -Wno-interference-size") #-fsanitize=address
+set(CMAKE_CXX_FLAGS "${CAMKE_CXX_FLAGS} -std=c++20 -fopenmp -static-libgcc -static-libstdc++ -isystem $ENV{CONDA_PREFIX}/include -isystem $ENV{CONDA_PREFIX}/include/seqan3/submodules/sdsl-lite/include -isystem $ENV{CONDA_PREFIX}/include/seqan3/submodules/cereal/include -fconcepts -g -Wall -lyaml-cpp -Wno-interference-size -Wno-maybe-uninitialized") #-fsanitize=address
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src c_files)
 add_executable(${PROJECT_NAME} ${c_files})
-# Link against the required libraries
-target_link_libraries(${PROJECT_NAME} -Wl,-Bstatic xxhash -Wl,-Bdynamic)
+
 

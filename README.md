@@ -15,11 +15,12 @@ conda install bioconda::reads2graph
 ```
 conda create -n reads2graph-env
 conda activate reads2graph-env
-conda install -c conda-forge cmake>=3.21 gxx_linux-64==13.2.0 seqan3==3.3.0 sharg==1.1.1 libboost==1.82.0 openmp==8.0.1
+conda install cmake==3.27.6 gxx_linux-64==13.2.0 sharg==1.1.1 seqan3==3.3.0 boost==1.82.0 openmp==8.0.1
 ```
 #### Compile read2graph
 ```
-https://github.com/Jappy0/reads2graph.git
+git clone https://github.com/Jappy0/reads2graph.git
+mkdir build
 cd build
 cmake ..
 make
