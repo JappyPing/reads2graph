@@ -1,14 +1,6 @@
 # reads2graph
 reads2graph is a practical method for constructing an edit-distance-based read graph for a short-read sequencing dataset via minimizer and order min hash bucketing and graph traversal.
 
-## Dependencies
-    - cmake >=3.21
-    - gxx_linux-64 ==13.2.0
-    - seqan3 ==3.3.0
-    - sharg ==1.1.1
-    - libboost ==1.82.0
-    - openmp ==8.0.1
-
 ## Installation
 ### From bioconda
 #### Create an environment and install reads2graph via conda
