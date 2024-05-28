@@ -1,13 +1,13 @@
 {% set name = "reads2graph" %}
-{% set version = "1.0.0" %}
-{% set sha256 = "" %}
+{% set version = "v1.0.0" %}
+{% set sha256 = "6bf8594de980e63109d10580a7a7fb459ffd613c95bd9e3cfa6a01f16890db7a" %}
 
 package:
   name: {{ name}}
   version: {{ version }}
 
 source:
-  url: https://github.com/ChristopherWilks/megadepth/archive/{{ version }}.tar.gz
+  url: https://github.com/Jappy0/reads2graph/archive/refs/tags/{{name}-{version}}.tar.gz
   sha256: {{ sha256 }}
 
 build:
