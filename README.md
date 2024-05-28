@@ -11,6 +11,11 @@ Generate edit-distance-based read graph from short reads via looped minimiser an
     - openmp ==8.0.1
 
 ## Installation
+### From bioconda
+
+```
+conda install bioconda::reads2graph
+```
 
 ### From source
 #### Create an environment and Install dependencies via conda
@@ -25,12 +30,6 @@ https://github.com/Jappy0/reads2graph.git
 cd build
 cmake ..
 make
-```
-
-### From bioconda
-
-```
-conda install bioconda::reads2graph
 ```
 
 ## Example
