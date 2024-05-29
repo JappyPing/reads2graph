@@ -1,4 +1,6 @@
 # reads2graph
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11388496.svg)](https://doi.org/10.5281/zenodo.11388496)
+
 reads2graph is a practical method for constructing an edit-distance-based read graph for a short-read sequencing dataset via minimizer and order min hash bucketing and graph traversal.
 
 ## Installation
