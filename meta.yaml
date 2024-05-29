@@ -17,7 +17,7 @@ build:
 
 requirements:
   build:
-    - cmake >=3.21
+    - cmake ==3.27.6
     - gxx_linux-64 ==13.2.0
   host:
     - seqan3 ==3.3.0
