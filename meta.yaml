@@ -12,23 +12,23 @@ source:
 
 build:
   number: 0
-  noarch: generic
   run_exports:
     - {{ pin_subpackage(name, max_pin="x") }}
 
 requirements:
   build:
+    - {{ compiler('cxx') }} #- gxx_linux-64 ==13.2.0
     - cmake ==3.27.6
-    - gxx_linux-64 ==13.2.0
+    - make
   host:
     - seqan3 ==3.3.0
     - sharg ==1.1.1
-    - boost ==1.82.0
+    - libboost ==1.82.0
     - openmp ==8.0.1
   run:
     - seqan3 ==3.3.0
     - sharg ==1.1.1
-    - boost ==1.82.0
+    - libboost ==1.82.0
     - openmp ==8.0.1
 
 test:
