@@ -1,13 +1,13 @@
 {% set name = "reads2graph" %}
 {% set version = "1.0.0" %}
-{% set sha256 = "0c0e6eba83c0f92aee9005ea3a2813d73e5f3f5379372714a138a6e70ff89c8a" %}
+{% set sha256 = "0b4514cf225eb53d28ba02ded1b86d86423977ac65a8224adfc2fe6e860807c1" %}
 
 package:
   name: {{ name}}
   version: {{ version }}
 
 source:
-  url: "https://github.com/Jappy0/reads2graph/archive/refs/tags/{{name}}-{{version}}.tar.gz"
+  url: "https://github.com/Jappy0/reads2graph/archive/refs/tags/{{name}}-v{{version}}.tar.gz"
   sha256: {{ sha256 }}
 
 build:
@@ -18,7 +18,7 @@ build:
 requirements:
   build:
     - {{ compiler('cxx') }} 
-    - gxx ==12.*
+    - gxx ==12*
     - cmake >=3.21
     - make
     - seqan3 ==3.3.0
