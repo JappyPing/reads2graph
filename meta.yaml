@@ -17,18 +17,25 @@ build:
 
 requirements:
   build:
-    - {{ compiler('cxx') }} #- gxx_linux-64 ==13.2.0
-    - cmake ==3.27.6
+    - {{ compiler('cxx') }} 
+    - gxx >=12*
+    - cmake >=3.21
     - make
-  host:
     - seqan3 ==3.3.0
     - sharg ==1.1.1
-    - libboost ==1.82.0
+    - boost ==1.82.0
+    - openmp ==8.0.1
+  host:
+    - gxx >=12*
+    - seqan3 ==3.3.0
+    - sharg ==1.1.1
+    - boost ==1.82.0
     - openmp ==8.0.1
   run:
+    - gxx >=12*
     - seqan3 ==3.3.0
     - sharg ==1.1.1
-    - libboost ==1.82.0
+    - boost ==1.82.0
     - openmp ==8.0.1
 
 test:
@@ -47,4 +54,4 @@ extra:
   identifiers:
     - biotools:reads2graph
   recipe-maintainers:
-    - Jappy0  # Replace with your Bioconda username
+    - Jappy0 

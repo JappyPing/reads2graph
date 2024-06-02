@@ -7,6 +7,7 @@
 #include <ranges>
 #include <boost/functional/hash.hpp>
 #include <cmath>
+#include <format>
 
 MinimizerGenerator::MinimizerGenerator(cmd_arguments args) : args(args) {}
 // MinimizerGenerator::MinimizerGenerator(std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : read2count(read2count), args(args) {}

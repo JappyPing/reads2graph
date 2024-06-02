@@ -3,6 +3,7 @@
 #include "OMH.hpp"
 #include "MinimizerGenerator.hpp"
 
+#include <format>
 #include <algorithm>
 #include <ranges>
 #include <utility>

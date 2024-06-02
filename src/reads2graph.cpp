@@ -23,6 +23,7 @@
 #include <filesystem>
 #include <unistd.h>
 #include <seqan3/core/debug_stream.hpp> // for debug_stream
+#include <format>
 
 #include <array>  // std::array
 #include <string> // std::string
