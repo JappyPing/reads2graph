@@ -141,7 +141,7 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
         Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise comparison for the small- or medium-size-based buckets done!");       
     } else {
         // Utils::getInstance().logger(LOG_LEVEL_INFO,  "No bucket has a size larger than 100!");
-        Utils::getInstance().logger(LOG_LEVEL_INFO,  format("No bucket with size between 2 and {}!", args.bin_size_max));
+        Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("No bucket with size between 2 and {}!", args.bin_size_max));
     }
     edge_summary();
     // if (args.read_length < 16){
