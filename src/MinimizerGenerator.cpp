@@ -10,7 +10,6 @@
 #include <format>
 
 MinimizerGenerator::MinimizerGenerator(cmd_arguments args) : args(args) {}
-// MinimizerGenerator::MinimizerGenerator(std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : read2count(read2count), args(args) {}
 
 std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> MinimizerGenerator::minimizer2reads_main(std::vector<std::vector<seqan3::dna5>> unique_reads,std::tuple<unsigned, unsigned, unsigned, double> betterParams)
 {   
@@ -45,8 +44,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
             }
         }
     }
-
-    Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("Size of minimiser_to_reads: {}.", minimiser_to_reads.size()));  
+    Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("Size of minimiser_to_reads: {}.", minimiser_to_reads.size()));  // mark for debug
     return minimiser_to_reads;     
 }
 
