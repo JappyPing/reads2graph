@@ -1,6 +1,6 @@
 {% set name = "reads2graph" %}
 {% set version = "1.0.0" %}
-{% set sha256 = "0b4514cf225eb53d28ba02ded1b86d86423977ac65a8224adfc2fe6e860807c1" %}
+{% set sha256 = "8b0d96849791263125671c95152ee0e82a04206d32e28ec2adbd825b4707a0dc" %}
 
 package:
   name: {{ name}}
@@ -18,7 +18,7 @@ build:
 requirements:
   build:
     - {{ compiler('cxx') }} 
-    - gxx ==12*
+    - gxx >=12.0
     - cmake >=3.21
     - make
     - seqan3 ==3.3.0
@@ -26,13 +26,11 @@ requirements:
     - boost ==1.82.0
     - openmp ==8.0.1
   host:
-    - gxx ==12*
     - seqan3 ==3.3.0
     - sharg ==1.1.1
     - boost ==1.82.0
     - openmp ==8.0.1
   run:
-    - gxx ==12*
     - seqan3 ==3.3.0
     - sharg ==1.1.1
     - boost ==1.82.0

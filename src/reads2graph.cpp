@@ -23,7 +23,8 @@
 #include <filesystem>
 #include <unistd.h>
 #include <seqan3/core/debug_stream.hpp> // for debug_stream
-#include <format>
+// #include <format>
+#include <boost/format.hpp>
 
 #include <array>  // std::array
 #include <string> // std::string
@@ -86,7 +87,8 @@ int main(int argc, char** argv) {
 
     // Declare and define a global variable for available cores
     int available_cores = omp_get_max_threads();
-    Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("The maximum number of threads available: {} ", available_cores));
+    // Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("The maximum number of threads available: {} ", available_cores));
+    Utils::getInstance().logger(LOG_LEVEL_DEBUG, boost::str(boost::format("The maximum number of threads available: %1% ") % available_cores));
     // Ensure the user-specified number of cores is within a valid range
     auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
     // std::cout << "The maximum number of threads available:" << available_cores << std::endl;
@@ -95,14 +97,15 @@ int main(int argc, char** argv) {
     // omp_set_num_threads(num_cores_to_use);
     args.num_process = num_cores_to_use;
     // std::cout << "The number of threads :" << num_cores_to_use << std::endl;
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The number of threads: {} ", num_cores_to_use));
+    // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The number of threads: {} ", num_cores_to_use));
+    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of threads: %1% ") % num_cores_to_use));
     ////////////////////////////////////////////////////////////////////////////
     // auto read2count = ReadWrite(args).get_unique_reads_counts();
     auto [unique_reads, read2count, min_read_length] = ReadWrite(args).get_unique_reads_counts();
     args.read_length = min_read_length;
     auto total_uniq_num = unique_reads.size();
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The number of unique reads: {}, minimum read length: {}.", total_uniq_num, min_read_length));
-
+    // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The number of unique reads: {}, minimum read length: {}.", total_uniq_num, min_read_length));
+    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of unique reads: %1%, minimum read length: %2%.") % total_uniq_num % min_read_length));
     // auto uniq_num = unique_reads.size();
     // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The number of unique reads: {} ", uniq_num));
 

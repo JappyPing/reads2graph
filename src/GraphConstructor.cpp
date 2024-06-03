@@ -3,7 +3,8 @@
 #include "OMH.hpp"
 #include "MinimizerGenerator.hpp"
 
-#include <format>
+// #include <format>
+#include <boost/format.hpp>
 #include <algorithm>
 #include <ranges>
 #include <utility>
@@ -63,10 +64,14 @@ void GraphConstructor::edge_summary(){
     // Output the counts of edges with the same weights
     for (const auto& [weight, count] : weight_counts) {
         // std::cout << "Number of edges with weight " << weight << ": " << count << std::endl;
-        Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The number of edges with weight of {}: {}.", weight, count));
+        std::string message = (boost::format("The number of edges with weight of %1%: %2%.") % weight % count).str();
+        Utils::getInstance().logger(LOG_LEVEL_INFO,  message);
+        // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The number of edges with weight of {}: {}.", weight, count));
         edge_num += count;
     }
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The total number of edges: {}.", edge_num));
+    std::string message = (boost::format("The total number of edges: %1%.") % edge_num ).str();
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  message);
+    // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The total number of edges: {}.", edge_num));
 }
 
 void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> key2reads)
@@ -88,13 +93,13 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
             #pragma omp critical
             {
                 // std::cout << cur_read_num << " ";
-                Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("{} ", cur_read_num));
+                // Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("{} ", cur_read_num));
                 medium_group.emplace_back(reads_vec);
             } 
         } else {
             #pragma omp critical
             {
-                Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("{} ", cur_read_num));
+                // Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("{} ", cur_read_num));
                 large_group.emplace_back(reads_vec); 
                 // large_group.emplace_back(reads_vec);   
             }
@@ -141,7 +146,8 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
         Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise comparison for the small- or medium-size-based buckets done!");       
     } else {
         // Utils::getInstance().logger(LOG_LEVEL_INFO,  "No bucket has a size larger than 100!");
-        Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("No bucket with size between 2 and {}!", args.bin_size_max));
+        Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("No bucket with size between 2 and %1%!") % args.bin_size_max));
+        // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("No bucket with size between 2 and {}!", args.bin_size_max));
     }
     edge_summary();
     // if (args.read_length < 16){
@@ -199,7 +205,9 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
             }
             /////////////////////////////////////////////////////
         } else {
-            Utils::getInstance().logger(LOG_LEVEL_ERROR,  std::format("min_edit_dis({}) should not larger than max_edit_dis({}) ", args.min_edit_dis, args.max_edit_dis));
+            // Utils::getInstance().logger(LOG_LEVEL_ERROR,  std::format("min_edit_dis({}) should not larger than max_edit_dis({}) ", args.min_edit_dis, args.max_edit_dis));
+             Utils::getInstance().logger(LOG_LEVEL_ERROR, boost::str(boost::format("min_edit_dis(%1%) should not be larger than max_edit_dis(%2%)") % args.min_edit_dis % args.max_edit_dis));
+
         }
 
         #pragma omp parallel for num_threads(args.num_process) schedule(dynamic)
@@ -217,7 +225,7 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
                     #pragma omp critical
                     {
                         // std::cout << cur_num << " ";
-                        Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("{} ", cur_num));
+                        // Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("{} ", cur_num));
                         m_group.emplace_back(cur_reads_vec);
                     } 
                 } else {
@@ -269,7 +277,8 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
         //////////////////////////////////////////////////////////////////////////////////////////////
         if (l_group.size() > 0){
             auto unique_reads = mergeUniqueReads(l_group);
-            Utils::getInstance().logger(LOG_LEVEL_INFO,   std::format("The number of remaining unprocessed unique reads: {} ", unique_reads.size()));
+            // Utils::getInstance().logger(LOG_LEVEL_INFO,   std::format("The number of remaining unprocessed unique reads: {} ", unique_reads.size()));
+            Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of remaining unprocessed unique reads: %1%") % unique_reads.size()));
             //////////////////////////
             // Method 1
             std::vector<std::pair<int, int>> v_pairs;
@@ -318,7 +327,8 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     if (args.min_edit_dis > 1 && args.read_length >= 50) {
         remove_edges_in_interval(graph_, 1, args.min_edit_dis - 1);
-        Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Graph update for removing the edges with weights less than {}.", args.min_edit_dis));
+        // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Graph update for removing the edges with weights less than {}.", args.min_edit_dis));
+        Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("Graph update for removing the edges with weights less than %1%.") % args.min_edit_dis));
     }
     Utils::getInstance().logger(LOG_LEVEL_INFO,  "Edit-distance-based read graph construction done!");
     edge_summary();
@@ -370,7 +380,9 @@ void GraphConstructor::update_graph_omh(std::vector<std::vector<seqan3::dna5>> u
         /////////////////////////////////////////////////////
 
     } else {
-        Utils::getInstance().logger(LOG_LEVEL_ERROR,  std::format("min_edit_dis({}) should not larger than max_edit_dis({}) ", args.min_edit_dis, args.max_edit_dis));
+        // Utils::getInstance().logger(LOG_LEVEL_ERROR,  std::format("min_edit_dis({}) should not larger than max_edit_dis({}) ", args.min_edit_dis, args.max_edit_dis));
+        Utils::getInstance().logger(LOG_LEVEL_ERROR, boost::str(boost::format("min_edit_dis(%1%) should not be larger than max_edit_dis(%2%)") % args.min_edit_dis % args.max_edit_dis));
+
     }
 
     auto cur_hash2reads = OMH(args).omh2read_main(unique_reads, seeds_k);
@@ -390,7 +402,7 @@ void GraphConstructor::update_graph_omh(std::vector<std::vector<seqan3::dna5>> u
             #pragma omp critical
             {
                 // std::cout << cur_num << " ";
-                Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("{} ", cur_num));
+                // Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("{} ", cur_num));
                 m_group.emplace_back(cur_reads_vec);
             } 
         } else {
@@ -439,7 +451,8 @@ void GraphConstructor::update_graph_omh(std::vector<std::vector<seqan3::dna5>> u
     //////////////////////////////////////////////////////////////////////////////////////////////
     if (l_group.size() > 0){
         auto unique_reads = mergeUniqueReads(l_group);
-        Utils::getInstance().logger(LOG_LEVEL_INFO,   std::format("The number of remaining unprocessed unique reads: {} ", unique_reads.size()));
+        // Utils::getInstance().logger(LOG_LEVEL_INFO,   std::format("The number of remaining unprocessed unique reads: {} ", unique_reads.size()));
+        Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of remaining unprocessed unique reads: %1%") % unique_reads.size()));
         //////////////////////////
         // Method 1
         std::vector<std::pair<int, int>> v_pairs;
