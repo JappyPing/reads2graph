@@ -1,4 +1,5 @@
 # reads2graph
+![GitHub Release](https://img.shields.io/github/v/release/jappy0/reads2graph)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11388496.svg)](https://doi.org/10.5281/zenodo.11388496)
 ![Conda Platform](https://img.shields.io/conda/p/bioconda/reads2graph?style=flat&label=bioconda&labelColor=orange&color=blue)
 
