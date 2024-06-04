@@ -26,7 +26,7 @@
 int num_cores_to_use;  // Define the global variable
 
 #define reads2graph_VERSION "1.0.0"
-#define last_update_date "03.06.2024"
+#define last_update_date "04.06.2024"
 
 using namespace std;
 
@@ -110,8 +110,8 @@ Utils::Utils() {
 void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
 {
     parser.info.author = "Pengyao Ping";
-    parser.info.short_description = "Efficiently construct a read graph from a short-read set.";
-    parser.info.description.push_back("Efficiently construct edit-distance-based read graph via looped minimisers and locality-sensitive hashing from a short-read set.");
+    parser.info.short_description = "Construction of edit-distance graphs from a set of short reads.";
+    parser.info.description.push_back("Construction of edit-distance graphs from large scale sets of short reads through minimizer- and gOMH-bucketing and graph traversal.");
     parser.info.version = reads2graph_VERSION;
     parser.info.date = last_update_date;
     parser.info.short_copyright = "BSD 3-Clause License";

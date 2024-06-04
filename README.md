@@ -4,8 +4,8 @@
 reads2graph is a practical method for constructing an edit-distance-based read graph for a short-read sequencing dataset via minimizer and order min hash bucketing and graph traversal.
 
 ## Installation
-### From bioconda
-#### Create an environment and install reads2graph via conda
+### From ```bioconda```
+#### Create an environment and install reads2graph via ```conda```
 ```
 conda create -n reads2graph-env
 conda activate reads2graph-env
@@ -13,7 +13,7 @@ conda install bioconda::reads2graph
 ```
 
 ### From source
-#### Create an environment and Install dependencies via conda
+#### Create an environment and Install dependencies via ```conda```
 ```
 conda create -n reads2graph-env
 conda activate reads2graph-env
@@ -37,7 +37,7 @@ cd ..
 cd example
 ../bin/reads2graph -i ./data/SRR1543965.umi.fasta -o ./ -x 2 -n 1 -p 64 -k 4 --window_number 2 --omh_times 4 --omh_k 4
 ```
-### Installing reads2graph from bioconda
+### Installing reads2graph from ```bioconda```
 download the example data(SRR1543965.umi.fasta) from this repo
 ```
 wget https://github.com/Jappy0/reads2graph/blob/main/example/data/SRR1543965.umi.fasta
