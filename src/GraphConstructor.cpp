@@ -64,13 +64,11 @@ void GraphConstructor::edge_summary(){
     // Output the counts of edges with the same weights
     for (const auto& [weight, count] : weight_counts) {
         // std::cout << "Number of edges with weight " << weight << ": " << count << std::endl;
-        std::string message = (boost::format("The number of edges with weight of %1%: %2%.") % weight % count).str();
-        Utils::getInstance().logger(LOG_LEVEL_INFO,  message);
+        Utils::getInstance().logger(LOG_LEVEL_INFO,  boost::str(boost::format("The number of edges with weight of %1%: %2%.") % weight % count));
         // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The number of edges with weight of {}: {}.", weight, count));
         edge_num += count;
     }
-    std::string message = (boost::format("The total number of edges: %1%.") % edge_num ).str();
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  message);
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  boost::str(boost::format("The total number of edges: %1%.") % edge_num ));
     // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The total number of edges: {}.", edge_num));
 }
 

@@ -8,14 +8,20 @@ reads2graph is a practical method for constructing an edit-distance-based read g
 ## Installation
 ### From ```bioconda```
 #### Create an environment and install reads2graph via ```conda```
+
+Note: reads2graph installed from ```bioconda``` currently only support linux-64
+
 ```
 conda create -n reads2graph-env
 conda activate reads2graph-env
 conda install bioconda::reads2graph
 ```
 
-### From source
+### From source codes
 #### Create an environment and Install dependencies via ```conda```
+
+Note: Given that reads2graph depends on the Seqan3, Boost, and Sharg libraries, and requires a modern C++20 supported compiler, it is recommended to use the Conda environment for configuring and compiling this software, rather than relying on the default compiler of the Linux system.
+
 ```
 conda create -n reads2graph-env
 conda activate reads2graph-env
@@ -34,6 +40,8 @@ make
 ## Example
 
 ### Installing reads2graph from source codes
+Note: Given that reads2graph depends on the Seqan3, Boost, and Sharg libraries, and requires a modern C++20 supported compiler, it is recommended to use the Conda environment for configuring and compiling this software, rather than relying on the default compiler of the Linux system.
+
 ```
 cd ..
 cd example
@@ -71,3 +79,44 @@ Note: The date, time, and commands will reflect the current state when you execu
 2024-05-23 22:50:36: INFO: The total number of edges: 2248754.
 2024-05-23 22:50:36: INFO: Edit-distance-based read graph construction done!
 ```
+
+## Parameters Configuration
+
+### Constructing read graph
+If you are constructing graphs for short reads (e.g., with read lengths between 50bp and 300bp), you can use the default parameters, we have optimized this for you. 
+
+### Constructing UMI graph
+If you are constructing UMI graphs, you must input the following parameters by yourself, as some of the defaults may not work for UMIs. 
+
+    -k, --k_size (unsigned 8 bit integer)
+          The size for minimiser. Default: 4.
+    -w, --window_number (unsigned 8 bit integer)
+          The window number for minimiser. Default: 3.
+    -x, --max_edit_dis (unsigned 8 bit integer)
+          The maximum edit distance for constructing edges between reads Default: 2.
+    -n, --min_edit_dis (unsigned 8 bit integer)
+          The minimum edit distance for constructing edges between reads. Default: 1.
+    --omh_k (unsigned 32 bit integer)
+          K-mer size used in order min hashing. Default: 4.
+    --omh_times (unsigned 32 bit integer)
+          The number of times to perform permutation in order min hashing. Default: 3.
+
+### More help
+Please use the following commands for more help if you need
+
+```
+reads2graph -h
+```
+installed from ```bioconda```
+
+or 
+
+```
+xx/bin/reads2graph -h
+```
+installed from Source codes
+
+## Question
+
+Feel free to contact me if you have any questions or bugs on runnning reads2graph or are interested in reads2graph
+
