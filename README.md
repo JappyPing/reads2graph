@@ -81,7 +81,14 @@ Note: The date, time, and commands will reflect the current state when you execu
 ## Parameters Configuration
 
 ### Constructing read graph
-If you are constructing graphs for short reads (e.g., with read lengths between 50bp and 300bp), you can use the default parameters, we have optimized this for you. 
+If you are constructing graphs for short reads (e.g., with read lengths between 50bp and 300bp), you may only need to customise the following paramters following your needs. Using all the other parameters as default, we have optimised this for you. 
+
+    -x, --max_edit_dis (unsigned 8 bit integer)
+          The maximum edit distance for constructing edges between reads Default: 2.
+    -n, --min_edit_dis (unsigned 8 bit integer)
+          The minimum edit distance for constructing edges between reads. Default: 1.
+    -p, --num_process (signed 32 bit integer)
+          The number of expected processes. Default: 26.
 
 ### Constructing UMI graph
 If you are constructing UMI graphs, you must input the following parameters by yourself, as some of the defaults may not work for UMIs. 
@@ -98,6 +105,8 @@ If you are constructing UMI graphs, you must input the following parameters by y
           K-mer size used in order min hashing. Default: 4.
     --omh_times (unsigned 32 bit integer)
           The number of times to perform permutation in order min hashing. Default: 3.
+    -p, --num_process (signed 32 bit integer)
+          The number of expected processes. Default: 26.
 
 ### Print help
 Please use the following commands to view all the options if you need
