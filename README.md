@@ -40,8 +40,6 @@ make
 ## Example
 
 ### Installing reads2graph from source codes
-Note: Given that reads2graph depends on the Seqan3, Boost, and Sharg libraries, and requires a modern C++20 supported compiler, it is recommended to use the Conda environment for configuring and compiling this software, rather than relying on the default compiler of the Linux system.
-
 ```
 cd ..
 cd example
