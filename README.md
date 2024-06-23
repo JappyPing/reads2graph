@@ -11,6 +11,12 @@ reads2graph is a practical method for constructing an edit-distance-based read g
 
 Note: reads2graph installed from ```bioconda``` currently only support linux-64
 
+Add the necessary channels if you are not currently using them.
+```
+conda config --add channels bioconda
+conda config --add channels conda-forge
+```
+
 ```
 conda create -n reads2graph-env
 conda activate reads2graph-env
@@ -21,6 +27,12 @@ conda install bioconda::reads2graph
 #### Create an environment and Install dependencies via ```conda```
 
 Note: Given that reads2graph depends on the Seqan3, Boost, and Sharg libraries, and requires a modern C++20 supported compiler, it is recommended to use the Conda environment for configuring and compiling this software, rather than relying on the default compiler of the Linux system. 
+
+Add the necessary channels if you are not currently using them.
+```
+conda config --add channels bioconda
+conda config --add channels conda-forge
+```
 
 ```
 conda create -n reads2graph-env
