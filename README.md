@@ -59,9 +59,12 @@ cd example
 ```
 ### Installing reads2graph from ```bioconda```
 download the example data SRR1543965.umi.fasta under /example/data of this repo
-
 ```
-reads2graph -i ./SRR1543965.umi.fasta -o ./ -x 2 -n 1 -p 64 -k 4 --window_number 2 --omh_times 4 --omh_k 4
+git clone https://github.com/Jappy0/reads2graph.git
+cd reads2graph/example
+```
+```
+reads2graph -i ./data/SRR1543965.umi.fasta -o ./ -x 2 -n 1 -p 64 -k 4 --window_number 2 --omh_times 4 --omh_k 4
 ```
 ### Expected results
 Note: The date, time, and commands will reflect the current state when you execute `reads2graph'. The example process will be finished in about 4 minutes by using 64 CPU cores. 

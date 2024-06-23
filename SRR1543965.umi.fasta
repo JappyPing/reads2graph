@@ -37,7 +37,7 @@
   
 
 
-  <script type="application/json" id="client-env">{"locale":"en","featureFlags":["code_vulnerability_scanning","copilot_chat_static_thread_suggestions","copilot_conversational_ux_history_refs","copilot_followup_to_agent","copilot_smell_icebreaker_ux","copilot_implicit_context","copilot_stop_response","failbot_handle_non_errors","geojson_azure_maps","ghost_pilot_vnext","image_metric_tracking","marketing_forms_api_integration_contact_request","marketing_pages_search_explore_provider","turbo_experiment_risky","sample_network_conn_type","no_character_key_shortcuts_in_inputs","react_start_transition_for_navigations","custom_inp","remove_child_patch","kb_source_repos"]}</script>
+  <script type="application/json" id="client-env">{"locale":"en","featureFlags":["code_vulnerability_scanning","copilot_chat_static_thread_suggestions","copilot_conversational_ux_history_refs","copilot_followup_to_agent","copilot_smell_icebreaker_ux","copilot_implicit_context","copilot_stop_response","failbot_handle_non_errors","geojson_azure_maps","image_metric_tracking","marketing_forms_api_integration_contact_request","marketing_pages_search_explore_provider","turbo_experiment_risky","sample_network_conn_type","no_character_key_shortcuts_in_inputs","react_start_transition_for_navigations","custom_inp","remove_child_patch","kb_source_repos"]}</script>
 <script crossorigin="anonymous" defer="defer" type="application/javascript" src="https://github.githubassets.com/assets/wp-runtime-24f41857dca8.js"></script>
 <script crossorigin="anonymous" defer="defer" type="application/javascript" src="https://github.githubassets.com/assets/vendors-node_modules_dompurify_dist_purify_js-810e4b1b9abd.js"></script>
 <script crossorigin="anonymous" defer="defer" type="application/javascript" src="https://github.githubassets.com/assets/vendors-node_modules_oddbird_popover-polyfill_dist_popover_js-4ac41d0a76fd.js"></script>
@@ -120,7 +120,7 @@
   <meta name="current-catalog-service-hash" content="82c569b93da5c18ed649ebd4c2c79437db4611a6a1373e805a3cb001c64130b7">
 
 
-  <meta name="request-id" content="8188:216F79:D6167E:F71A2E:66782E45" data-pjax-transient="true"/><meta name="html-safe-nonce" content="9b8e0829197297aaac26dcfad1ce0910cf8ce47994d4a2a92e920abb8898e73f" data-pjax-transient="true"/><meta name="visitor-payload" content="eyJyZWZlcnJlciI6IiIsInJlcXVlc3RfaWQiOiI4MTg4OjIxNkY3OTpENjE2N0U6RjcxQTJFOjY2NzgyRTQ1IiwidmlzaXRvcl9pZCI6IjgwOTg3NzAyMzQwNTY5MTI0NTMiLCJyZWdpb25fZWRnZSI6ImF1c3RyYWxpYWVhc3QiLCJyZWdpb25fcmVuZGVyIjoiYXVzdHJhbGlhZWFzdCJ9" data-pjax-transient="true"/><meta name="visitor-hmac" content="1b0b82efee7823d72a787f80fd3b9f54ac476650dc9d065b05c329205217327f" data-pjax-transient="true"/>
+  <meta name="request-id" content="BAE6:2DE9CB:E11130:1023772:667830C3" data-pjax-transient="true"/><meta name="html-safe-nonce" content="835e37947df3290b17c754e0c83a9de581de2b34004629cb6a474f9fe123228a" data-pjax-transient="true"/><meta name="visitor-payload" content="eyJyZWZlcnJlciI6IiIsInJlcXVlc3RfaWQiOiJCQUU2OjJERTlDQjpFMTExMzA6MTAyMzc3Mjo2Njc4MzBDMyIsInZpc2l0b3JfaWQiOiI1MDE2ODM3NDQ0ODg4NzAzMTcxIiwicmVnaW9uX2VkZ2UiOiJhdXN0cmFsaWFlYXN0IiwicmVnaW9uX3JlbmRlciI6ImF1c3RyYWxpYWVhc3QifQ==" data-pjax-transient="true"/><meta name="visitor-hmac" content="bab5269eceb5d398d6546cc464b3af4636251ab571489705a4d47a9d427fe7a9" data-pjax-transient="true"/>
 
 
     <meta name="hovercard-subject-tag" content="repository:711338212" data-turbo-transient>
@@ -159,8 +159,8 @@
     <meta property="fb:app_id" content="1401488693436528">
     <meta name="apple-itunes-app" content="app-id=1477376905, app-argument=https://github.com/Jappy0/reads2graph/blob/main/example/data/SRR1543965.umi.fasta" />
 
-      <meta name="twitter:image:src" content="https://opengraph.githubassets.com/9094f603132753a78316839a0ad5cc0cd01bf1be13ed6c6fc2db5d10f977af05/Jappy0/reads2graph" /><meta name="twitter:site" content="@github" /><meta name="twitter:card" content="summary_large_image" /><meta name="twitter:title" content="reads2graph/example/data/SRR1543965.umi.fasta at main · Jappy0/reads2graph" /><meta name="twitter:description" content="Edit-distance-based read graph construction from short reads - Jappy0/reads2graph" />
-  <meta property="og:image" content="https://opengraph.githubassets.com/9094f603132753a78316839a0ad5cc0cd01bf1be13ed6c6fc2db5d10f977af05/Jappy0/reads2graph" /><meta property="og:image:alt" content="Edit-distance-based read graph construction from short reads - Jappy0/reads2graph" /><meta property="og:image:width" content="1200" /><meta property="og:image:height" content="600" /><meta property="og:site_name" content="GitHub" /><meta property="og:type" content="object" /><meta property="og:title" content="reads2graph/example/data/SRR1543965.umi.fasta at main · Jappy0/reads2graph" /><meta property="og:url" content="https://github.com/Jappy0/reads2graph/blob/main/example/data/SRR1543965.umi.fasta" /><meta property="og:description" content="Edit-distance-based read graph construction from short reads - Jappy0/reads2graph" />
+      <meta name="twitter:image:src" content="https://opengraph.githubassets.com/048ec2d1796780c70000afdfadd74c76ff6e6438f474e969f36545ffbf63b185/Jappy0/reads2graph" /><meta name="twitter:site" content="@github" /><meta name="twitter:card" content="summary_large_image" /><meta name="twitter:title" content="reads2graph/example/data/SRR1543965.umi.fasta at main · Jappy0/reads2graph" /><meta name="twitter:description" content="Edit-distance-based read graph construction from short reads - Jappy0/reads2graph" />
+  <meta property="og:image" content="https://opengraph.githubassets.com/048ec2d1796780c70000afdfadd74c76ff6e6438f474e969f36545ffbf63b185/Jappy0/reads2graph" /><meta property="og:image:alt" content="Edit-distance-based read graph construction from short reads - Jappy0/reads2graph" /><meta property="og:image:width" content="1200" /><meta property="og:image:height" content="600" /><meta property="og:site_name" content="GitHub" /><meta property="og:type" content="object" /><meta property="og:title" content="reads2graph/example/data/SRR1543965.umi.fasta at main · Jappy0/reads2graph" /><meta property="og:url" content="https://github.com/Jappy0/reads2graph/blob/main/example/data/SRR1543965.umi.fasta" /><meta property="og:description" content="Edit-distance-based read graph construction from short reads - Jappy0/reads2graph" />
   
 
 
@@ -714,7 +714,7 @@
                 
 
 
-<qbsearch-input class="search-input" data-scope="repo:Jappy0/reads2graph" data-custom-scopes-path="/search/custom_scopes" data-delete-custom-scopes-csrf="QgUQOxgRSCMDchcIrEgcxb9kV61btQVno5hyGLpALTdJlxeNbMDNdcr2nzSa4EEHHd31l2RVfAdnp9fS9Iue4g" data-max-custom-scopes="10" data-header-redesign-enabled="false" data-initial-value="" data-blackbird-suggestions-path="/search/suggestions" data-jump-to-suggestions-path="/_graphql/GetSuggestedNavigationDestinations" data-current-repository="Jappy0/reads2graph" data-current-org="" data-current-owner="Jappy0" data-logged-in="false" data-copilot-chat-enabled="false" data-blackbird-indexed-repo-csrf="<esi:include src=&quot;/_esi/rails_csrf_token_form_hidden?r=%2F61zTcPRh30MGcF%2FJLYNNASAFMOCI5fX8txmIbE0h%2FnsUDSbpvuvE5ILhgVUq623s5Ra4pKppOQxsCV%2BYxm0FgcHWUJAjmojCRbggP0HCqIp8HgAxhtPF2XrMkxXPn8sAlqcnAylK6dfpM41M8gGz5D24hL48lmptUvGxAUQDt740P7pAGYX1vq87NXAwhFiu2CwJ%2Bngwq7EU2DeOoymHM8ph0hmlUadjgkggTPvp213h2yYqgW2JLbJzq9%2FbfF%2FkYWfG5MuXT7hGEZRDUfOCoDn3YXXbX4Q9YpGQAZbBR4bnNxf8zQNMtJYwG9iXxRGyN%2F3zm34eZKAKDs2%2F8RXsU829Ly9pM59yBEShabXJuulfwgJaX%2FceUZfbZy7kSmmECZxnHhcH%2BdeUk7GsIJwz20yyGqHhYR%2F7b0IzPe01wCZgGXPaE1b3P5K%2FjJaWagj3ln2VPzUqx%2FIpjWQXOImNAatBvqCJ%2FcF1FmdHukHbbPZ2eqPBiqn5DG6dmeBFZw%2FyA8pU75zw2uFa7jS3C0%2FNB7WcRZMYljzyryzpecS89frDKC3LgotLVOJGIrvKlqzjA0NkI6TiOWQ8fDWzcFx3VEq7I4%2Bz%2F1rQ0k%3D--fwcxWOrEJGS2KrMi--c4BILdhPnLtopj60TNLP9w%3D%3D&quot; />">
+<qbsearch-input class="search-input" data-scope="repo:Jappy0/reads2graph" data-custom-scopes-path="/search/custom_scopes" data-delete-custom-scopes-csrf="gCIMpbOFIJSb4rVq70YbIopYFBcYSymIRxTd92llU2Wv97JiT9rhuJ1Rx0CmrdaHKHHfo9zKGLOQsB_6FG23hw" data-max-custom-scopes="10" data-header-redesign-enabled="false" data-initial-value="" data-blackbird-suggestions-path="/search/suggestions" data-jump-to-suggestions-path="/_graphql/GetSuggestedNavigationDestinations" data-current-repository="Jappy0/reads2graph" data-current-org="" data-current-owner="Jappy0" data-logged-in="false" data-copilot-chat-enabled="false" data-blackbird-indexed-repo-csrf="<esi:include src=&quot;/_esi/rails_csrf_token_form_hidden?r=%2BspAfXHdjMGLs5tW3PP7Xc3owZrb6061GEmbjENALoicdypJaDG%2F3DbtMOXb6bTlCNVLSaQhQ0XOGifF7lzKKHJSkYOS4Ch1Tzkpbmi8VekyWdf0IzlCQi9Zjg0DMUwwAD9z2sbWEsXQ5k1SZdpWd2u9gq%2F2%2Frub%2FAtNj%2B98Fbzev4%2FQGOQ736QK0L7wxGCIwjdSdnz9UeTzR9UpEOUMmjHxBOLG4gi8fa2hMS8tFGIKgBNttUPdxzRQXNzXiyndY7hrgAq6%2FV90aauAplwfEZrZJfXz%2F0Y2NbJ0TFMPbmfeC%2BKTng9EJuu57LRg9uCfVfKo9rQGZmvqfOjHnSNSpQ9BPH77oaM2mUWixwONZS6ye8z3L65eeTZyvAW4ZKTRx%2F25Td3PJ3QX8ARvcGHAISulDg5pb59eZuMlwFVnojNK0dVG5hCQtW%2FM4YNalAQaRu%2BvQCmhSeT5LCyhWSs429q4OVliD410YgwkEgBJc%2BRT8UE5NReUcup7iB9jMZFp9yp4vfvGQQzYhwYRGFI9BXg8rO3KysbjmYQg%2Bc1wabKGrRqjDzxomAN%2FWp8m41wA8uddmXiE3NbqPvVAFi4CCjrahb12s2uRF4A%3D--9weM9BSnVUzH0oVc--tAH5u%2FZMYrVmXbGdr9dRsw%3D%3D&quot; />">
   <div
     class="search-input-container search-with-dialog position-relative d-flex flex-row flex-items-center mr-4 rounded"
     data-action="click:qbsearch-input#searchInputContainerClicked"
@@ -776,7 +776,7 @@
           ></div>
           <div class="QueryBuilder-InputWrapper">
             <div aria-hidden="true" class="QueryBuilder-Sizer" data-target="query-builder.sizer"></div>
-            <input id="query-builder-test" name="query-builder-test" value="" autocomplete="off" type="text" role="combobox" spellcheck="false" aria-expanded="false" aria-describedby="validation-8ddfdde5-558b-41c6-9ad6-51b15e1a91b9" data-target="query-builder.input" data-action="
+            <input id="query-builder-test" name="query-builder-test" value="" autocomplete="off" type="text" role="combobox" spellcheck="false" aria-expanded="false" aria-describedby="validation-db677424-9e69-4e99-b2eb-96d0c2a168c4" data-target="query-builder.input" data-action="
           input:query-builder#inputChange
           blur:query-builder#inputBlur
           keydown:query-builder#inputKeydown
@@ -1007,7 +1007,7 @@
                   id="query-builder-test-results"
                 ></ul>
         </div>
-      <div class="FormControl-inlineValidation" id="validation-8ddfdde5-558b-41c6-9ad6-51b15e1a91b9" hidden="hidden">
+      <div class="FormControl-inlineValidation" id="validation-db677424-9e69-4e99-b2eb-96d0c2a168c4" hidden="hidden">
         <span class="FormControl-inlineValidation--visual">
           <svg aria-hidden="true" height="12" viewBox="0 0 12 12" version="1.1" width="12" data-view-component="true" class="octicon octicon-alert-fill">
     <path d="M4.855.708c.5-.896 1.79-.896 2.29 0l4.675 8.351a1.312 1.312 0 0 1-1.146 1.954H1.33A1.313 1.313 0 0 1 .183 9.058ZM7 7V3H5v4Zm-1 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"></path>
@@ -1050,7 +1050,7 @@
   
 </div>
       <scrollable-region data-labelled-by="feedback-dialog-title">
-        <div data-view-component="true" class="Overlay-body">        <!-- '"` --><!-- </textarea></xmp> --></option></form><form id="code-search-feedback-form" data-turbo="false" action="/search/feedback" accept-charset="UTF-8" method="post"><input type="hidden" data-csrf="true" name="authenticity_token" value="M87IMOWfVDAoXq+7VcFnk8rn9vcpAduBVDHdUA6geEJF6bEoseCvvxDrIssVz5nx4oIwlP44HhEfm4H9xxBtqw==" />
+        <div data-view-component="true" class="Overlay-body">        <!-- '"` --><!-- </textarea></xmp> --></option></form><form id="code-search-feedback-form" data-turbo="false" action="/search/feedback" accept-charset="UTF-8" method="post"><input type="hidden" data-csrf="true" name="authenticity_token" value="vrUkBDvHiJwcC/IQO5M1nieoXas8WMCKsz8FXaAA2DkcX0KzfJe8IHJpV5b3bMmAXI6hXdOI66SJIsECngwRVQ==" />
           <p>We read every piece of feedback, and take your input very seriously.</p>
           <textarea name="feedback" class="form-control width-full mb-2" style="height: 120px" id="feedback"></textarea>
           <input name="include_email" id="include_email" aria-label="Include my email address so I can be contacted" class="form-control mr-2" type="checkbox">
@@ -1088,7 +1088,7 @@
         <div data-view-component="true" class="Overlay-body">        <div data-target="custom-scopes.customScopesModalDialogFlash"></div>
 
         <div hidden class="create-custom-scope-form" data-target="custom-scopes.createCustomScopeForm">
-        <!-- '"` --><!-- </textarea></xmp> --></option></form><form id="custom-scopes-dialog-form" data-turbo="false" action="/search/custom_scopes" accept-charset="UTF-8" method="post"><input type="hidden" data-csrf="true" name="authenticity_token" value="pvrDJ9A27PKbYHXX4DAgG+HXyQAvRrP5uHdWbdg0el1lWVGo9EHoslWVlcbclKbFEmKjNFY3QoLSse2af6hn8g==" />
+        <!-- '"` --><!-- </textarea></xmp> --></option></form><form id="custom-scopes-dialog-form" data-turbo="false" action="/search/custom_scopes" accept-charset="UTF-8" method="post"><input type="hidden" data-csrf="true" name="authenticity_token" value="Ld1pINjRQNGHhFVs3y9nCSMxURbQKRkm75uHBqDW7lbFdnF5lPjiH313iESjXCcXHHk9H7O771/kOvqRaJfInA==" />
           <div data-target="custom-scopes.customScopesModalDialogFlash"></div>
 
           <input type="hidden" id="custom_scope_id" name="custom_scope_id" data-target="custom-scopes.customScopesIdField">
@@ -1106,7 +1106,7 @@
                 placeholder="github-ruby"
                 required
                 maxlength="50">
-              <input type="hidden" data-csrf="true" value="5Au15AmafunyXlhIvGd6IDNM7fp2RhimQoQLjUfDo5CTj5SHK1o3cZwddbwBTE0puN9LMkaY34kRGXytR7ZNAw==" />
+              <input type="hidden" data-csrf="true" value="+pBCQpieoeqE37XJd9NOIgCdBqyJmAZVD5cJ7apUBJtuxjTdgDz4/r5QJMz9zQ0xgkogqoGI3jcX0xii6tqFTw==" />
             </auto-check>
           </div>
 
@@ -1143,7 +1143,7 @@
 </dialog></dialog-helper>
     </custom-scopes>
   </div>
-</qbsearch-input><input type="hidden" data-csrf="true" class="js-data-jump-to-suggestions-path-csrf" value="dNV1iIwBHkuva0O+M+yFDyxFCZ/nGSAqKAw/oEeKJYsMBMl3ebd9PudpijMW6pnM/kGrhDOPKDH3ibTB2Od1WA==" />
+</qbsearch-input><input type="hidden" data-csrf="true" class="js-data-jump-to-suggestions-path-csrf" value="Hoy8IAxp+8ZIeVlDF5pdHs2sP+GDyiDHR9Sf/ISJA7Pws7ROdCyon3/rp1MbatPTvl2n8xAn4W5Yuk897WQ1VQ==" />
 
 
           <div class="position-relative mr-lg-3 d-lg-inline-block">
@@ -1177,10 +1177,10 @@
         <span class="js-stale-session-flash-signed-out" hidden>You signed out in another tab or window. <a class="Link--inTextBlock" href="">Reload</a> to refresh your session.</span>
         <span class="js-stale-session-flash-switched" hidden>You switched accounts on another tab or window. <a class="Link--inTextBlock" href="">Reload</a> to refresh your session.</span>
 
-    <button id="icon-button-63629a3d-57ed-4f41-b600-f4acf2e5fa08" aria-labelledby="tooltip-ed47a5df-348c-4f07-bb09-cf7becf49479" type="button" data-view-component="true" class="Button Button--iconOnly Button--invisible Button--medium flash-close js-flash-close">  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-x Button-visual">
+    <button id="icon-button-342148c3-0d1e-4dfd-9e50-57e72859fd07" aria-labelledby="tooltip-45bd0d85-3b0a-499a-98ba-138d3789a648" type="button" data-view-component="true" class="Button Button--iconOnly Button--invisible Button--medium flash-close js-flash-close">  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-x Button-visual">
     <path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z"></path>
 </svg>
-</button><tool-tip id="tooltip-ed47a5df-348c-4f07-bb09-cf7becf49479" for="icon-button-63629a3d-57ed-4f41-b600-f4acf2e5fa08" popover="manual" data-direction="s" data-type="label" data-view-component="true" class="sr-only position-absolute">Dismiss alert</tool-tip>
+</button><tool-tip id="tooltip-45bd0d85-3b0a-499a-98ba-138d3789a648" for="icon-button-342148c3-0d1e-4dfd-9e50-57e72859fd07" popover="manual" data-direction="s" data-type="label" data-view-component="true" class="sr-only position-absolute">Dismiss alert</tool-tip>
 
 
   
@@ -1281,7 +1281,7 @@
             <a href="/login?return_to=%2FJappy0%2Freads2graph" rel="nofollow" id="repository-details-watch-button" data-hydro-click="{&quot;event_type&quot;:&quot;authentication.click&quot;,&quot;payload&quot;:{&quot;location_in_page&quot;:&quot;notification subscription menu watch&quot;,&quot;repository_id&quot;:null,&quot;auth_type&quot;:&quot;LOG_IN&quot;,&quot;originating_url&quot;:&quot;https://github.com/Jappy0/reads2graph/blob/main/example/data/SRR1543965.umi.fasta&quot;,&quot;user_id&quot;:null}}" data-hydro-click-hmac="ed3d35f5d3385e8764e728b94426a44a5dc419fce2cc2f0d083424c8dca2704c" aria-label="You must be signed in to change notification settings" data-view-component="true" class="btn-sm btn">    <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-bell mr-2">
     <path d="M8 16a2 2 0 0 0 1.985-1.75c.017-.137-.097-.25-.235-.25h-3.5c-.138 0-.252.113-.235.25A2 2 0 0 0 8 16ZM3 5a5 5 0 0 1 10 0v2.947c0 .05.015.098.042.139l1.703 2.555A1.519 1.519 0 0 1 13.482 13H2.518a1.516 1.516 0 0 1-1.263-2.36l1.703-2.554A.255.255 0 0 0 3 7.947Zm5-3.5A3.5 3.5 0 0 0 4.5 5v2.947c0 .346-.102.683-.294.97l-1.703 2.556a.017.017 0 0 0-.003.01l.001.006c0 .002.002.004.004.006l.006.004.007.001h10.964l.007-.001.006-.004.004-.006.001-.007a.017.017 0 0 0-.003-.01l-1.703-2.554a1.745 1.745 0 0 1-.294-.97V5A3.5 3.5 0 0 0 8 1.5Z"></path>
 </svg>Notifications
-</a>    <tool-tip id="tooltip-30ca566e-a32a-4fde-a62d-07f68cb6e370" for="repository-details-watch-button" popover="manual" data-direction="s" data-type="description" data-view-component="true" class="sr-only position-absolute">You must be signed in to change notification settings</tool-tip>
+</a>    <tool-tip id="tooltip-abf1daaa-796d-4867-94db-d3074ce60f32" for="repository-details-watch-button" popover="manual" data-direction="s" data-type="description" data-view-component="true" class="sr-only position-absolute">You must be signed in to change notification settings</tool-tip>
 
   </li>
 
@@ -1408,22 +1408,22 @@
 </ul>
     <div style="visibility:hidden;" data-view-component="true" class="UnderlineNav-actions js-responsive-underlinenav-overflow position-absolute pr-3 pr-md-4 pr-lg-5 right-0">      <action-menu data-select-variant="none" data-view-component="true">
   <focus-group direction="vertical" mnemonics retain>
-    <button id="action-menu-7d6df107-0849-4ea7-8b6d-5433c8552090-button" popovertarget="action-menu-7d6df107-0849-4ea7-8b6d-5433c8552090-overlay" aria-controls="action-menu-7d6df107-0849-4ea7-8b6d-5433c8552090-list" aria-haspopup="true" aria-labelledby="tooltip-8bc21bc3-3834-402e-86fb-0d4a42b4a9cd" type="button" data-view-component="true" class="Button Button--iconOnly Button--secondary Button--medium UnderlineNav-item">  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-kebab-horizontal Button-visual">
+    <button id="action-menu-e348d06c-3afd-4744-bd7c-020a187769b1-button" popovertarget="action-menu-e348d06c-3afd-4744-bd7c-020a187769b1-overlay" aria-controls="action-menu-e348d06c-3afd-4744-bd7c-020a187769b1-list" aria-haspopup="true" aria-labelledby="tooltip-d849c668-d218-498c-9c60-0b523a5b47db" type="button" data-view-component="true" class="Button Button--iconOnly Button--secondary Button--medium UnderlineNav-item">  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-kebab-horizontal Button-visual">
     <path d="M8 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM1.5 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm13 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"></path>
 </svg>
-</button><tool-tip id="tooltip-8bc21bc3-3834-402e-86fb-0d4a42b4a9cd" for="action-menu-7d6df107-0849-4ea7-8b6d-5433c8552090-button" popover="manual" data-direction="s" data-type="label" data-view-component="true" class="sr-only position-absolute">Additional navigation options</tool-tip>
+</button><tool-tip id="tooltip-d849c668-d218-498c-9c60-0b523a5b47db" for="action-menu-e348d06c-3afd-4744-bd7c-020a187769b1-button" popover="manual" data-direction="s" data-type="label" data-view-component="true" class="sr-only position-absolute">Additional navigation options</tool-tip>
 
 
-<anchored-position id="action-menu-7d6df107-0849-4ea7-8b6d-5433c8552090-overlay" anchor="action-menu-7d6df107-0849-4ea7-8b6d-5433c8552090-button" align="start" side="outside-bottom" anchor-offset="normal" popover="auto" data-view-component="true">
+<anchored-position id="action-menu-e348d06c-3afd-4744-bd7c-020a187769b1-overlay" anchor="action-menu-e348d06c-3afd-4744-bd7c-020a187769b1-button" align="start" side="outside-bottom" anchor-offset="normal" popover="auto" data-view-component="true">
   <div data-view-component="true" class="Overlay Overlay--size-auto">
     
       <div data-view-component="true" class="Overlay-body Overlay-body--paddingNone">          <action-list>
   <div data-view-component="true">
-    <ul aria-labelledby="action-menu-7d6df107-0849-4ea7-8b6d-5433c8552090-button" id="action-menu-7d6df107-0849-4ea7-8b6d-5433c8552090-list" role="menu" data-view-component="true" class="ActionListWrap--inset ActionListWrap">
+    <ul aria-labelledby="action-menu-e348d06c-3afd-4744-bd7c-020a187769b1-button" id="action-menu-e348d06c-3afd-4744-bd7c-020a187769b1-list" role="menu" data-view-component="true" class="ActionListWrap--inset ActionListWrap">
         <li hidden="hidden" data-menu-item="i0code-tab" data-targets="action-list.items" role="none" data-view-component="true" class="ActionListItem">
     
     
-    <a tabindex="-1" id="item-185b0790-e363-4679-b081-23dc3327e701" href="/Jappy0/reads2graph" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
+    <a tabindex="-1" id="item-ddd87382-5a1a-46bc-8eea-6b00319815cc" href="/Jappy0/reads2graph" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
         <span class="ActionListItem-visual ActionListItem-visual--leading">
           <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-code">
     <path d="m11.28 3.22 4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.275-.326.749.749 0 0 1 .215-.734L13.94 8l-3.72-3.72a.749.749 0 0 1 .326-1.275.749.749 0 0 1 .734.215Zm-6.56 0a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042L2.06 8l3.72 3.72a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L.47 8.53a.75.75 0 0 1 0-1.06Z"></path>
@@ -1438,7 +1438,7 @@
         <li hidden="hidden" data-menu-item="i1issues-tab" data-targets="action-list.items" role="none" data-view-component="true" class="ActionListItem">
     
     
-    <a tabindex="-1" id="item-6b26c0fd-3bef-4658-b90a-70f0c8fa57bd" href="/Jappy0/reads2graph/issues" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
+    <a tabindex="-1" id="item-f40706b5-ca0d-414b-8b71-7b6e6cd701d2" href="/Jappy0/reads2graph/issues" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
         <span class="ActionListItem-visual ActionListItem-visual--leading">
           <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-issue-opened">
     <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"></path><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Z"></path>
@@ -1453,7 +1453,7 @@
         <li hidden="hidden" data-menu-item="i2pull-requests-tab" data-targets="action-list.items" role="none" data-view-component="true" class="ActionListItem">
     
     
-    <a tabindex="-1" id="item-2934889e-7fbd-464d-98ab-c34519b76079" href="/Jappy0/reads2graph/pulls" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
+    <a tabindex="-1" id="item-cc11dfaa-ccb9-412b-bcc4-aa27d267113f" href="/Jappy0/reads2graph/pulls" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
         <span class="ActionListItem-visual ActionListItem-visual--leading">
           <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-git-pull-request">
     <path d="M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25Zm5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354ZM3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm0 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm8.25.75a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0Z"></path>
@@ -1468,7 +1468,7 @@
         <li hidden="hidden" data-menu-item="i3actions-tab" data-targets="action-list.items" role="none" data-view-component="true" class="ActionListItem">
     
     
-    <a tabindex="-1" id="item-85e09702-7c72-4791-9466-2bbefe8baf77" href="/Jappy0/reads2graph/actions" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
+    <a tabindex="-1" id="item-cecdc21c-90df-4a82-bc2d-977300805c8f" href="/Jappy0/reads2graph/actions" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
         <span class="ActionListItem-visual ActionListItem-visual--leading">
           <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-play">
     <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm4.879-2.773 4.264 2.559a.25.25 0 0 1 0 .428l-4.264 2.559A.25.25 0 0 1 6 10.559V5.442a.25.25 0 0 1 .379-.215Z"></path>
@@ -1483,7 +1483,7 @@
         <li hidden="hidden" data-menu-item="i4projects-tab" data-targets="action-list.items" role="none" data-view-component="true" class="ActionListItem">
     
     
-    <a tabindex="-1" id="item-689ad6fc-2faf-4727-993f-8456144d088a" href="/Jappy0/reads2graph/projects" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
+    <a tabindex="-1" id="item-b2506935-1f94-4678-bc0d-1a073b557d17" href="/Jappy0/reads2graph/projects" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
         <span class="ActionListItem-visual ActionListItem-visual--leading">
           <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-table">
     <path d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v12.5A1.75 1.75 0 0 1 14.25 16H1.75A1.75 1.75 0 0 1 0 14.25ZM6.5 6.5v8h7.75a.25.25 0 0 0 .25-.25V6.5Zm8-1.5V1.75a.25.25 0 0 0-.25-.25H6.5V5Zm-13 1.5v7.75c0 .138.112.25.25.25H5v-8ZM5 5V1.5H1.75a.25.25 0 0 0-.25.25V5Z"></path>
@@ -1498,7 +1498,7 @@
         <li hidden="hidden" data-menu-item="i5security-tab" data-targets="action-list.items" role="none" data-view-component="true" class="ActionListItem">
     
     
-    <a tabindex="-1" id="item-030baff7-5655-4b2a-8184-b1523cad493a" href="/Jappy0/reads2graph/security" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
+    <a tabindex="-1" id="item-4376d6b4-059d-491d-9502-70bb812787db" href="/Jappy0/reads2graph/security" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
         <span class="ActionListItem-visual ActionListItem-visual--leading">
           <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-shield">
     <path d="M7.467.133a1.748 1.748 0 0 1 1.066 0l5.25 1.68A1.75 1.75 0 0 1 15 3.48V7c0 1.566-.32 3.182-1.303 4.682-.983 1.498-2.585 2.813-5.032 3.855a1.697 1.697 0 0 1-1.33 0c-2.447-1.042-4.049-2.357-5.032-3.855C1.32 10.182 1 8.566 1 7V3.48a1.75 1.75 0 0 1 1.217-1.667Zm.61 1.429a.25.25 0 0 0-.153 0l-5.25 1.68a.25.25 0 0 0-.174.238V7c0 1.358.275 2.666 1.057 3.86.784 1.194 2.121 2.34 4.366 3.297a.196.196 0 0 0 .154 0c2.245-.956 3.582-2.104 4.366-3.298C13.225 9.666 13.5 8.36 13.5 7V3.48a.251.251 0 0 0-.174-.237l-5.25-1.68ZM8.75 4.75v3a.75.75 0 0 1-1.5 0v-3a.75.75 0 0 1 1.5 0ZM9 10.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path>
@@ -1513,7 +1513,7 @@
         <li hidden="hidden" data-menu-item="i6insights-tab" data-targets="action-list.items" role="none" data-view-component="true" class="ActionListItem">
     
     
-    <a tabindex="-1" id="item-d54f8ba4-1540-4cc1-9b68-a4f8b2815897" href="/Jappy0/reads2graph/pulse" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
+    <a tabindex="-1" id="item-1bc21b8b-c18f-42b0-881f-5919d25da678" href="/Jappy0/reads2graph/pulse" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
         <span class="ActionListItem-visual ActionListItem-visual--leading">
           <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-graph">
     <path d="M1.5 1.75V13.5h13.75a.75.75 0 0 1 0 1.5H.75a.75.75 0 0 1-.75-.75V1.75a.75.75 0 0 1 1.5 0Zm14.28 2.53-5.25 5.25a.75.75 0 0 1-1.06 0L7 7.06 4.28 9.78a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042l3.25-3.25a.75.75 0 0 1 1.06 0L10 7.94l4.72-4.72a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042Z"></path>
@@ -1565,7 +1565,7 @@
   data-alternate="false"
 >
   
-  <script type="application/json" data-target="react-app.embeddedData">{"payload":{"allShortcutsEnabled":false,"fileTree":{"example/data":{"items":[{"name":"SRR1543965.umi.fasta","path":"example/data/SRR1543965.umi.fasta","contentType":"file"}],"totalCount":1},"example":{"items":[{"name":"data","path":"example/data","contentType":"directory"}],"totalCount":1},"":{"items":[{"name":"bin","path":"bin","contentType":"directory"},{"name":"example","path":"example","contentType":"directory"},{"name":"include","path":"include","contentType":"directory"},{"name":"src","path":"src","contentType":"directory"},{"name":".gitignore","path":".gitignore","contentType":"file"},{"name":"CMakeLists.txt","path":"CMakeLists.txt","contentType":"file"},{"name":"LICENSE","path":"LICENSE","contentType":"file"},{"name":"README.md","path":"README.md","contentType":"file"},{"name":"build.sh","path":"build.sh","contentType":"file"},{"name":"cross-linux.cmake","path":"cross-linux.cmake","contentType":"file"},{"name":"meta.yaml","path":"meta.yaml","contentType":"file"}],"totalCount":11}},"fileTreeProcessingTime":9.509589,"foldersToFetch":[],"repo":{"id":711338212,"defaultBranch":"main","name":"reads2graph","ownerLogin":"Jappy0","currentUserCanPush":false,"isFork":false,"isEmpty":false,"createdAt":"2023-10-28T23:57:43.000Z","ownerAvatar":"https://avatars.githubusercontent.com/u/36221893?v=4","public":true,"private":false,"isOrgOwned":false},"codeLineWrapEnabled":false,"symbolsExpanded":false,"treeExpanded":true,"refInfo":{"name":"main","listCacheKey":"v0:1717467275.0","canEdit":false,"refType":"branch","currentOid":"e37c53ce7696b6203c05bb422dedd55fe689e538"},"path":"example/data/SRR1543965.umi.fasta","currentUser":null,"blob":{"rawLines":null,"stylingDirectives":[],"colorizedLines":null,"csv":null,"csvError":null,"dependabotInfo":{"showConfigurationBanner":false,"configFilePath":null,"networkDependabotPath":"/Jappy0/reads2graph/network/updates","dismissConfigurationNoticePath":"/settings/dismiss-notice/dependabot_configuration_notice","configurationNoticeDismissed":null},"displayName":"SRR1543965.umi.fasta","displayUrl":"https://github.com/Jappy0/reads2graph/blob/main/example/data/SRR1543965.umi.fasta?raw=true","headerInfo":{"blobSize":"39.4 MB","deleteTooltip":"You must be signed in to make or propose changes","editTooltip":"You must be signed in to make or propose changes","ghDesktopPath":"https://desktop.github.com","isGitLfs":false,"onBranch":true,"shortPath":"62c69ba","siteNavLoginPath":"/login?return_to=https%3A%2F%2Fgithub.com%2FJappy0%2Freads2graph%2Fblob%2Fmain%2Fexample%2Fdata%2FSRR1543965.umi.fasta","isCSV":false,"isRichtext":false,"toc":null,"lineInfo":{"truncatedLoc":null,"truncatedSloc":null},"mode":"file"},"image":false,"isCodeownersFile":null,"isPlain":false,"isValidLegacyIssueTemplate":false,"issueTemplate":null,"discussionTemplate":null,"language":null,"languageID":null,"large":true,"planSupportInfo":{"repoIsFork":null,"repoOwnedByCurrentUser":null,"requestFullPath":"/Jappy0/reads2graph/blob/main/example/data/SRR1543965.umi.fasta","showFreeOrgGatedFeatureMessage":null,"showPlanSupportBanner":null,"upgradeDataAttributes":null,"upgradePath":null},"publishBannersInfo":{"dismissActionNoticePath":"/settings/dismiss-notice/publish_action_from_dockerfile","releasePath":"/Jappy0/reads2graph/releases/new?marketplace=true","showPublishActionBanner":false},"rawBlobUrl":"https://github.com/Jappy0/reads2graph/raw/main/example/data/SRR1543965.umi.fasta","renderImageOrRaw":true,"richText":null,"renderedFileInfo":null,"shortPath":null,"symbolsEnabled":true,"tabSize":8,"topBannersInfo":{"overridingGlobalFundingFile":false,"globalPreferredFundingPath":null,"showInvalidCitationWarning":false,"citationHelpUrl":"https://docs.github.com/github/creating-cloning-and-archiving-repositories/creating-a-repository-on-github/about-citation-files","actionsOnboardingTip":null},"truncated":true,"viewable":false,"workflowRedirectUrl":null,"symbols":{"timed_out":true,"not_analyzed":true,"symbols":[],"error":{"code":"invalid_argument","msg":"content required","meta":{}}}},"copilotInfo":null,"copilotAccessAllowed":false,"csrf_tokens":{"/Jappy0/reads2graph/branches":{"post":"UGBQEQAU-156DuIP5Om4sW_rjP4MKmET99s09Poo4YxkOxKGM8oqGowrzhmIklxeAnknHLKsYWHzBW3O2FSAVg"},"/repos/preferences":{"post":"_0p6LVgQambuH-P_PQnOVF5V8jV9blYSpsMItbzTFzm6xYKRntjuQB38jHls1LTbHO-aZCIPJPPXVM0P9gnkWw"}}},"title":"reads2graph/example/data/SRR1543965.umi.fasta at main · Jappy0/reads2graph","appPayload":{"helpUrl":"https://docs.github.com","findFileWorkerPath":"/assets-cdn/worker/find-file-worker-1583894afd38.js","findInFileWorkerPath":"/assets-cdn/worker/find-in-file-worker-3a63a487027b.js","githubDevUrl":null,"enabled_features":{"code_nav_ui_events":false,"react_blob_overlay":false,"copilot_conversational_ux_embedding_update":false,"copilot_smell_icebreaker_ux":true,"copilot_workspace":false}}}</script>
+  <script type="application/json" data-target="react-app.embeddedData">{"payload":{"allShortcutsEnabled":false,"fileTree":{"example/data":{"items":[{"name":"SRR1543965.umi.fasta","path":"example/data/SRR1543965.umi.fasta","contentType":"file"}],"totalCount":1},"example":{"items":[{"name":"data","path":"example/data","contentType":"directory"}],"totalCount":1},"":{"items":[{"name":"bin","path":"bin","contentType":"directory"},{"name":"example","path":"example","contentType":"directory"},{"name":"include","path":"include","contentType":"directory"},{"name":"src","path":"src","contentType":"directory"},{"name":".gitignore","path":".gitignore","contentType":"file"},{"name":"CMakeLists.txt","path":"CMakeLists.txt","contentType":"file"},{"name":"LICENSE","path":"LICENSE","contentType":"file"},{"name":"README.md","path":"README.md","contentType":"file"},{"name":"SRR1543965.umi.fasta","path":"SRR1543965.umi.fasta","contentType":"file"},{"name":"build.sh","path":"build.sh","contentType":"file"},{"name":"cross-linux.cmake","path":"cross-linux.cmake","contentType":"file"},{"name":"meta.yaml","path":"meta.yaml","contentType":"file"}],"totalCount":12}},"fileTreeProcessingTime":8.752327000000001,"foldersToFetch":[],"repo":{"id":711338212,"defaultBranch":"main","name":"reads2graph","ownerLogin":"Jappy0","currentUserCanPush":false,"isFork":false,"isEmpty":false,"createdAt":"2023-10-28T23:57:43.000Z","ownerAvatar":"https://avatars.githubusercontent.com/u/36221893?v=4","public":true,"private":false,"isOrgOwned":false},"codeLineWrapEnabled":false,"symbolsExpanded":false,"treeExpanded":true,"refInfo":{"name":"main","listCacheKey":"v0:1717467275.0","canEdit":false,"refType":"branch","currentOid":"41864eaa5a994ddc4b1a3ed5f4abb8f6d2899354"},"path":"example/data/SRR1543965.umi.fasta","currentUser":null,"blob":{"rawLines":null,"stylingDirectives":[],"colorizedLines":null,"csv":null,"csvError":null,"dependabotInfo":{"showConfigurationBanner":false,"configFilePath":null,"networkDependabotPath":"/Jappy0/reads2graph/network/updates","dismissConfigurationNoticePath":"/settings/dismiss-notice/dependabot_configuration_notice","configurationNoticeDismissed":null},"displayName":"SRR1543965.umi.fasta","displayUrl":"https://github.com/Jappy0/reads2graph/blob/main/example/data/SRR1543965.umi.fasta?raw=true","headerInfo":{"blobSize":"39.4 MB","deleteTooltip":"You must be signed in to make or propose changes","editTooltip":"You must be signed in to make or propose changes","ghDesktopPath":"https://desktop.github.com","isGitLfs":false,"onBranch":true,"shortPath":"62c69ba","siteNavLoginPath":"/login?return_to=https%3A%2F%2Fgithub.com%2FJappy0%2Freads2graph%2Fblob%2Fmain%2Fexample%2Fdata%2FSRR1543965.umi.fasta","isCSV":false,"isRichtext":false,"toc":null,"lineInfo":{"truncatedLoc":null,"truncatedSloc":null},"mode":"file"},"image":false,"isCodeownersFile":null,"isPlain":false,"isValidLegacyIssueTemplate":false,"issueTemplate":null,"discussionTemplate":null,"language":null,"languageID":null,"large":true,"planSupportInfo":{"repoIsFork":null,"repoOwnedByCurrentUser":null,"requestFullPath":"/Jappy0/reads2graph/blob/main/example/data/SRR1543965.umi.fasta","showFreeOrgGatedFeatureMessage":null,"showPlanSupportBanner":null,"upgradeDataAttributes":null,"upgradePath":null},"publishBannersInfo":{"dismissActionNoticePath":"/settings/dismiss-notice/publish_action_from_dockerfile","releasePath":"/Jappy0/reads2graph/releases/new?marketplace=true","showPublishActionBanner":false},"rawBlobUrl":"https://github.com/Jappy0/reads2graph/raw/main/example/data/SRR1543965.umi.fasta","renderImageOrRaw":true,"richText":null,"renderedFileInfo":null,"shortPath":null,"symbolsEnabled":true,"tabSize":8,"topBannersInfo":{"overridingGlobalFundingFile":false,"globalPreferredFundingPath":null,"showInvalidCitationWarning":false,"citationHelpUrl":"https://docs.github.com/github/creating-cloning-and-archiving-repositories/creating-a-repository-on-github/about-citation-files","actionsOnboardingTip":null},"truncated":true,"viewable":false,"workflowRedirectUrl":null,"symbols":{"timed_out":true,"not_analyzed":true,"symbols":[],"error":{"code":"invalid_argument","msg":"content required","meta":{}}}},"copilotInfo":null,"copilotAccessAllowed":false,"csrf_tokens":{"/Jappy0/reads2graph/branches":{"post":"5g35GBqrwIjkaEP-50Lw5OPu4jqgSIFibrCplhfyvg3G7wdnm4M0IzkFPvZlQHn01UpIAJjaiBqqrv94533e0A"},"/repos/preferences":{"post":"exeWH7m8eDqIAJ68HZz41wrV4cqTJVTI29O-A_ts22SE13EZ-sqRu8CXhxTn6WoNl7LTUBv4C3Ihki8KDKGXQQ"}}},"title":"reads2graph/example/data/SRR1543965.umi.fasta at main · Jappy0/reads2graph","appPayload":{"helpUrl":"https://docs.github.com","findFileWorkerPath":"/assets-cdn/worker/find-file-worker-1583894afd38.js","findInFileWorkerPath":"/assets-cdn/worker/find-in-file-worker-3a63a487027b.js","githubDevUrl":null,"enabled_features":{"code_nav_ui_events":false,"react_blob_overlay":false,"copilot_conversational_ux_embedding_update":false,"copilot_smell_icebreaker_ux":true,"copilot_workspace":false}}}</script>
   <div data-target="react-app.reactRoot"><style data-styled="true" data-styled-version="5.3.6">.jUriTl{font-weight:600;font-size:32px;margin:0;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;font-size:14px;}/*!sc*/
 .cgQnMS{font-weight:600;font-size:32px;margin:0;}/*!sc*/
 .diwsLq{font-weight:600;font-size:32px;margin:0;font-weight:600;display:inline-block;max-width:100%;font-size:16px;}/*!sc*/
