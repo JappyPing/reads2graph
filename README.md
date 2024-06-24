@@ -51,6 +51,9 @@ make
 
 ## Example
 
+### Important notes before running the example
+Please check the number of available CPU cores that can be used. Specify the exact number of CPU cores you want to use in parallel with the ```-p your_cpu_cores``` option. If you do not set this, reads2graph may not run in parallel correctly. Using only one CPU core will run slowly.
+
 ### Installing reads2graph from source codes
 ```
 cd ..
