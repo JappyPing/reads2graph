@@ -53,5 +53,7 @@ about:
 extra:
   identifiers:
     - biotools:reads2graph
+  # additional-platforms: 
+  #   - linux-aarch64 
   recipe-maintainers:
     - Jappy0 
