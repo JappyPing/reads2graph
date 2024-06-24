@@ -33,7 +33,7 @@ struct cmd_arguments
     // uint8_t window_size{};
     uint8_t max_edit_dis{2};
     uint8_t min_edit_dis{1};
-    int num_process{26};
+    int num_process{1};
     bool pair_wise{false};
     // unsigned int bin_size_min{500};
     unsigned int bin_size_max{10000};

@@ -59,12 +59,16 @@ int main(int argc, char** argv) {
     Utils::getInstance().logger(LOG_LEVEL_INFO,  "Welcome to use reads2graph!");
 
     std::string concatenatedArgs;
-
+    bool num_process_input = false;
     for (int i = 0; i < argc; ++i) {
         concatenatedArgs += argv[i];
         if (i < argc - 1) {
             concatenatedArgs += " ";
         }
+        if (strcmp(argv[i], "--num_process") == 0 || strcmp(argv[i], "-p") == 0) {
+            num_process_input = true;
+        }
+
     }
     sharg::parser reads2graphParser{"reads2graph", argc, argv, sharg::update_notifications::off}; // initialise parser
     cmd_arguments args{};
@@ -85,20 +89,58 @@ int main(int argc, char** argv) {
     }
     // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Parameters: -o {} -k {} -w {} --omh_kmer_n {} --omh_times {}", args.output_dir.string(), args.k_size, args.window_size, args.omh_kmer_n, args.omh_times));
 
-    // Declare and define a global variable for available cores
+    const char* omp_num_threads = getenv("OMP_NUM_THREADS");
+    const char* slurm_cpus_per_task = getenv("SLURM_CPUS_PER_TASK");
+    const char* pbs_num_procs = getenv("PBS_NP");
+
+    // Determine the number of cores available
     int available_cores = omp_get_max_threads();
-    // Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("The maximum number of threads available: {} ", available_cores));
-    Utils::getInstance().logger(LOG_LEVEL_DEBUG, boost::str(boost::format("The maximum number of threads available: %1% ") % available_cores));
-    // Ensure the user-specified number of cores is within a valid range
-    auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
+
+    // Log the maximum number of threads available
+    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The maximum number of CPU cores available: %1%") % available_cores));
+
+    // Log environment variables for debugging
+    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("OMP_NUM_THREADS: %1%") % (omp_num_threads ? omp_num_threads : "not set")));
+    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("SLURM_CPUS_PER_TASK: %1%") % (slurm_cpus_per_task ? slurm_cpus_per_task : "not set")));
+    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("PBS_NP: %1%") % (pbs_num_procs ? pbs_num_procs : "not set")));
+
+    // Determine number of cores to use based on scheduler variables
+    int num_cores_to_use;  
+    if (slurm_cpus_per_task) {
+        num_cores_to_use = std::atoi(slurm_cpus_per_task);
+    } else if (pbs_num_procs) {
+        num_cores_to_use = std::atoi(pbs_num_procs);
+    } else if (omp_num_threads) {
+        num_cores_to_use = std::atoi(omp_num_threads);
+    } else {
+        num_cores_to_use = available_cores;
+    }
+
+    // Ensure the number of cores to use is within a valid range
+    if (num_process_input){
+        Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of CPU cores requested: %1% ") % args.num_process));
+        if (args.num_process > num_cores_to_use){
+            args.num_process = num_cores_to_use;
+        }
+    } else {
+        args.num_process = std::min(std::max(num_cores_to_use, 1), available_cores);
+    } 
+
+    ///////////////////////////////////////////////////
+    // Declare and define a global variable for available cores
+    // int available_cores = omp_get_max_threads();
+    // // Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("The maximum number of threads available: {} ", available_cores));
+    // Utils::getInstance().logger(LOG_LEVEL_DEBUG, boost::str(boost::format("The maximum number of threads available: %1% ") % available_cores));
+    // // Ensure the user-specified number of cores is within a valid range
+    // auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
     // std::cout << "The maximum number of threads available:" << available_cores << std::endl;
     
     // Set the number of threads for OpenMP
     // omp_set_num_threads(num_cores_to_use);
-    args.num_process = num_cores_to_use;
+    // args.num_process = num_cores_to_use;
     // std::cout << "The number of threads :" << num_cores_to_use << std::endl;
     // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The number of threads: {} ", num_cores_to_use));
-    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of threads: %1% ") % num_cores_to_use));
+    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of CPU cores actually used: %1% ") % args.num_process));
     ////////////////////////////////////////////////////////////////////////////
     // auto read2count = ReadWrite(args).get_unique_reads_counts();
     auto [unique_reads, read2count, min_read_length] = ReadWrite(args).get_unique_reads_counts();
