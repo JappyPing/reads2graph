@@ -5,6 +5,10 @@
 
 reads2graph is a practical method for constructing an edit-distance-based read graph for a short-read sequencing dataset via minimizer and order min hash bucketing and graph traversal.
 
+## Important Notes
+1. Please do not attempt to install reads2graph from both bioconda and source code in the same conda environment. The bioconda channel currently does not support gxx_linux-64==13.2.0, and the following instructions for installing from source codes use the ```gxx_linux-64==13.2.0```.
+2. reads2graph has only been tested and released on Linux. Support for other platforms will be added in the future.
+
 ## Installation
 ### From ```bioconda```
 #### Create an environment and install reads2graph via ```conda```
