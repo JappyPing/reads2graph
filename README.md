@@ -74,7 +74,7 @@ cd reads2graph/example
 reads2graph -i ./data/SRR1543965.umi.fasta -o ./ -x 2 -n 1 -p 64 -k 4 --window_number 2 --omh_times 4 --omh_k 4
 ```
 ### Expected results
-Note: The date, time, and commands will reflect the current state when you execute `reads2graph'. The example process will be finished in about 4 minutes by using 64 CPU cores. 
+Note: The date, time, and commands will reflect the current status upon executing reads2graph. The example process is expected to complete in approximately 4 minutes using 64 CPU cores. Some HPC servers can finish the test example in less than one minute with 64 CPU cores.
 
 ```
 2024-05-26 10:35:37: INFO: Welcome to use reads2graph!
