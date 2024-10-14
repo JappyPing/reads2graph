@@ -147,6 +147,7 @@ public:
     void save_graph() const;
     void edge_summary();
     void construt_graph_via_pairwise_comparison(std::vector<std::vector<seqan3::dna5>> unique_reads);
+    void construt_graph_via_original_omh_only(std::vector<std::vector<seqan3::dna5>> unique_reads);
 
 private:
     // std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> key2reads_;

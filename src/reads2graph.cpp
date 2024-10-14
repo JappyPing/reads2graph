@@ -12,7 +12,7 @@
 #include "ReadWrite.hpp"
 #include "MinimizerGenerator.hpp"
 #include "GraphConstructor.hpp"
-#include "OMH.hpp"
+#include "gOMH.hpp"
 
 #include <time.h>
 #include <stdlib.h>
@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
         std::cerr << "[Invalid Options] " << ext.what() << "\n"; // customise your error message
         return -1;
     }
-    // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Parameters: -o {} -k {} -w {} --omh_kmer_n {} --omh_times {}", args.output_dir.string(), args.k_size, args.window_size, args.omh_kmer_n, args.omh_times));
+    // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Parameters: -o {} -k {} -w {} --gomh_kmer_n {} --gomh_times {}", args.output_dir.string(), args.k_size, args.window_size, args.gomh_kmer_n, args.gomh_times));
 
     const char* omp_num_threads = getenv("OMP_NUM_THREADS");
     const char* slurm_cpus_per_task = getenv("SLURM_CPUS_PER_TASK");
@@ -185,6 +185,12 @@ int main(int argc, char** argv) {
         // Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise (brute force) edit-distance-based edges calculation done");
         // GraphManager(edge_lst, read2count, args).construct_graph();
         // GraphManager(edge_lst, read2count, read2id, args).construct_graph();
+    } else if (args.ori_omh) {
+        GraphConstructor graph_constructor(read2count, args);
+        graph_constructor.construt_graph_via_original_omh_only(unique_reads);
+        if (args.save_graph){
+            graph_constructor.save_graph();
+        }
     } else {
         // minimizer grouping first and then omh
         auto betterParams = MinimizerGenerator(args).possibleBetterParameters();

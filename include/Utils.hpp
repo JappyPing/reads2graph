@@ -37,11 +37,11 @@ struct cmd_arguments
     bool pair_wise{false};
     // unsigned int bin_size_min{500};
     unsigned int bin_size_max{10000};
-    unsigned omh_k{4};
+    unsigned gomh_k{4};
     // uint8_t omh_k_step_size{3};
-    unsigned omh_times{3};
-    bool omh_flag{false};
-    std::uint64_t omh_seed{2024};
+    unsigned gomh_times{3};
+    bool gomh_flag{false};
+    std::uint64_t gomh_seed{2024};
     // unsigned omh_kmer_n{3}; // Number of k-mers to consider
     double bad_kmer_ratio{0.3};
     double probability{0.86};
@@ -49,6 +49,10 @@ struct cmd_arguments
     bool save_graph{false};
     // double sampling_rate{0.01};
     // bool minimizer_omh{true}; 
+    /////////////////////////////
+    bool ori_omh{false};
+    unsigned ori_omh_l{2};
+    unsigned ori_omh_m{3};
 };
 
 

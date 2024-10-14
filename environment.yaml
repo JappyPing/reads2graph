@@ -1,0 +1,57 @@
+--------------
+Hash contents:
+--------------
+{'c_compiler': 'gcc', 'cxx_compiler': 'gxx', 'target_platform': 'linux-64'}
+----------
+meta.yaml:
+----------
+package:
+  name: reads2graph
+  version: 1.0.0
+source:
+  sha256: 1c054034fe139c60d521f349c824885594f30f04695c669d66072002fd1306e4
+  url: https://github.com/Jappy0/reads2graph/archive/refs/tags/reads2graph-v1.0.0.tar.gz
+build:
+  number: '0'
+  run_exports:
+    - reads2graph >=1.0.0,<2.0a0
+requirements:
+  build:
+    - gxx_linux-64
+    - seqan3 ==3.3.0
+    - gxx >=12.0
+    - openmp ==8.0.1
+    - gcc_linux-64
+    - sharg ==1.1.1
+    - make
+    - cmake >=3.21
+    - boost ==1.82.0
+  host:
+    - openmp ==8.0.1
+    - seqan3 ==3.3.0
+    - boost ==1.82.0
+    - sharg ==1.1.1
+  run:
+    - openmp ==8.0.1
+    - seqan3 ==3.3.0
+    - boost ==1.82.0
+    - sharg ==1.1.1
+test:
+  commands:
+    - reads2graph --help
+    - reads2graph --version
+about:
+  home: https://github.com/Jappy0/reads2graph
+  license: BSD-3-Clause
+  license_family: BSD
+  license_file: LICENSE
+  summary: reads2graph is an efficient tool for constructing edit-distance-based read
+    graph from short-read sequencing data.
+extra:
+  copy_test_source_files: true
+  final: true
+  identifiers:
+    - biotools:reads2graph
+  recipe-maintainers:
+    - Jappy0
+

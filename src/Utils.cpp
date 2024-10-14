@@ -209,20 +209,20 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                       sharg::config{.long_id = "bin_size_max",
                                     .description = "The larger threshold used to group buckets of different sizes."});
 
-    parser.add_option(args.omh_k,
-                      sharg::config{.long_id = "omh_k",
+    parser.add_option(args.gomh_k,
+                      sharg::config{.long_id = "gomh_k",
                                     .description = "K-mer size used in order min hashing."});
 
-    parser.add_option(args.omh_times,
-                      sharg::config{.long_id = "omh_times",
+    parser.add_option(args.gomh_times,
+                      sharg::config{.long_id = "gomh_times",
                                     .description = "The number of times to perform permutation in order min hashing."});
 
-    parser.add_option(args.omh_seed,
-                      sharg::config{.long_id = "omh_seed",
+    parser.add_option(args.gomh_seed,
+                      sharg::config{.long_id = "gomh_seed",
                                     .description = "The seed to generate a series of seeds for OMH bucketing."});
 
-    parser.add_option(args.omh_flag,
-                      sharg::config{.long_id = "omh_flag",
+    parser.add_option(args.gomh_flag,
+                      sharg::config{.long_id = "gomh_flag",
                                     .description = "Do not set this flag by yourself. When the permutation_times larger than the number of k-mer candidates and the kmer size are the same one, bucketing the reads using each kmer candidate."});
 
     parser.add_option(args.bad_kmer_ratio,
@@ -240,6 +240,16 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
     parser.add_option(args.save_graph,
                       sharg::config{.long_id = "save_graph",
                                     .description = "If ture, reads2graph will save graph to file in graphviz dot format."});
+
+    parser.add_option(args.ori_omh,
+                      sharg::config{.long_id = "ori_omh",
+                                    .description = "If ture, reads2graph will use original OMH only for constructing edit-distance graph."});   
+    parser.add_option(args.ori_omh_m,
+                      sharg::config{.long_id = "ori_omh_m",
+                                    .description = "The parameter m, the number of hash functions, for bucketing reads used in the original OMH only to construct edit-distance graph."});                                       
+    parser.add_option(args.ori_omh_l,
+                      sharg::config{.long_id = "ori_omh_l",
+                                    .description = "The parameter l for bucketing reads used in the original OMH only to construct edit-distance graph."});    
     // parser.add_option(args.minimizer_omh,
     //                   sharg::config{.long_id = "minimizer_omh",
     //                                 .description = "If ture, reads2graph employs minimizer bucketing first and then OMH bucketing; otherwise, OMH first then minimizer."});
