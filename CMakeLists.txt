@@ -13,7 +13,8 @@ set(SOURCES
     ReadWrite.cpp
     MinimizerGenerator.cpp
     GraphConstructor.cpp
-    OMH.cpp
+    gOMH.cpp
+    omh.cpp
 )
 #include_directories
 include_directories(include)
@@ -23,5 +24,3 @@ set(CMAKE_CXX_FLAGS "${CAMKE_CXX_FLAGS} -std=c++20 -fopenmp -static-libgcc -stat
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src c_files)
 add_executable(${PROJECT_NAME} ${c_files})
-
-

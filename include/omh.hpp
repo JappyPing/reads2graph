@@ -13,7 +13,7 @@ Guillaume Marçais, Dan DeBlasio, Prashant Pandey, Carl Kingsford, Locality-sens
 #include <algorithm>
 #include <random>
 #include <limits>
-
+#include <seqan3/alphabet/all.hpp>
 #include <xxhash.hpp>
 #include <seeded_prg.hpp>
 
@@ -163,16 +163,47 @@ public:
     return sk;
   }
 
-  double compare(const std::string& s1, const std::string& s2, bool rc = false) {
-    const auto sk1 = compute(s1, rc);
-    const auto sk2 = compute(s2, rc);
-    return compare_sketches(sk1, sk2);
-  }
+  // double compare(const std::string& s1, const std::string& s2, bool rc = false) {
+  //   const auto sk1 = compute(s1, rc);
+  //   const auto sk2 = compute(s2, rc);
+  //   return compare_sketches(sk1, sk2);
+  // }
 };
 
 
 // Compare 2 sketches. Return agreement in [0, 1]
-double compare_sketches(const sketch& sk1, const sketch& sk2, ssize_t m = -1, bool circular = false);
+// double compare_sketches(const sketch& sk1, const sketch& sk2, ssize_t m = -1, bool circular = false);
+
+class OMH {
+public:
+    // Function to group reads by OMH sketch
+    template<typename EngineT>
+    std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>>
+    ori_omh2read_main(std::vector<std::vector<seqan3::dna5>> unique_reads, omh_sketcher<EngineT>& sketcher, bool rc = false) {
+        std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> omh2reads;
+
+        for (const auto& read : unique_reads) {
+            // Convert seqan3::dna5 vector to string (needed by the sketcher)
+            std::string read_str;
+            for (const auto& nt : read) {
+                read_str.push_back(seqan3::to_char(nt));
+            }
+
+            // Compute the sketch for the current read
+            sketch sk = sketcher.compute(read_str, rc);
+
+            // Hash the sketch to generate a uint64_t key
+            xxhash<64> hash;
+            hash.update(sk.data.data(), sk.data.size());
+            std::uint64_t sketch_hash = hash.digest();
+
+            // Group reads by their sketch hash
+            omh2reads[sketch_hash].push_back(read);
+        }
+
+        return omh2reads;
+    }
+};
 
 
 #endif /* __OMH_H__ */

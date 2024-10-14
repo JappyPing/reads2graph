@@ -646,8 +646,14 @@ void GraphConstructor::construt_graph_via_original_omh_only(std::vector<std::vec
 
     auto config = seqan3::align_cfg::method_global{} | seqan3::align_cfg::edit_scheme | seqan3::align_cfg::min_score{-1 * args.max_edit_dis} | seqan3::align_cfg::output_score{};
 
-    auto cur_hash2reads = OMH(args).ori_omh2read_main(unique_reads, seeds_k);
-    args.omh_flag = false; // make this flag false after using omh2read_main
+    // LongSeed<std::mt19937_64> seed;
+    std::mt19937_64 generator(args.ori_omh_seed);
+    std::uint64_t cur_seed = distribution(generator);
+    omh_sketcher<std::mt19937_64> sketcher(args.ori_omh_k, args.ori_omh_l, args.ori_omh_m, cur_seed);
+
+    // Group reads by OMH sketches
+    OMH omh;
+    auto cur_hash2reads = omh.ori_omh2read_main(unique_reads, sketcher, false);
     auto cur_bin_n = cur_hash2reads.size();
 
     for (auto i = 0u; i < cur_bin_n; ++i) {
