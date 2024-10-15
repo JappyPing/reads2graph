@@ -41,7 +41,7 @@ void omh_pos(const std::string& seq, unsigned k, unsigned l, unsigned m, EngineT
 
   std::vector<mer_info> mers;
   std::unordered_map<std::string, unsigned> occurrences;
-  size_t pos[l];
+  // size_t pos[l];
 
   //  Create list of k-mers with occurrence numbers
   for(size_t i = 0; i < seq.size() - k + 1; ++i) {
@@ -193,7 +193,7 @@ public:
             sketch sk = sketcher.compute(read_str, rc);
 
             // Hash the sketch to generate a uint64_t key
-            xxhash<64> hash;
+            xxhash hash;
             hash.update(sk.data.data(), sk.data.size());
             std::uint64_t sketch_hash = hash.digest();
 

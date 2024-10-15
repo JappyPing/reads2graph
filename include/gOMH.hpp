@@ -9,6 +9,7 @@ Guillaume Marçais, Dan DeBlasio, Prashant Pandey, Carl Kingsford, Locality-sens
 
 #include "Utils.hpp"
 #include "LoggingLevels.hpp"
+#include "omh.hpp"
 
 #include <cstring>
 #include <string>
@@ -22,16 +23,16 @@ Guillaume Marçais, Dan DeBlasio, Prashant Pandey, Carl Kingsford, Locality-sens
 // #include <seeded_prg.hpp>
 #include <seqan3/alphabet/nucleotide/dna5.hpp>
 
-struct mer_info {
-  size_t pos;
-  uint64_t hash;
-  unsigned occ;
-  mer_info(size_t p, unsigned o, uint64_t h)
-    : pos(p)
-    , hash(h)
-    , occ(o)
-  { }
-};
+// struct mer_info {
+//   size_t pos;
+//   uint64_t hash;
+//   unsigned occ;
+//   mer_info(size_t p, unsigned o, uint64_t h)
+//     : pos(p)
+//     , hash(h)
+//     , occ(o)
+//   { }
+// };
 
 class gOMH
 {
@@ -60,50 +61,4 @@ private:
     cmd_arguments args;
 
 };
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// This is the source code for the function of omh computation from the authors, please cite the following the literature if you want to use the source code
-// Reference: Guillaume Marçais, Dan DeBlasio, Prashant Pandey, Carl Kingsford, Locality-sensitive hashing for the edit distance, Bioinformatics, Volume 35, Issue 14, July 2019, Pages i127–i135, https://doi.org/10.1093/bioinformatics/btz354
-// Compute the position in sequence of the k-mers picked by omh, and
-// passed them 1 by 1 to block. block takes 3 arguments: i \in [m], j
-// \in [l] and the position.
-// template<typename EngineT, typename BT>
-// void omh_pos(const std::string& seq, unsigned k, unsigned l, unsigned m, EngineT& prg, BT block) {
-template<typename EngineT>
-std::vector<uint64_t> ori_omh_pos(const std::string& seq, unsigned k, unsigned l, unsigned m, EngineT& prg) {
-    
-  if(seq.size() < k) return;
-  const bool weight = l > 0;
-  if(l == 0) l = 1;
-
-  std::vector<mer_info> mers;
-  std::unordered_map<std::string, unsigned> occurrences;
-  size_t pos[l];
-
-  //  Create list of k-mers with occurrence numbers
-  for(size_t i = 0; i < seq.size() - k + 1; ++i) {
-    auto occ = occurrences[seq.substr(i, k)]++;
-    mers.emplace_back(i, occ, (uint64_t)0);
-  }
-
-  xxhash hash;
-  for(unsigned i = 0; i < m; ++i) {
-    const auto seed = prg();
-    for(auto& meri : mers) {
-      hash.reset(seed);
-      hash.update(&seq.data()[meri.pos], k);
-      if(weight) hash.update(&meri.occ, sizeof(meri.occ));
-      meri.hash = hash.digest();
-    }
-
-    std::partial_sort(mers.begin(), mers.begin() + l, mers.end(), [&](const mer_info& x, const mer_info& y) { return x.hash < y.hash; });
-    std::sort(mers.begin(), mers.begin() + l, [&](const mer_info& x, const mer_info& y) { return x.pos < y.pos; });
-//     for(unsigned j = 0; j < l; ++j)
-//       block(i, j, mers[j].pos);
-    }
-    uint64_t smallest_hash = mers[0].hash;
-    return smallest_hash;
-}
-
-
 #endif /* __OMH_H__ */

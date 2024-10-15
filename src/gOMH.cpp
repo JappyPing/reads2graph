@@ -111,7 +111,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> gOMH::
         unsigned k = first_pair.second;
         #pragma omp parallel for num_threads(args.num_process) schedule(static)
         for (auto const & read : unique_reads){  
-            auto gomh_values = ggomh_pos2(read, k, seed);
+            auto gomh_values = gomh_pos2(read, k, seed);
             for (auto const & gomh_val : gomh_values){
                 #pragma omp critical
                 {

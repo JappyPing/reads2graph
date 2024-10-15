@@ -2,6 +2,7 @@
 #include "GraphConstructor.hpp"
 #include "gOMH.hpp"
 #include "MinimizerGenerator.hpp"
+#include "omh.hpp"
 
 // #include <format>
 #include <boost/format.hpp>
@@ -648,8 +649,11 @@ void GraphConstructor::construt_graph_via_original_omh_only(std::vector<std::vec
 
     // LongSeed<std::mt19937_64> seed;
     std::mt19937_64 generator(args.ori_omh_seed);
+    std::uniform_int_distribution<std::uint64_t> distribution(std::numeric_limits<std::uint64_t>::min(), std::numeric_limits<std::uint64_t>::max());
     std::uint64_t cur_seed = distribution(generator);
-    omh_sketcher<std::mt19937_64> sketcher(args.ori_omh_k, args.ori_omh_l, args.ori_omh_m, cur_seed);
+    // Create a LongSeed object from cur_seed
+    LongSeed<std::mt19937_64> seed(cur_seed);
+    omh_sketcher<std::mt19937_64> sketcher(args.ori_omh_k, args.ori_omh_l, args.ori_omh_m, seed);
 
     // Group reads by OMH sketches
     OMH omh;
