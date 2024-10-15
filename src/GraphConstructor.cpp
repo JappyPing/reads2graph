@@ -657,7 +657,7 @@ void GraphConstructor::construt_graph_via_original_omh_only(std::vector<std::vec
 
     // Group reads by OMH sketches
     OMH omh;
-    auto cur_hash2reads = omh.ori_omh2read_main(unique_reads, sketcher, false);
+    auto cur_hash2reads = omh.ori_omh2read_main(unique_reads, sketcher, args.num_process, false);
     auto cur_bin_n = cur_hash2reads.size();
 
     for (auto i = 0u; i < cur_bin_n; ++i) {

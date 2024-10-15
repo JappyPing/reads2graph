@@ -53,7 +53,7 @@ struct cmd_arguments
     bool ori_omh{false};
     unsigned ori_omh_l{2};
     unsigned ori_omh_m{3};
-    unsigned ori_omh_k{10};
+    unsigned ori_omh_k{18};
     std::uint64_t ori_omh_seed{2024};
 };
 

@@ -244,6 +244,10 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
     parser.add_option(args.ori_omh,
                       sharg::config{.long_id = "ori_omh",
                                     .description = "If ture, reads2graph will use original OMH only for constructing edit-distance graph."});   
+    parser.add_option(args.ori_omh_k,
+                      sharg::config{.long_id = "ori_omh_k",
+                                    .description = "K-mer size for bucketing reads used in the original OMH only to construct edit-distance graph."});  
+
     parser.add_option(args.ori_omh_m,
                       sharg::config{.long_id = "ori_omh_m",
                                     .description = "The parameter m, the number of hash functions, for bucketing reads used in the original OMH only to construct edit-distance graph."});                                       

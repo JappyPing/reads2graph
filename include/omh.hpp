@@ -16,6 +16,7 @@ Guillaume Marçais, Dan DeBlasio, Prashant Pandey, Carl Kingsford, Locality-sens
 #include <seqan3/alphabet/all.hpp>
 #include <xxhash.hpp>
 #include <seeded_prg.hpp>
+#include <omp.h>
 
 std::string reverse_complement(const std::string&);
 
@@ -179,9 +180,9 @@ public:
     // Function to group reads by OMH sketch
     template<typename EngineT>
     std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>>
-    ori_omh2read_main(std::vector<std::vector<seqan3::dna5>> unique_reads, omh_sketcher<EngineT>& sketcher, bool rc = false) {
+    ori_omh2read_main(std::vector<std::vector<seqan3::dna5>> unique_reads, omh_sketcher<EngineT>& sketcher, int num_process, bool rc = false) {
         std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> omh2reads;
-
+        #pragma omp parallel for num_threads(num_process) schedule(static)
         for (const auto& read : unique_reads) {
             // Convert seqan3::dna5 vector to string (needed by the sketcher)
             std::string read_str;
@@ -198,7 +199,10 @@ public:
             std::uint64_t sketch_hash = hash.digest();
 
             // Group reads by their sketch hash
-            omh2reads[sketch_hash].push_back(read);
+            #pragma omp critical
+            {
+              omh2reads[sketch_hash].push_back(read);
+            }
         }
 
         return omh2reads;
