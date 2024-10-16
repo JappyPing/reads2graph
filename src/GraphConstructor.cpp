@@ -651,15 +651,14 @@ void GraphConstructor::construt_graph_via_original_omh_only(std::vector<std::vec
     std::mt19937_64 generator(args.ori_omh_seed);
     std::uniform_int_distribution<std::uint64_t> distribution(std::numeric_limits<std::uint64_t>::min(), std::numeric_limits<std::uint64_t>::max());
     std::uint64_t cur_seed = distribution(generator);
-    // Create a LongSeed object from cur_seed
-    LongSeed<std::mt19937_64> seed(cur_seed);
-    omh_sketcher<std::mt19937_64> sketcher(args.ori_omh_k, args.ori_omh_l, args.ori_omh_m, seed);
+    omh_sketcher<std::mt19937_64> sketcher(args.ori_omh_k, args.ori_omh_l, cur_seed);
 
     // Group reads by OMH sketches
     OMH omh;
-    auto cur_hash2reads = omh.ori_omh2read_main(unique_reads, sketcher, args.num_process, false);
+    std::mt19937_64 prg(args.ori_omh_seed);
+    auto cur_hash2reads = omh.ori_omh2read_main(unique_reads, sketcher, prg, args.ori_omh_m, args.num_process);
     auto cur_bin_n = cur_hash2reads.size();
-
+    std::cout << "The number of buckets: " << cur_bin_n << std::endl;
     for (auto i = 0u; i < cur_bin_n; ++i) {
         const auto &cur_entry = *std::next(cur_hash2reads.begin(), i);
         const std::vector<std::vector<seqan3::dna5>> &cur_reads_vec = cur_entry.second;

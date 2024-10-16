@@ -20,7 +20,6 @@ set(SOURCES
     MinimizerGenerator.cpp
     GraphConstructor.cpp
     gOMH.cpp
-    omh.cpp
 )
 #include_directories
 include_directories(include)

@@ -18,8 +18,6 @@ Guillaume Marçais, Dan DeBlasio, Prashant Pandey, Carl Kingsford, Locality-sens
 #include <seeded_prg.hpp>
 #include <omp.h>
 
-std::string reverse_complement(const std::string&);
-
 struct mer_info {
   size_t pos;
   uint64_t hash;
@@ -35,173 +33,111 @@ struct mer_info {
 // passed them 1 by 1 to block. block takes 3 arguments: i \in [m], j
 // \in [l] and the position.
 template<typename EngineT, typename BT>
-void omh_pos(const std::string& seq, unsigned k, unsigned l, unsigned m, EngineT& prg, BT block) {
-  if(seq.size() < k) return;
-  const bool weight = l > 0;
-  if(l == 0) l = 1;
+void omh_pos(const std::string& seq, unsigned k, unsigned l, EngineT& prg, BT block) {
+    if (seq.size() < k) return;
+    // const bool weight = l > 0;
+    if (l == 0) l = 1;
 
-  std::vector<mer_info> mers;
-  std::unordered_map<std::string, unsigned> occurrences;
-  // size_t pos[l];
+    std::vector<mer_info> mers;
+    std::unordered_map<std::string, unsigned> occurrences;
 
-  //  Create list of k-mers with occurrence numbers
-  for(size_t i = 0; i < seq.size() - k + 1; ++i) {
-    auto occ = occurrences[seq.substr(i, k)]++;
-    mers.emplace_back(i, occ, (uint64_t)0);
-  }
-
-  xxhash hash;
-  for(unsigned i = 0; i < m; ++i) {
-    const auto seed = prg();
-    for(auto& meri : mers) {
-      hash.reset(seed);
-      hash.update(&seq.data()[meri.pos], k);
-      if(weight) hash.update(&meri.occ, sizeof(meri.occ));
-      meri.hash = hash.digest();
+    // Create list of k-mers with occurrence numbers
+    for (size_t i = 0; i < seq.size() - k + 1; ++i) {
+        auto occ = occurrences[seq.substr(i, k)]++;
+        mers.emplace_back(i, occ, (uint64_t)0);
     }
 
-    std::partial_sort(mers.begin(), mers.begin() + l, mers.end(), [&](const mer_info& x, const mer_info& y) { return x.hash < y.hash; });
-    std::sort(mers.begin(), mers.begin() + l, [&](const mer_info& x, const mer_info& y) { return x.pos < y.pos; });
-    for(unsigned j = 0; j < l; ++j)
-      block(i, j, mers[j].pos);
-  }
+    // Sort k-mers by position
+    std::partial_sort(mers.begin(), mers.begin() + l, mers.end(), 
+        [&](const mer_info& x, const mer_info& y) { return x.pos < y.pos; });
+
+    // Call the block function on the sorted k-mers
+    for (unsigned j = 0; j < l; ++j) {
+        block(mers[j].pos);
+    }
 }
 
 struct sketch {
-  std::string       name;
-  unsigned          k, l, m;
-  std::vector<char> data;
-  std::vector<char> rcdata;
-
-  bool operator==(const sketch& rhs) const {
-    return k == rhs.k && l == rhs.l && m == rhs.m && data == rhs.data && rcdata == rhs.rcdata;
-  }
-
-  // Read a sketch into this
-  void read(std::istream& is);
-
-  // Read a sketch
-  static sketch from_stream(std::istream& is) {
-    sketch sk;
-    sk.read(is);
-    return sk;
-  }
-
-  // Write sketch
-  void write(std::ostream& os) const;
+    std::string name;       // Optional name for the sketch
+    unsigned k, l, m;       // Parameters for sketching
+    std::vector<char> data; // Data for the sketch (k-mers)
 };
 
 template<typename EngineT = std::mt19937_64>
 class omh_sketcher {
 protected:
-  unsigned           m_k, m_l, m_m;
-  LongSeed<EngineT>& m_seed;
-  EngineT            m_prg;
+    unsigned m_k, m_l;         // Parameters for sketching
+    uint64_t m_seed;           // Seed for PRG
+    EngineT m_prg;             // Random number generator (PRG)
 
-  inline void write_sketch(std::ostream& os, const std::string& seq) {
-    omh_pos(seq, m_k, m_l, m_m, m_prg, [&os, &seq, this](unsigned i, unsigned j, size_t pos) { os.write(seq.data() + pos, m_k); });
-  }
-
-  inline void compute_sketch(char* ptr, const char* seq) {
-    omh_pos(seq, m_k, m_l, m_m, m_prg,
-            [&ptr, &seq, this](unsigned i, unsigned j, size_t pos) { memcpy(ptr, seq + pos, m_k); ptr += m_k; });
-  }
+    // Compute sketch positions for the given sequence and store them in 'ptr'
+    inline void compute_sketch(uint8_t* ptr, const char* seq) {
+        omh_pos(seq, m_k, m_l, m_prg, [&ptr, &seq, this](size_t pos) {
+            std::memcpy(ptr, seq + pos, m_k);  // Copy k-mer into sketch
+            ptr += m_k;
+        });
+    }
 
 public:
-  omh_sketcher(unsigned k, unsigned l, unsigned m, LongSeed<EngineT>& seed)
-    : m_k(k), m_l(l), m_m(m)
-    , m_seed(seed)
-  { }
+    // Constructor: Initialize k, l, values and the PRG with a fixed seed
+    omh_sketcher(unsigned k, unsigned l, uint64_t seed)
+        : m_k(k), m_l(l), m_seed(seed), m_prg(seed) // Pass seed to PRG
+    { }
 
-  // Compute the positions in seq of the k-mers picked by omh and append then to res
-  void pos(const std::string& seq, std::vector<size_t>& res) {
-    m_seed(m_prg);
-    omh_pos(seq, m_k, m_l, m_m, m_prg, [&res](unsigned i, unsigned j, size_t pos) { res.push_back(pos); });
-  }
+    // Compute sketch from sequence
+    void compute(const std::string& seq, sketch& sk) {
+        sk.k = m_k;
+        sk.l = m_l;
+        sk.data.resize(std::max(sk.l, (unsigned)1) * sk.k);
 
-  // Compute the positions in seq and return vector
-  inline std::vector<size_t> pos(const std::string& seq) {
-    std::vector<size_t> res;
-    pos(seq, res);
-    return res;
-  }
-
-  // Write sketch to an ostream
-  void write(std::ostream& os, const std::string& name, const std::string& seq, bool rc = false) {
-    m_seed(m_prg);
-    os << '>' << name << ' ' << m_k << ' ' << m_l << ' ' << m_m << ' ' << rc << '\n';
-    write_sketch(os, seq);
-    os << '\n';
-    if(rc) {
-      m_seed(m_prg);
-      std::string rcseq = reverse_complement(seq);
-      write_sketch(os, rcseq);
-      os << '\n';
+        // Use the same seed for each read to keep sketch consistent
+        m_prg.seed(m_seed);  
+        compute_sketch(reinterpret_cast<uint8_t*>(sk.data.data()), seq.data());
     }
-  }
 
-  // Sketch from sequence
-  void compute(const std::string& seq, sketch& sk, bool rc = false) {
-    sk.k = m_k;
-    sk.l = m_l;
-    sk.m = m_m;
-    sk.data.resize(std::max(sk.l, (unsigned)1) * sk.m * sk.k);
-    m_seed(m_prg);
-    compute_sketch(sk.data.data(), seq.data());
-
-    if(rc) {
-      m_seed(m_prg);
-      std::string rcseq = reverse_complement(seq);
-      sk.rcdata.resize(sk.l * sk.m * sk.k);
-      compute_sketch(sk.rcdata.data(), rcseq.data());
+    // Compute and return sketch directly from sequence
+    sketch compute(const std::string& seq) {
+        sketch sk;
+        compute(seq, sk);
+        return sk;
     }
-  }
-
-  // Sketch from sequence
-  sketch compute(const std::string& seq, bool rc = false) {
-    sketch sk;
-    compute(seq, sk, rc);
-    return sk;
-  }
-
-  // double compare(const std::string& s1, const std::string& s2, bool rc = false) {
-  //   const auto sk1 = compute(s1, rc);
-  //   const auto sk2 = compute(s2, rc);
-  //   return compare_sketches(sk1, sk2);
-  // }
 };
-
-
-// Compare 2 sketches. Return agreement in [0, 1]
-// double compare_sketches(const sketch& sk1, const sketch& sk2, ssize_t m = -1, bool circular = false);
 
 class OMH {
 public:
-    // Function to group reads by OMH sketch
+    // Function to group reads by OMH sketch using m hash functions
     template<typename EngineT>
     std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>>
-    ori_omh2read_main(std::vector<std::vector<seqan3::dna5>> unique_reads, omh_sketcher<EngineT>& sketcher, int num_process, bool rc = false) {
+    ori_omh2read_main(std::vector<std::vector<seqan3::dna5>> unique_reads, omh_sketcher<EngineT>& sketcher, EngineT& prg, unsigned m, int num_process) {
         std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> omh2reads;
-        #pragma omp parallel for num_threads(num_process) schedule(static)
-        for (const auto& read : unique_reads) {
-            // Convert seqan3::dna5 vector to string (needed by the sketcher)
-            std::string read_str;
-            for (const auto& nt : read) {
-                read_str.push_back(seqan3::to_char(nt));
-            }
+        xxhash hash;
 
-            // Compute the sketch for the current read
-            sketch sk = sketcher.compute(read_str, rc);
+        // Iterate over m hash functions (or seeds)
+        for (unsigned i = 0; i < m; ++i) {
+            // Generate a new seed for this hash iteration
+            const auto seed = prg();
 
-            // Hash the sketch to generate a uint64_t key
-            xxhash hash;
-            hash.update(sk.data.data(), sk.data.size());
-            std::uint64_t sketch_hash = hash.digest();
+            #pragma omp parallel for num_threads(num_process) schedule(static)
+            for (const auto& read : unique_reads) {
+                // Convert seqan3::dna5 vector to string (needed by the sketcher)
+                std::string read_str;
+                for (const auto& nt : read) {
+                    read_str.push_back(seqan3::to_char(nt));
+                }
 
-            // Group reads by their sketch hash
-            #pragma omp critical
-            {
-              omh2reads[sketch_hash].push_back(read);
+                // Compute the sketch for the current read
+                sketch sk = sketcher.compute(read_str);
+
+                // Hash the sketch to generate a uint64_t key using the current seed
+                hash.reset(seed);
+                hash.update(sk.data.data(), sk.data.size());
+                std::uint64_t sketch_hash = hash.digest();
+
+                // Group reads by their sketch hash
+                #pragma omp critical
+                {
+                    omh2reads[sketch_hash].push_back(read);
+                }
             }
         }
 
