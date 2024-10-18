@@ -2,6 +2,7 @@
 
 #include <seqan3/core/debug_stream.hpp>
 #include <seqan3/search/all.hpp>
+#include <seqan3/search/views/minimiser_hash.hpp>
 #include <vector>
 #include <set>
 #include <seqan3/alphabet/all.hpp>

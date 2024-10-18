@@ -88,44 +88,22 @@ int main(int argc, char** argv) {
         return -1;
     }
     // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Parameters: -o {} -k {} -w {} --gomh_kmer_n {} --gomh_times {}", args.output_dir.string(), args.k_size, args.window_size, args.gomh_kmer_n, args.gomh_times));
-
-    const char* omp_num_threads = getenv("OMP_NUM_THREADS");
-    const char* slurm_cpus_per_task = getenv("SLURM_CPUS_PER_TASK");
-    const char* pbs_num_procs = getenv("PBS_NP");
-
+    omp_set_dynamic(0);
+    setenv("OMP_PROC_BIND", "false", 1);
+    omp_set_num_threads(args.num_process);
     // Determine the number of cores available
     int available_cores = omp_get_max_threads();
-
     // Log the maximum number of threads available
     Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The maximum number of CPU cores available: %1%") % available_cores));
-
-    // Log environment variables for debugging
-    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("OMP_NUM_THREADS: %1%") % (omp_num_threads ? omp_num_threads : "not set")));
-    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("SLURM_CPUS_PER_TASK: %1%") % (slurm_cpus_per_task ? slurm_cpus_per_task : "not set")));
-    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("PBS_NP: %1%") % (pbs_num_procs ? pbs_num_procs : "not set")));
-
-    // Determine number of cores to use based on scheduler variables
-    int num_cores_to_use;  
-    if (slurm_cpus_per_task) {
-        num_cores_to_use = std::atoi(slurm_cpus_per_task);
-    } else if (pbs_num_procs) {
-        num_cores_to_use = std::atoi(pbs_num_procs);
-    } else if (omp_num_threads) {
-        num_cores_to_use = std::atoi(omp_num_threads);
-    } else {
-        num_cores_to_use = available_cores;
-    }
 
     // Ensure the number of cores to use is within a valid range
     if (num_process_input){
         Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of CPU cores requested: %1% ") % args.num_process));
-        if (args.num_process > num_cores_to_use){
-            args.num_process = num_cores_to_use;
+        if (args.num_process > available_cores){
+            args.num_process = available_cores;
         }
-    } else {
-        args.num_process = std::min(std::max(num_cores_to_use, 1), available_cores);
     } 
-
+    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of CPU cores actually used: %1% ") % args.num_process));
     ///////////////////////////////////////////////////
     // Declare and define a global variable for available cores
     // int available_cores = omp_get_max_threads();
@@ -140,43 +118,18 @@ int main(int argc, char** argv) {
     // args.num_process = num_cores_to_use;
     // std::cout << "The number of threads :" << num_cores_to_use << std::endl;
     // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The number of threads: {} ", num_cores_to_use));
-    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of CPU cores actually used: %1% ") % args.num_process));
+
     ////////////////////////////////////////////////////////////////////////////
     // auto read2count = ReadWrite(args).get_unique_reads_counts();
     auto [unique_reads, read2count, min_read_length] = ReadWrite(args).get_unique_reads_counts();
     args.read_length = min_read_length;
     auto total_uniq_num = unique_reads.size();
-    // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The number of unique reads: {}, minimum read length: {}.", total_uniq_num, min_read_length));
+
     Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of unique reads: %1%, minimum read length: %2%.") % total_uniq_num % min_read_length));
-    // auto uniq_num = unique_reads.size();
-    // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("The number of unique reads: {} ", uniq_num));
-
-    // std::vector<std::vector<seqan3::dna5>> unique_reads;
-    // #pragma omp parallel
-    // {
-    //     std::vector<std::vector<seqan3::dna5>> private_unique_reads;
-
-    //     #pragma omp for nowait
-    //     for (long unsigned int i = 0; i < uniq_num; ++i) {
-    //         auto it = read2count.begin();
-    //         std::advance(it, i);
-    //         private_unique_reads.push_back(it->first);
-    //     }
-
-    //     #pragma omp critical
-    //     unique_reads.insert(unique_reads.end(), private_unique_reads.begin(), private_unique_reads.end());
-    // }
-
-    // auto [read2count, read2id] = ReadWrite(args).get_unique_reads_counts();
-    // // Print the unique reads.
-    // for (auto const & read : unique_reads)
-    // {
-    //     seqan3::debug_stream << read << '\n';
-    // }
 
     // Validate the input mode
     if (!is_valid_bucketing_mode(args.bucketing_mode)) {
-        std::cerr << "Error: Invalid bucketing mode selected! Choose from: minimizer_only, original_omh, minimizer_gomh, brute_force." << std::endl;
+        std::cerr << "Error: Invalid bucketing mode selected! Choose from: minimizer_gomh, minimizer_only, original_omh, brute_force. Default minimizer_gomh. minimizer_only, original_omh and brute_force are implemented to assess the performance of reads2graph." << std::endl;
         return EXIT_FAILURE;
     }
 
@@ -187,11 +140,6 @@ int main(int argc, char** argv) {
         if (args.save_graph){
             graph_constructor.save_graph();
         }
-        // Create an instance of PairwiseEditDistance
-        // edge_lst = PairWiseEditDis(unique_reads, args).compute_pairwise_edit_distance();
-        // Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise (brute force) edit-distance-based edges calculation done");
-        // GraphManager(edge_lst, read2count, args).construct_graph();
-        // GraphManager(edge_lst, read2count, read2id, args).construct_graph();
     } else if (args.bucketing_mode == "original_omh") {
         GraphConstructor graph_constructor(read2count, args);
         graph_constructor.construt_graph_via_original_omh_only(unique_reads);

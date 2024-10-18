@@ -6,6 +6,8 @@
 #include <omp.h>
 #include <ranges>
 #include <boost/functional/hash.hpp>
+#include <random>
+#include <string>
 #include <cmath>
 // #include <format>
 #include <boost/format.hpp>
@@ -161,12 +163,12 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
         std::uint64_t cur_seed = distribution(generator);
         #pragma omp parallel for num_threads(args.num_process) schedule(static)
         for (auto const & read : unique_reads){
-            size_t len_read = read.size();
+            unsigned int len_read = read.size();
             // Compute the minimizer hash for the entire read (produces one minimizer)
-            auto minimizer = seqan3::views::minimiser_hash(read, seqan3::shape{seqan3::ungapped{k}}, seqan3::window_size{len_read}, cur_seed);
+            auto minimisers = read | seqan3::views::minimiser_hash(seqan3::shape{seqan3::ungapped{k}}, seqan3::window_size{len_read - k + 1}, seqan3::seed{cur_seed});
+
             // Get the first (and only) minimizer since the window spans the entire read
-            auto min_hash = *minimizer.begin();
-            std::uint64_t converted_minimiser = static_cast<std::uint64_t>(min_hash);
+            std::uint64_t converted_minimiser = static_cast<std::uint64_t>(*minimisers.begin());
             #pragma omp critical
             {
                 minimiser_to_reads[converted_minimiser].push_back(read);

@@ -272,13 +272,13 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
     // parser.add_option(args.ori_omh_seed,
     //                   sharg::config{.long_id = "ori_omh_seed",
     //                                 .description = "The seed to generate a series of seeds for original OMH bucketing only."});     
-    parser.add_option(args.ori_omh_k,
-                      sharg::config{.long_id = "ori_omh_k",
-                                    .description = "K-mer size for bucketing reads used in the original OMH only to construct edit-distance graph."});  
+    parser.add_option(args.minimizer_k,
+                      sharg::config{.long_id = "minimizer_k",
+                                    .description = "K-mer size for bucketing reads used in the minimizer only mode to construct edit-distance graph."});  
 
-    parser.add_option(args.ori_omh_m,
-                      sharg::config{.long_id = "ori_omh_m",
-                                    .description = "The parameter m, the number of hash functions, for bucketing reads used in the original OMH only to construct edit-distance graph."});                                     
+    parser.add_option(args.minimizer_m,
+                      sharg::config{.long_id = "minimizer_m",
+                                    .description = "The parameter m is the times of permutation for bucketing reads used in the minimizer only mode to construct edit-distance graph."});                                     
 
     // parser.add_option(args.minimizer_omh,
     //                   sharg::config{.long_id = "minimizer_omh",
