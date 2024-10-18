@@ -160,7 +160,7 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
     if (large_group.size() > 0){
         // auto large_unique_reads = mergeUniqueReads(large_group);
 
-        std::mt19937_64 generator(args.gomh_seed);
+        std::mt19937_64 generator(args.seed);
         // Specify the range of values for your seeds
         std::uniform_int_distribution<std::uint64_t> distribution(std::numeric_limits<std::uint64_t>::min(), std::numeric_limits<std::uint64_t>::max());
 
@@ -334,7 +334,7 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
 }
 
 void GraphConstructor::update_graph_omh(std::vector<std::vector<seqan3::dna5>> unique_reads){
-    std::mt19937_64 generator(args.gomh_seed + 1);
+    std::mt19937_64 generator(args.seed + 1);
     // Specify the range of values for your seeds
     std::uniform_int_distribution<std::uint64_t> distribution(std::numeric_limits<std::uint64_t>::min(), std::numeric_limits<std::uint64_t>::max());
 
@@ -648,15 +648,68 @@ void GraphConstructor::construt_graph_via_original_omh_only(std::vector<std::vec
     auto config = seqan3::align_cfg::method_global{} | seqan3::align_cfg::edit_scheme | seqan3::align_cfg::min_score{-1 * args.max_edit_dis} | seqan3::align_cfg::output_score{};
 
     // LongSeed<std::mt19937_64> seed;
-    std::mt19937_64 generator(args.ori_omh_seed);
+    std::mt19937_64 generator(args.seed);
     std::uniform_int_distribution<std::uint64_t> distribution(std::numeric_limits<std::uint64_t>::min(), std::numeric_limits<std::uint64_t>::max());
     std::uint64_t cur_seed = distribution(generator);
     omh_sketcher<std::mt19937_64> sketcher(args.ori_omh_k, args.ori_omh_l, cur_seed);
 
     // Group reads by OMH sketches
     OMH omh;
-    std::mt19937_64 prg(args.ori_omh_seed);
+    std::mt19937_64 prg(args.seed);
     auto cur_hash2reads = omh.ori_omh2read_main(unique_reads, sketcher, prg, args.ori_omh_m, args.num_process);
+    auto cur_bin_n = cur_hash2reads.size();
+    std::cout << "The number of buckets: " << cur_bin_n << std::endl;
+    for (auto i = 0u; i < cur_bin_n; ++i) {
+        const auto &cur_entry = *std::next(cur_hash2reads.begin(), i);
+        const std::vector<std::vector<seqan3::dna5>> &cur_reads_vec = cur_entry.second;
+        auto cur_num = cur_reads_vec.size();
+        if ( cur_num == 1){
+            continue;
+        } else if (cur_bin_n >= 2){ 
+            auto pairwise_combinations = seqan3::views::pairwise_combine(cur_reads_vec);
+
+            // #pragma omp parallel for
+            #pragma omp parallel for num_threads(args.num_process) schedule(static)
+            for (size_t i = 0; i < pairwise_combinations.size(); ++i)
+            {
+                auto const &combination = pairwise_combinations[i];
+                auto const &seq1 = std::get<0>(combination);
+                auto const &seq2 = std::get<1>(combination);
+                auto alignment_results = seqan3::align_pairwise(std::tie(seq1, seq2), config);
+                // Iterate over alignment results and access the scores
+                for (auto const &result : alignment_results)
+                {
+                    int edit_distance = -1 * result.score();
+                    // std::cout << edit_distance << endl;
+                    //if ((edit_distance >= min_s) && (edit_distance <= max_s))
+                    if ((edit_distance >= 1) && (edit_distance <= args.max_edit_dis)) 
+                    // if ((edit_distance < min_s) && (edit_distance > max_s))
+                    {
+                        #pragma omp critical
+                        {
+                            // edge_lst[read_pair_set] = edit_distance;
+                            insert_edge(seq1, seq2, edit_distance);
+                        }                    
+                    } 
+                }
+                // }
+            }    
+        }
+    }            
+
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  "Constructing edit-distance-based read graph via original OMH done!");
+    edge_summary();
+}
+
+void GraphConstructor::construt_graph_via_minimizer_only(std::vector<std::vector<seqan3::dna5>> unique_reads)
+{
+    init_graph();
+
+    auto config = seqan3::align_cfg::method_global{} | seqan3::align_cfg::edit_scheme | seqan3::align_cfg::min_score{-1 * args.max_edit_dis} | seqan3::align_cfg::output_score{};
+
+    MinimizerGenerator ginimizer_generator(args)
+    auto cur_hash2reads = ginimizer_generator.minimizer_only2reads_main(unique_reads, args.minimizer_k, args.minimizer_m);
+
     auto cur_bin_n = cur_hash2reads.size();
     std::cout << "The number of buckets: " << cur_bin_n << std::endl;
     for (auto i = 0u; i < cur_bin_n; ++i) {

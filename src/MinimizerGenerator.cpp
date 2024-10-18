@@ -150,6 +150,34 @@ std::tuple<unsigned, unsigned, unsigned, double> MinimizerGenerator::possibleBet
     return std::make_tuple(betterN, betterW, betterK, p);   
 }
 
+// using minimizer only with random ordering to bucket reads multiple times
+std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> MinimizerGenerator::minimizer_only2reads_main(std::vector<std::vector<seqan3::dna5>> unique_reads, uint8_t k, unsigned m)
+{
+    std::mt19937_64 generator(args.seed);
+    // Specify the range of values for your seeds
+    std::uniform_int_distribution<std::uint64_t> distribution(std::numeric_limits<std::uint64_t>::min(), std::numeric_limits<std::uint64_t>::max());
+    for (unsigned i = 0; i < m; ++i) {
+        // Generate a new seed for this hash iteration
+        std::uint64_t cur_seed = distribution(generator);
+        #pragma omp parallel for num_threads(args.num_process) schedule(static)
+        for (auto const & read : unique_reads){
+            size_t len_read = read.size();
+            // Compute the minimizer hash for the entire read (produces one minimizer)
+            auto minimizer = seqan3::views::minimiser_hash(read, seqan3::shape{seqan3::ungapped{k}}, seqan3::window_size{len_read}, cur_seed);
+            // Get the first (and only) minimizer since the window spans the entire read
+            auto min_hash = *minimizer.begin();
+            std::uint64_t converted_minimiser = static_cast<std::uint64_t>(min_hash);
+            #pragma omp critical
+            {
+                minimiser_to_reads[converted_minimiser].push_back(read);
+            }
+        }
+    }
+    Utils::getInstance().logger(LOG_LEVEL_DEBUG, boost::str(boost::format("Size of minimiser_to_reads: %1%!") % minimiser_to_reads.size()));
+    return minimiser_to_reads;     
+}
+
+
 // // Function to sample p percentage of elements
 // std::size_t MinimizerGenerator::min_k_in_sampling(const std::vector<std::vector<seqan3::dna5>>& unique_reads, double p) {
 //     auto total_uniq_num = unique_reads.size();

@@ -34,14 +34,14 @@ struct cmd_arguments
     uint8_t max_edit_dis{2};
     uint8_t min_edit_dis{1};
     int num_process{1};
-    bool pair_wise{false};
+    // bool pair_wise{false};
     // unsigned int bin_size_min{500};
     unsigned int bin_size_max{10000};
     unsigned gomh_k{4};
     // uint8_t omh_k_step_size{3};
     unsigned gomh_times{3};
     bool gomh_flag{false};
-    std::uint64_t gomh_seed{2024};
+    std::uint64_t seed{2024};
     // unsigned omh_kmer_n{3}; // Number of k-mers to consider
     double bad_kmer_ratio{0.3};
     double probability{0.86};
@@ -50,14 +50,22 @@ struct cmd_arguments
     // double sampling_rate{0.01};
     // bool minimizer_omh{true}; 
     /////////////////////////////
-    bool ori_omh{false};
+    // bool ori_omh{false};
+    std::string bucketing_mode{"minimizer_gomh"};
+    /////
     unsigned ori_omh_l{2};
     unsigned ori_omh_m{3};
     unsigned ori_omh_k{18};
-    std::uint64_t ori_omh_seed{2024};
+    // std::uint64_t ori_omh_seed{2024};
+    /////////////////////////////
+    // bool minimizer_only{false};
+    unsigned minimizer_m{3};
+    unsigned minimizer_k{3};
+
 };
 
-
+// Utility function to validate the bucketing mode
+bool is_valid_bucketing_mode(const std::string &mode);
 
 class Utils{
     public:

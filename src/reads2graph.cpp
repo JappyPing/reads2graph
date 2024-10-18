@@ -173,8 +173,15 @@ int main(int argc, char** argv) {
     // {
     //     seqan3::debug_stream << read << '\n';
     // }
+
+    // Validate the input mode
+    if (!is_valid_bucketing_mode(args.bucketing_mode)) {
+        std::cerr << "Error: Invalid bucketing mode selected! Choose from: minimizer_only, original_omh, minimizer_gomh, brute_force." << std::endl;
+        return EXIT_FAILURE;
+    }
+
     std::map<std::set<std::vector<seqan3::dna5>>, int> edge_lst;
-    if (args.pair_wise) {
+    if (args.bucketing_mode == "brute_force") {
         GraphConstructor graph_constructor(read2count, args);
         graph_constructor.construt_graph_via_pairwise_comparison(unique_reads);
         if (args.save_graph){
@@ -185,13 +192,19 @@ int main(int argc, char** argv) {
         // Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise (brute force) edit-distance-based edges calculation done");
         // GraphManager(edge_lst, read2count, args).construct_graph();
         // GraphManager(edge_lst, read2count, read2id, args).construct_graph();
-    } else if (args.ori_omh) {
+    } else if (args.bucketing_mode == "original_omh") {
         GraphConstructor graph_constructor(read2count, args);
         graph_constructor.construt_graph_via_original_omh_only(unique_reads);
         if (args.save_graph){
             graph_constructor.save_graph();
         }
-    } else {
+    } else if (args.bucketing_mode == "minimizer_only") {
+        GraphConstructor graph_constructor(read2count, args);
+        graph_constructor.construt_graph_via_minimizer_only(unique_reads);
+        if (args.save_graph){
+            graph_constructor.save_graph();
+        }
+    } else if (args.bucketing_mode == "minimizer_gomh") {
         // minimizer grouping first and then omh
         auto betterParams = MinimizerGenerator(args).possibleBetterParameters();
 

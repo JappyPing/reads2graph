@@ -26,9 +26,15 @@
 int num_cores_to_use;  // Define the global variable
 
 #define reads2graph_VERSION "1.0.1"
-#define last_update_date "04.06.2024"
+#define last_update_date "18.10.2024"
 
 using namespace std;
+
+// Function to validate the bucketing mode
+bool is_valid_bucketing_mode(const std::string &mode) {
+    return mode == "minimizer_only" || mode == "original_omh" || 
+           mode == "minimizer_gomh" || mode == "brute_force";
+}
 
 Utils& Utils::getInstance() {
     static Utils instance;
@@ -196,10 +202,10 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
     //                                 .long_id = "graph_filename",
     //                                 .description = "The file name of the constructed graph."});
     // Brute Force
-    parser.add_option(args.pair_wise,
-                      sharg::config{
-                                    .long_id = "pair_wise",
-                                    .description = "Brute Force calcualte the pairwise edit distance."});
+    // parser.add_option(args.pair_wise,
+    //                   sharg::config{
+    //                                 .long_id = "pair_wise",
+    //                                 .description = "Brute Force calcualte the pairwise edit distance."});
 
     // parser.add_option(args.bin_size_min,
     //                   sharg::config{.long_id = "bin_size_min",
@@ -217,9 +223,13 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                       sharg::config{.long_id = "gomh_times",
                                     .description = "The number of times to perform permutation in order min hashing."});
 
-    parser.add_option(args.gomh_seed,
-                      sharg::config{.long_id = "gomh_seed",
-                                    .description = "The seed to generate a series of seeds for OMH bucketing."});
+    // parser.add_option(args.gomh_seed,
+    //                   sharg::config{.long_id = "gomh_seed",
+    //                                 .description = "The seed to generate a series of seeds for OMH bucketing."});
+
+    parser.add_option(args.seed,
+                      sharg::config{.long_id = "seed",
+                                    .description = "Multiple purposes used initial seed in reads2graph. For eaxmple, the seed to generate a series of seeds for OMH bucketing. The initial seed used in minimizer and original omh bucketing modes for reproducing results."});
 
     parser.add_option(args.gomh_flag,
                       sharg::config{.long_id = "gomh_flag",
@@ -241,9 +251,14 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                       sharg::config{.long_id = "save_graph",
                                     .description = "If ture, reads2graph will save graph to file in graphviz dot format."});
 
-    parser.add_option(args.ori_omh,
-                      sharg::config{.long_id = "ori_omh",
-                                    .description = "If ture, reads2graph will use original OMH only for constructing edit-distance graph."});   
+    // Add option for bucketing mode with description and default value
+    parser.add_option(args.bucketing_mode,
+                      sharg::config{.long_id = "bucketing_mode",
+                                    .description = "Specify the bucketing mode using the following options: minimizer_gomh, minimizer_only, original_omh, and brute_force. The default option is minimizer_gomh. The minimizer_only, original_omh, and brute_force modes are implemented for assessing the performance of our method, reads2graph. The minimizer_gomh mode uses minimizers for bucketing reads in a random order to construct an edit-distance graph. The original_omh mode utilizes the original OMH method for bucketing short reads to create an edit-distance graph, while the brute_force mode calculates the pairwise edit distance for a set of short reads."});
+
+    // parser.add_option(args.ori_omh,
+    //                   sharg::config{.long_id = "ori_omh",
+    //                                 .description = "If ture, reads2graph will use original OMH only for constructing edit-distance graph."});   
     parser.add_option(args.ori_omh_k,
                       sharg::config{.long_id = "ori_omh_k",
                                     .description = "K-mer size for bucketing reads used in the original OMH only to construct edit-distance graph."});  
@@ -254,9 +269,17 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
     parser.add_option(args.ori_omh_l,
                       sharg::config{.long_id = "ori_omh_l",
                                     .description = "The parameter l for bucketing reads used in the original OMH only to construct edit-distance graph."});  
-    parser.add_option(args.ori_omh_seed,
-                      sharg::config{.long_id = "ori_omh_seed",
-                                    .description = "The seed to generate a series of seeds for original OMH bucketing only."});                                      
+    // parser.add_option(args.ori_omh_seed,
+    //                   sharg::config{.long_id = "ori_omh_seed",
+    //                                 .description = "The seed to generate a series of seeds for original OMH bucketing only."});     
+    parser.add_option(args.ori_omh_k,
+                      sharg::config{.long_id = "ori_omh_k",
+                                    .description = "K-mer size for bucketing reads used in the original OMH only to construct edit-distance graph."});  
+
+    parser.add_option(args.ori_omh_m,
+                      sharg::config{.long_id = "ori_omh_m",
+                                    .description = "The parameter m, the number of hash functions, for bucketing reads used in the original OMH only to construct edit-distance graph."});                                     
+
     // parser.add_option(args.minimizer_omh,
     //                   sharg::config{.long_id = "minimizer_omh",
     //                                 .description = "If ture, reads2graph employs minimizer bucketing first and then OMH bucketing; otherwise, OMH first then minimizer."});

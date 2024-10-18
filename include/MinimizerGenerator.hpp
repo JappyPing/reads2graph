@@ -23,6 +23,7 @@ public:
     double proba(unsigned L, unsigned k);
     int kSize(int L, double p);
     std::tuple<unsigned, unsigned, unsigned, double> possibleBetterParameters();
+    std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> minimizer_only2reads_main(std::vector<std::vector<seqan3::dna5>> unique_reads, uint8_t k, unsigned m);
     // std::tuple<int, int, double> findBestParameters(int l, int dt, double pt);
     // long double prob(int l, int n, int k, int dt);
     // void process_read(const std::vector<seqan3::dna5> &read);
