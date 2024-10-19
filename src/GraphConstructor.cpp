@@ -82,14 +82,17 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
 
     std::vector<std::vector<std::vector<seqan3::dna5>>> medium_group;
     std::vector<std::vector<std::vector<seqan3::dna5>>> large_group;
-
+    std::atomic<int> singleton_bucket_num{0};
+    auto cur_bin_n = key2reads.size();
+    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of buckets by Multiple-Minimizer-One-Read (MMOR): %1%.") % cur_bin_n));
     // #pragma omp parallel for
     #pragma omp parallel for num_threads(args.num_process) schedule(static, 1)
-    for (auto i = 0u; i < key2reads.size(); ++i) {
+    for (auto i = 0u; i < cur_bin_n; ++i) {
         const auto &entry = *std::next(key2reads.begin(), i);
         const std::vector<std::vector<seqan3::dna5>> &reads_vec = entry.second;
         auto cur_read_num = reads_vec.size();
         if ( cur_read_num == 1){
+            singleton_bucket_num++;
             continue;
         } else if ( cur_read_num >= 2 && cur_read_num < args.bin_size_max){
             #pragma omp critical
@@ -107,6 +110,7 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
             }
         }
     }
+    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of buckets containing one unique read after bucketing by MMOR: %1%.") % singleton_bucket_num));
     ///////////////////////////
     // test the following function
     // auto unique_reads = mergeUniqueReads(medium_group);
@@ -116,6 +120,7 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
     auto config = seqan3::align_cfg::method_global{} | seqan3::align_cfg::edit_scheme | seqan3::align_cfg::min_score{-1 * args.max_edit_dis} | seqan3::align_cfg::output_score{};
     // large group
     auto bucket_num = medium_group.size();
+    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of buckets with size falling in [2, %1%) by MMOR: %2%.") % args.bin_size_max % bucket_num));
     if (bucket_num > 0){
         StatisticsRecorder recorder(bucket_num);
 
@@ -124,27 +129,30 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
         {
             // Atomic variables for positive and negative cases
             std::atomic<int> positive_cases{0};
-            std::atomic<int> negative_cases{0};      
-
+            std::atomic<int> negative_cases{0};    
             auto pairwise_combinations = seqan3::views::pairwise_combine(group);
+            //debug
+            // std::atomic<int> total_pairs{0};
+            // std::cout << "Group size: " << group.size() << std::endl;
+            // std::cout << "Expected total pairs: " << (group.size() * (group.size() - 1)) / 2 << std::endl;
+
+            // auto total_combinations = std::distance(pairwise_combinations.begin(), pairwise_combinations.end());
+            // std::cout << "Total combinations calculated: " << total_combinations << std::endl;
+            auto bucket_size = group.size();
             auto total_pairs = pairwise_combinations.size();
+            // for (auto const &combination : pairwise_combinations) {
             #pragma omp parallel for num_threads(args.num_process) schedule(static)
-            for (size_t i = 0; i < total_pairs; ++i)
-            {
+            for (size_t i = 0; i < total_pairs; ++i){
                 auto const &combination = pairwise_combinations[i];
                 auto const &seq1 = std::get<0>(combination);
                 auto const &seq2 = std::get<1>(combination);
 
                 auto alignment_results = seqan3::align_pairwise(std::tie(seq1, seq2), config);
                 // Iterate over alignment results and access the scores
-                for (auto const &result : alignment_results)
-                {
+                for (auto const &result : alignment_results){
                     int edit_distance = -1 * result.score();
                     // std::cout << edit_distance << endl;
-                    //if ((edit_distance >= min_s) && (edit_distance <= max_s))
-                    if ((edit_distance >= 1) && (edit_distance <= args.max_edit_dis)) 
-                    // if ((edit_distance < min_s) && (edit_distance > max_s))
-                    {
+                    if ((edit_distance >= 1) && (edit_distance <= args.max_edit_dis)){
                         positive_cases++;
                         #pragma omp critical
                         {
@@ -154,8 +162,8 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
                         negative_cases++;
                     }
                 }
+                // total_pairs++;
             }
-            auto bucket_size = group.size();
             recorder.record_bucket(bucket_id, bucket_size, total_pairs, positive_cases, negative_cases);   
             bucket_id++;    
         } 
@@ -170,21 +178,13 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
         Utils::getInstance().logger(LOG_LEVEL_INFO,  "Pairwise comparison for the small- or medium-size-based buckets done!");       
     } else {
         // Utils::getInstance().logger(LOG_LEVEL_INFO,  "No bucket has a size larger than 100!");
-        Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("No bucket with size between 2 and %1%!") % args.bin_size_max));
-        // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("No bucket with size between 2 and {}!", args.bin_size_max));
+        Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("No bucket with size falling in [2, %1%) by MMOR!") % args.bin_size_max));
     }
     edge_summary();
-    // if (args.read_length < 16){
-    //     if (medium_group.size() > 0){
-    //         auto medium_unique_reads = mergeUniqueReads(medium_group);
-    //         update_graph_omh(medium_unique_reads); 
-    //     }
-    // }
-    // edge_summary();
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  "===== Graph construction based on MMOR bucketing done =====");
     // extra large group
     if (large_group.size() > 0){
-        // auto large_unique_reads = mergeUniqueReads(large_group);
-
+        Utils::getInstance().logger(LOG_LEVEL_INFO, "Bucketing large-size-based bins using gOMH...");
         std::mt19937_64 generator(args.seed);
         // Specify the range of values for your seeds
         std::uniform_int_distribution<std::uint64_t> distribution(std::numeric_limits<std::uint64_t>::min(), std::numeric_limits<std::uint64_t>::max());
@@ -229,12 +229,9 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
             }
             /////////////////////////////////////////////////////
         } else {
-            // Utils::getInstance().logger(LOG_LEVEL_ERROR,  std::format("min_edit_dis({}) should not larger than max_edit_dis({}) ", args.min_edit_dis, args.max_edit_dis));
              Utils::getInstance().logger(LOG_LEVEL_ERROR, boost::str(boost::format("min_edit_dis(%1%) should not be larger than max_edit_dis(%2%)") % args.min_edit_dis % args.max_edit_dis));
-
         }
-
-        #pragma omp parallel for num_threads(args.num_process) schedule(dynamic)
+        std::atomic<int> singleton_bucket_num{0};
         for (const auto &el_group : large_group){
             auto cur_hash2reads = gOMH(args).gomh2read_main(el_group, seeds_k);
             auto cur_bin_n = cur_hash2reads.size();
@@ -244,6 +241,7 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
                 const std::vector<std::vector<seqan3::dna5>> &cur_reads_vec = cur_entry.second;
                 auto cur_num = cur_reads_vec.size();
                 if ( cur_num == 1){
+                    singleton_bucket_num++;
                     continue;
                 } else if (cur_bin_n >= 2 && cur_bin_n < args.bin_size_max){
                     #pragma omp critical
@@ -259,9 +257,8 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
             }
         }
         args.gomh_flag = false; // make this flag false after using gomh2read_main
-
-        Utils::getInstance().logger(LOG_LEVEL_INFO,  "Bucketing large-size-based bins using gOMH done!");
         auto bucket_num = m_group.size();
+        Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("After bucketing large-size groups with gOMH, there are %1% single-size buckets and %2% buckets ranging from size 2 to %3%.") % singleton_bucket_num % bucket_num % args.bin_size_max));
         if (bucket_num > 0){
             StatisticsRecorder recorder(bucket_num);
             int bucket_id = 0;
@@ -310,14 +307,14 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
             oss << std::put_time(&now_tm, "gomh_bucket_stats_%Y%m%d_%H%M%S.txt");
             std::filesystem::path output_file = args.output_dir / oss.str();
             recorder.write_statistics_to_file(output_file);             
-            Utils::getInstance().logger(LOG_LEVEL_INFO,  "Graph update for the small- or medium-size-based buckets generated by gOMH bucketing done!");   
+            // Utils::getInstance().logger(LOG_LEVEL_INFO,  "Graph update for the small- or medium-size-based buckets generated by gOMH bucketing done!"); 
+            edge_summary(); 
+            Utils::getInstance().logger(LOG_LEVEL_INFO,  "===== Graph update based on gOMH bucketing done ====="); 
         }
-        edge_summary();
-
+    
         //////////////////////////////////////////////////////////////////////////////////////////////
         if (l_group.size() > 0){
             auto unique_reads = mergeUniqueReads(l_group);
-            // Utils::getInstance().logger(LOG_LEVEL_INFO,   std::format("The number of remaining unprocessed unique reads: {} ", unique_reads.size()));
             Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of remaining unprocessed unique reads: %1%") % unique_reads.size()));
             //////////////////////////
             // Method 1
@@ -353,28 +350,29 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
                         }                    
                     } 
                 } 
-            } 
-        Utils::getInstance().logger(LOG_LEVEL_INFO,  "Graph update for the remaining unprocessed unique reads done!");
+            }
+            edge_summary(); 
+            Utils::getInstance().logger(LOG_LEVEL_INFO,  "===== Graph update for the remaining unprocessed unique reads with graph traversal done! =====");
         }
     }
     /////////////////////////////////////////////////////////////////////////////////////////
-    if (args.read_length < 16){
-        if (medium_group.size() > 0){
-            auto medium_unique_reads = mergeUniqueReads(medium_group);
-            update_graph_omh(medium_unique_reads); 
-        }
+    if ((args.read_length < 16) && (medium_group.size() > 0)){
+        auto medium_unique_reads = mergeUniqueReads(medium_group);
+        update_graph_omh(medium_unique_reads); 
+        Utils::getInstance().logger(LOG_LEVEL_INFO, "===== Graph update with additional gOMH done =====");
     }
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////
     if (args.min_edit_dis > 1 && args.read_length >= 50) {
         remove_edges_in_interval(graph_, 1, args.min_edit_dis - 1);
-        // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Graph update for removing the edges with weights less than {}.", args.min_edit_dis));
-        Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("Graph update for removing the edges with weights less than %1%.") % args.min_edit_dis));
+        edge_summary();
+        Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("===== Graph update for removing the edges with weights less than %1%. =====") % args.min_edit_dis));
     }
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  "Edit-distance-based read graph construction done!");
     edge_summary();
+    Utils::getInstance().logger(LOG_LEVEL_INFO,  "=========== Edit-distance-based read graph construction done! ===========");
 }
 
 void GraphConstructor::update_graph_omh(std::vector<std::vector<seqan3::dna5>> unique_reads){
+    Utils::getInstance().logger(LOG_LEVEL_INFO, "Additional bucketing of reads in medium-sized buckets produced by MMOR using gOMH...!");
     std::mt19937_64 generator(args.seed + 1);
     // Specify the range of values for your seeds
     std::uniform_int_distribution<std::uint64_t> distribution(std::numeric_limits<std::uint64_t>::min(), std::numeric_limits<std::uint64_t>::max());
@@ -428,21 +426,20 @@ void GraphConstructor::update_graph_omh(std::vector<std::vector<seqan3::dna5>> u
     auto cur_hash2reads = gOMH(args).gomh2read_main(unique_reads, seeds_k);
     args.gomh_flag = false; // make this flag false after using gomh2read_main
     auto cur_bin_n = cur_hash2reads.size();
-
+    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of buckets generated by gOMH is %1%.") % cur_bin_n));
     auto config = seqan3::align_cfg::method_global{} | seqan3::align_cfg::edit_scheme | seqan3::align_cfg::min_score{-1 * args.max_edit_dis} | seqan3::align_cfg::output_score{};
-
+    std::atomic<int> singleton_bucket_num{0};
     #pragma omp parallel for num_threads(args.num_process) schedule(static)
     for (auto i = 0u; i < cur_bin_n; ++i) {
         const auto &cur_entry = *std::next(cur_hash2reads.begin(), i);
         const std::vector<std::vector<seqan3::dna5>> &cur_reads_vec = cur_entry.second;
         auto cur_num = cur_reads_vec.size();
         if ( cur_num == 1){
+            singleton_bucket_num++;
             continue;
         } else if (cur_bin_n >= 2 && cur_bin_n < args.bin_size_max){
             #pragma omp critical
             {
-                // std::cout << cur_num << " ";
-                // Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("{} ", cur_num));
                 m_group.emplace_back(cur_reads_vec);
             } 
         } else {
@@ -450,16 +447,22 @@ void GraphConstructor::update_graph_omh(std::vector<std::vector<seqan3::dna5>> u
             l_group.emplace_back(cur_reads_vec);
         } 
     }
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  "Bucketing unique reads using gOMH done!");
-
-    if (m_group.size() > 0){
+    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of buckets containing one unique read after bucketing by gOMH is %1%.") % singleton_bucket_num));
+    Utils::getInstance().logger(LOG_LEVEL_INFO, "Bucketing unique reads using gOMH done!");
+    auto bucket_num = m_group.size();
+    if (bucket_num > 0){
+        StatisticsRecorder recorder(bucket_num);
+        int bucket_id = 0;
         for (const auto &cur_reads_vec : m_group){
-
+            // Atomic variables for positive and negative cases
+            std::atomic<int> positive_cases{0};
+            std::atomic<int> negative_cases{0};   
             auto pairwise_combinations = seqan3::views::pairwise_combine(cur_reads_vec);
-
+            auto bucket_size = cur_reads_vec.size();
+            auto total_pairs = pairwise_combinations.size();
             // #pragma omp parallel for
             #pragma omp parallel for num_threads(args.num_process) schedule(static)
-            for (size_t i = 0; i < pairwise_combinations.size(); ++i)
+            for (size_t i = 0; i < total_pairs; ++i)
             {
                 auto const &combination = pairwise_combinations[i];
                 auto const &seq1 = std::get<0>(combination);
@@ -469,22 +472,30 @@ void GraphConstructor::update_graph_omh(std::vector<std::vector<seqan3::dna5>> u
                 for (auto const &result : alignment_results)
                 {
                     int edit_distance = -1 * result.score();
-                    // std::cout << edit_distance << endl;
-                    //if ((edit_distance >= min_s) && (edit_distance <= max_s))
-                    if ((edit_distance >= 1) && (edit_distance <= args.max_edit_dis)) 
-                    // if ((edit_distance < min_s) && (edit_distance > max_s))
-                    {
+                    if ((edit_distance >= 1) && (edit_distance <= args.max_edit_dis)){
+                        positive_cases++;
                         #pragma omp critical
                         {
-                            // edge_lst[read_pair_set] = edit_distance;
                             insert_edge(seq1, seq2, edit_distance);
                         }                    
-                    } 
+                    } else {
+                        negative_cases++;
+                    }
                 }
-                // }
-            }    
+            }
+            recorder.record_bucket(bucket_id, bucket_size, total_pairs, positive_cases, negative_cases);   
+            bucket_id++;     
         }
-        Utils::getInstance().logger(LOG_LEVEL_INFO,  "Graph update for the small- or medium-size-based buckets generated by gOMH bucketing done!");   
+        // Create a timestamped filename
+        std::ostringstream oss;
+        auto now = std::chrono::system_clock::now();
+        std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+        std::tm now_tm = *std::localtime(&now_time);
+        oss << std::put_time(&now_tm, "additional_gomh_bucket_stats_%Y%m%d_%H%M%S.txt");
+        std::filesystem::path output_file = args.output_dir / oss.str();
+        recorder.write_statistics_to_file(output_file);      
+        edge_summary();   
+        Utils::getInstance().logger(LOG_LEVEL_INFO, "Graph update for the small- or medium-size-based buckets generated by gOMH bucketing done!");   
     }
     // 
 
@@ -518,7 +529,6 @@ void GraphConstructor::update_graph_omh(std::vector<std::vector<seqan3::dna5>> u
             for (auto const &result : alignment_results)
             {
                 int edit_distance = -1 * result.score();
-                //if ((edit_distance >= min_s) && (edit_distance <= max_s))
                 if ((edit_distance >= 1) && (edit_distance <= args.max_edit_dis)) 
                 {
                     #pragma omp critical
@@ -528,9 +538,9 @@ void GraphConstructor::update_graph_omh(std::vector<std::vector<seqan3::dna5>> u
                 } 
             } 
         } 
-        Utils::getInstance().logger(LOG_LEVEL_INFO,  "Graph update for the remaining unprocessed unique reads done!");
+        edge_summary();
+        Utils::getInstance().logger(LOG_LEVEL_INFO, "Graph update for the remaining unprocessed unique reads done!");
     }
-    // edge_summary();
 }
 
 std::vector<std::vector<seqan3::dna5>> GraphConstructor::mergeUniqueReads(const std::vector<std::vector<std::vector<seqan3::dna5>>>& read_vectors) {
@@ -678,8 +688,8 @@ void GraphConstructor::construt_graph_via_pairwise_comparison(std::vector<std::v
             }
         }
     }
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  "Constructing edit-distance-based read graph via pairwise comparisons done!");
     edge_summary();
+    Utils::getInstance().logger(LOG_LEVEL_INFO, "=========== Constructing edit-distance-based read graph via brute force done! ===========");
 }
 
 void GraphConstructor::construt_graph_via_original_omh_only(std::vector<std::vector<seqan3::dna5>> unique_reads)
@@ -702,11 +712,13 @@ void GraphConstructor::construt_graph_via_original_omh_only(std::vector<std::vec
 
     StatisticsRecorder recorder(cur_bin_n);
     int bucket_id = 0;
+    int singleton_bucket_num = 0;
     for (auto i = 0u; i < cur_bin_n; ++i) {
         const auto &cur_entry = *std::next(cur_hash2reads.begin(), i);
         const std::vector<std::vector<seqan3::dna5>> &cur_reads_vec = cur_entry.second;
         auto cur_num = cur_reads_vec.size();
         if ( cur_num == 1){
+            singleton_bucket_num++;
             continue;
         } else if (cur_num >= 2){ 
             // Atomic variables for positive and negative cases
@@ -727,15 +739,11 @@ void GraphConstructor::construt_graph_via_original_omh_only(std::vector<std::vec
                 for (auto const &result : alignment_results)
                 {
                     int edit_distance = -1 * result.score();
-                    // std::cout << edit_distance << endl;
-                    //if ((edit_distance >= min_s) && (edit_distance <= max_s))
                     if ((edit_distance >= 1) && (edit_distance <= args.max_edit_dis)) 
-                    // if ((edit_distance < min_s) && (edit_distance > max_s))
                     {
                         positive_cases++;
                         #pragma omp critical
                         {
-                            // edge_lst[read_pair_set] = edit_distance;
                             insert_edge(seq1, seq2, edit_distance);
                         }                    
                     } else {
@@ -746,7 +754,9 @@ void GraphConstructor::construt_graph_via_original_omh_only(std::vector<std::vec
             recorder.record_bucket(bucket_id, cur_num, total_pairs, positive_cases, negative_cases);   
             bucket_id++;    
         }
-    }            
+    }
+    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of buckets containing one unique read: %1%.") % singleton_bucket_num));
+
     std::ostringstream oss;
     auto now = std::chrono::system_clock::now();
     std::time_t now_time = std::chrono::system_clock::to_time_t(now);
@@ -754,8 +764,8 @@ void GraphConstructor::construt_graph_via_original_omh_only(std::vector<std::vec
     oss << std::put_time(&now_tm, "original_omh_only_bucket_stats_%Y%m%d_%H%M%S.txt");
     std::filesystem::path output_file = args.output_dir / oss.str();
     recorder.write_statistics_to_file(output_file);   
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  "Constructing edit-distance-based read graph via original OMH done!");
     edge_summary();
+    Utils::getInstance().logger(LOG_LEVEL_INFO, "=========== Constructing edit-distance-based read graph via original OMH done! ===========");
 }
 
 void GraphConstructor::construt_graph_via_minimizer_only(std::vector<std::vector<seqan3::dna5>> unique_reads)
@@ -772,11 +782,13 @@ void GraphConstructor::construt_graph_via_minimizer_only(std::vector<std::vector
 
     StatisticsRecorder recorder(cur_bin_n);
     int bucket_id = 0;
+    int singleton_bucket_num = 0;
     for (auto i = 0u; i < cur_bin_n; ++i) {
         const auto &cur_entry = *std::next(cur_hash2reads.begin(), i);
         const std::vector<std::vector<seqan3::dna5>> &cur_reads_vec = cur_entry.second;
         auto cur_num = cur_reads_vec.size();
         if ( cur_num == 1){
+            singleton_bucket_num++;
             continue;
         } else if (cur_num >= 2){ 
             // Atomic variables for positive and negative cases
@@ -812,6 +824,7 @@ void GraphConstructor::construt_graph_via_minimizer_only(std::vector<std::vector
             bucket_id++;    
         }
     }
+    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of buckets containing one unique read: %1%.") % singleton_bucket_num));
     std::ostringstream oss;
     auto now = std::chrono::system_clock::now();
     std::time_t now_time = std::chrono::system_clock::to_time_t(now);
@@ -819,6 +832,6 @@ void GraphConstructor::construt_graph_via_minimizer_only(std::vector<std::vector
     oss << std::put_time(&now_tm, "minimizer_only_bucket_stats_%Y%m%d_%H%M%S.txt");
     std::filesystem::path output_file = args.output_dir / oss.str();
     recorder.write_statistics_to_file(output_file);  
-    Utils::getInstance().logger(LOG_LEVEL_INFO,  "Constructing edit-distance-based read graph via minimizer bucketing only done!");
     edge_summary();
+    Utils::getInstance().logger(LOG_LEVEL_INFO, "=========== Constructing edit-distance-based read graph via minimizer bucketing only done! ===========");
 }

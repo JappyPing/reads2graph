@@ -7,10 +7,10 @@
 // Define the BucketStatistics structure
 struct BucketStatistics
 {
+    int bucket_size = 0;       // Size of the bucket
+    int total_pairs = 0;       // Total number of read pairs
     int positive_cases = 0;    // Count of positive cases
     int negative_cases = 0;    // Count of negative cases
-    int total_pairs = 0;       // Total number of read pairs
-    int bucket_size = 0;       // Size of the bucket
 };
 
 // Define the StatisticsRecorder class
@@ -26,7 +26,7 @@ public:
     }
 
     // Method to record the statistics for each bucket
-    void record_bucket(int bucket_id, int positive_cases, int negative_cases, int total_pairs, int bucket_size)
+    void record_bucket(int bucket_id, int bucket_size, int total_pairs, int positive_cases, int negative_cases)
     {
         bucket_stats[bucket_id] = {bucket_size, total_pairs, positive_cases, negative_cases};
     }
