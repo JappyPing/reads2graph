@@ -78,8 +78,8 @@ void Utils::logger(int log_level, const std::string& message){
         log_color = COLOR_RESET;
         break;
     }
-    logFile << timeString << ": " << log_prefix << message << endl;
-    std::cout << timeString << ": " << log_color << log_prefix << COLOR_RESET << message << std::endl;
+    logFile << timeString << ": " << log_prefix << " " << message << endl;
+    std::cout << timeString << ": " << log_color << log_prefix << COLOR_RESET << " " << message << std::endl;
     // if(logFile.is_open()){
     //     logFile << timeString << ": " << log_prefix << message << endl;
     //     logFile.close();
