@@ -362,7 +362,8 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
         Utils::getInstance().logger(LOG_LEVEL_INFO, "===== Graph update with additional gOMH done! =====");
     }
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
-    if (args.min_edit_dis > 1 && args.read_length >= 50) {
+    // if (args.min_edit_dis > 1 && args.read_length >= 50) {
+    if (args.min_edit_dis > 1) {
         remove_edges_in_interval(graph_, 1, args.min_edit_dis - 1);
         edge_summary();
         Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("===== Graph update for removing the edges with weights less than %1%. =====") % args.min_edit_dis));

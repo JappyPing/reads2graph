@@ -11,30 +11,23 @@
 #include <seqan3/alphabet/all.hpp>
 // #include <seqan3/utility/views/pairwise_combine.hpp>
 #include <boost/functional/hash.hpp>
-// #include <xxhash.h>
-// #include <seeded_prg.hpp>
-// OMH::OMH(std::map<std::vector<seqan3::dna5>, uint32_t> read2count, cmd_arguments args) : read2count(read2count), args(args) {}
+
 gOMH::gOMH(cmd_arguments args) : args(args) {}
 
 unsigned gOMH::gomh_k(unsigned L, double p, uint8_t d) {
-    // unsigned k = ceil((p*(1+L))/(d+p));
-    // unsigned k = ceil(((1-p)*(1+L))/(d+1-p));
     unsigned k;
     if (args.read_length >= 6 && args.read_length < 50){
         auto gomh_kmer_n = args.read_length- 2 * args.gomh_k + 1;
         if (gomh_kmer_n < 3 ){
-            // Utils::getInstance().logger(LOG_LEVEL_WARNING,  std::format("only {} kmers setted for gOMH selection.", omh_kmer_n));
             Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("only %1% kmers setted for gOMH selection.") % gomh_kmer_n));
         }        
         k = args.gomh_k;
     } else if (args.read_length >= 50 && args.read_length <= 300){
         k = ceil(((1-p)*(2+L))/(d+2-2*p));
         if (k < 4){
-            // Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Estimated k={} has been changed to 4.", k));
             Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 4.") % k));
             k = 4;
         } else if (k > 27) {
-            // Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Estimated k={} has been changed to 27.", k)); 
             Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 27.") % k));
             k = 27;               
         }   

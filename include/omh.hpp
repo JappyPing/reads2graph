@@ -119,11 +119,9 @@ public:
 
             #pragma omp parallel for num_threads(num_process) schedule(static)
             for (const auto& read : unique_reads) {
-                // Convert seqan3::dna5 vector to string (needed by the sketcher)
-                std::string read_str;
-                for (const auto& nt : read) {
-                    read_str.push_back(seqan3::to_char(nt));
-                }
+
+                auto seql = read | seqan3::views::to_char;
+                string read_str(seql.begin(), seql.end());
 
                 // Compute the sketch for the current read
                 sketch sk = sketcher.compute(read_str);
