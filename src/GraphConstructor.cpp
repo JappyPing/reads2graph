@@ -716,6 +716,7 @@ void GraphConstructor::construt_graph_via_original_omh_only(std::vector<std::vec
     StatisticsRecorder recorder(cur_bin_n);
     int bucket_id = 0;
     int singleton_bucket_num = 0;
+    #pragma omp parallel for num_threads(args.num_process) schedule(static)
     for (auto i = 0u; i < cur_bin_n; ++i) {
         const auto &cur_entry = *std::next(cur_hash2reads.begin(), i);
         const std::vector<std::vector<seqan3::dna5>> &cur_reads_vec = cur_entry.second;

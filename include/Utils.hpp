@@ -42,6 +42,8 @@ struct cmd_arguments
     unsigned visit_depth{15};
     bool save_graph{false};
     std::string bucketing_mode{"minimizer_gomh"};
+    bool win_overlap{true};
+
     unsigned ori_omh_l{2};
     unsigned ori_omh_m{3};
     unsigned ori_omh_k{18};

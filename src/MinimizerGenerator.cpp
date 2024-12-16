@@ -14,37 +14,74 @@
 
 MinimizerGenerator::MinimizerGenerator(cmd_arguments args) : args(args) {}
 
-std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> MinimizerGenerator::minimizer2reads_main(std::vector<std::vector<seqan3::dna5>> unique_reads,std::tuple<unsigned, unsigned, unsigned, double> betterParams)
+// std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> MinimizerGenerator::minimizer2reads_main(std::vector<std::vector<seqan3::dna5>> unique_reads,std::tuple<unsigned, unsigned, unsigned, double> betterParams)
+std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> MinimizerGenerator::minimizer2reads_main(std::vector<std::vector<seqan3::dna5>> unique_reads)
 {   
-    // auto better_n = std::get<0>(betterParams);
-    auto better_ww = std::get<1>(betterParams);
-    auto better_kk = std::get<2>(betterParams);
-    // auto prob = std::get<3>(betterParams);
-    // auto best_w = round(static_cast<double>(args.read_length) / best_n);   
-    auto better_k = static_cast<uint8_t>(better_kk);
-    auto better_w = static_cast<uint8_t>(better_ww);
-
-    // int available_cores = omp_get_max_threads();
-    // auto num_cores_to_use = std::min(std::max(args.num_process, 1), available_cores);
-    // omp_set_num_threads(num_cores_to_use);
-
-    // #pragma omp parallel for
-    // for (size_t i = 0; i < read2count.size(); ++i) {
-    //     auto it = std::next(read2count.begin(), i);
-    //     const auto& [read, count] = *it;
+    std::mt19937_64 generator(args.seed);
+    std::uint64_t cur_seed = distribution(generator);
     // #pragma omp parallel for
     #pragma omp parallel for num_threads(args.num_process) schedule(static)
     for (auto const & read : unique_reads){
-        // auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{args.k_size}) | seqan3::views::minimiser(args.window_size - args.k_size + 1);
-        auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{better_k}) | seqan3::views::minimiser(better_w - better_k + 1);   
+        if (args.win_overlap){
+            //sliding over the windows in a read
+            auto betterParams = overlappingWindowParameters();
+            // auto better_n = static_cast<uint8_t>(std::get<1>(betterParams));
+            auto win_size = static_cast<uint8_t>(std::get<1>(betterParams));
+            auto k1 = static_cast<uint8_t>(std::get<2>(betterParams));   
 
-        // // Iterate over minimisers and group reads
-        for (auto const &minimiser : minimisers) {
-            std::uint64_t converted_minimiser = static_cast<std::uint64_t>(minimiser);
-            #pragma omp critical
-            {
-                minimiser_to_reads[converted_minimiser].push_back(read);
+            // auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{k1}) | seqan3::views::minimiser(win_size - k1 + 1);
+            auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{k1})
+                            | std::views::transform(
+                                [](uint64_t i)
+                                {
+                                    return i ^ cur_seed;
+                                })
+                            | seqan3::views::minimiser(win_size - k1 + 1);              
+
+            // Iterate over minimisers and group reads
+            for (auto const &minimiser : minimisers) {
+                std::uint64_t converted_minimiser = static_cast<std::uint64_t>(minimiser);
+                #pragma omp critical
+                {
+                    minimiser_to_reads[converted_minimiser].push_back(read);
+                }
+            }   
+
+        } else {
+            // non-overlapping windows for minimizer
+            auto betterParams = non_overlappingWindowParameters();
+            auto better_n = static_cast<uint8_t>(std::get<1>(betterParams));
+            // auto better_ww = std::get<1>(betterParams);
+            auto better_k = static_cast<uint8_t>(std::get<2>(betterParams));   
+            // auto better_k = static_cast<uint8_t>(better_kk);
+            // auto better_w = static_cast<uint8_t>(better_ww);
+
+            auto windows = split_into_windows(read, better_n);
+            for (auto const & window : windows){
+
+                unsigned int substr_size = window.size();
+                // auto minimisers = window | seqan3::views::minimiser_hash(seqan3::shape{seqan3::ungapped{better_k}}, seqan3::window_size{substr_size - better_k + 1}, seqan3::seed{cur_seed});
+                // auto minimisers = window | seqan3::views::kmer_hash(seqan3::ungapped{better_k}) | seqan3::views::minimiser(substr_size - better_k + 1);  
+                // consider foreard only with random ordering 
+                auto minimisers = window | seqan3::views::kmer_hash(seqan3::ungapped{better_k})
+                                | std::views::transform(
+                                    [](uint64_t i)
+                                    {
+                                        return i ^ cur_seed;
+                                    })
+                                | seqan3::views::minimiser(substr_size - better_k + 1);    
+
+                //debug
+                seqan3::debug_stream << window << "--" << minimizers << "--" << minimisers.size() << endl;
+
+                // Get the first (and only) minimizer since the window spans the entire read
+                std::uint64_t converted_minimiser = static_cast<std::uint64_t>(*minimisers.begin());
+                #pragma omp critical
+                {
+                    minimiser_to_reads[converted_minimiser].push_back(read);
+                }
             }
+
         }
     }
     Utils::getInstance().logger(LOG_LEVEL_DEBUG, boost::str(boost::format("Size of minimiser_to_reads: %1%!") % minimiser_to_reads.size()));
@@ -59,6 +96,26 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
 //     return p2;
 // }
 
+// Function to split each sequence in the read vector into num_windows
+std::vector<std::vector<seqan3::dna5>> split_into_windows(const std::vector<seqan3::dna5> & read, int num_windows)
+{
+    std::vector<std::vector<seqan3::dna5>> windows;
+    int total_length = read.size();
+    int window_size = total_length / num_windows;
+
+    for (int i = 0; i < num_windows; ++i)
+    {
+        int start = i * window_size;
+        int end = (i == num_windows - 1) ? total_length : start + window_size;
+
+        // Slice the sequence for this window and store it in a vector
+        auto subrange = read | seqan3::views::slice(start, end);
+        windows.emplace_back(subrange.begin(), subrange.end());
+    }
+
+    return windows;
+}
+
 int MinimizerGenerator::kSize(int L, double p) {
     return ceil((p*(1+L))/(1+p));
 }
@@ -69,7 +126,51 @@ double MinimizerGenerator::proba(unsigned L, unsigned k) {
     return p;
 }
 
-std::tuple<unsigned, unsigned, unsigned, double> MinimizerGenerator::possibleBetterParameters() {
+std::tuple<unsigned, unsigned, unsigned, double> MinimizerGenerator::overlappingWindowParameters() {
+    unsigned betterK;
+    unsigned betterN;
+    unsigned betterW;
+    double p=0;
+    if (args.read_length >= 6 && args.read_length < 10){
+        betterK = args.k_size;
+        betterN = args.window_number;
+        betterW = args.read_length;
+    } else if (args.read_length >= 10 && args.read_length < 16){
+        betterK = args.k_size;
+        betterN = args.window_number;
+        betterW = round(args.read_length/betterN);
+    } else if (args.read_length >= 16 && args.read_length < 50){
+        betterK = args.k_size;
+        betterN = args.window_number;
+        betterW = round(args.read_length/betterN);
+    } else if (args.read_length >= 50 && args.read_length <= 300) {
+        betterN = args.window_number;
+        betterW = round(args.read_length/betterN);
+        betterK = kSize(betterW, args.bad_kmer_ratio);
+        if (betterK < 4){
+            Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 4.") % betterK));
+
+            betterK = 4;
+        } else if (betterK >= 28) {
+            Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 27 as the maximum size of unggaped shape is stricted by 28 in Seqan3.") % betterK)); 
+            betterK = 27;             
+        }
+    } 
+    if (args.read_length >= 50 && args.read_length <= 300){
+        p = 1 - std::pow(proba(betterW, betterK), betterN);
+        Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("Estimated number of windows: %1%, Estimated window size: %2%, Estimated K: %3% and the probability: %4%.") % betterN % betterW % betterK % p)); 
+    } else {
+        Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("Number of windows: %1%, Window size: %2%, K size: %3%.") % betterN % betterW % betterK));         
+    }
+    auto number_kmer = betterW - betterK + 1;
+    if ((number_kmer) < 3 ){
+        Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("only %1% kmers setted for minimizer selection.") % number_kmer));
+    }
+
+    return std::make_tuple(betterN, betterW, betterK, p);   
+}
+
+std::tuple<unsigned, unsigned, unsigned, double> MinimizerGenerator::non_overlappingWindowParameters() {
     unsigned betterK;
     unsigned betterN;
     unsigned betterW;
@@ -120,9 +221,7 @@ std::tuple<unsigned, unsigned, unsigned, double> MinimizerGenerator::possibleBet
             Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 4.") % betterK));
 
             betterK = 4;
-        } else 
-        if (betterK >= 28) {
-            // Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Estimated k={} has been changed to 27 as the maximum size of unggaped shape is stricted by 28 in Seqan3.", betterK)); 
+        } else if (betterK >= 28) {
             Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 27 as the maximum size of unggaped shape is stricted by 28 in Seqan3.") % betterK)); 
             betterK = 27;             
         }
@@ -137,15 +236,12 @@ std::tuple<unsigned, unsigned, unsigned, double> MinimizerGenerator::possibleBet
     // }
     if (args.read_length >= 50 && args.read_length <= 300){
         p = 1 - std::pow(proba(betterW, betterK), betterN);
-        // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Estimated number of windows: {}, Estimated window size: {}, Estimated K: {} and the probability: {}.", betterN, betterW, betterK, p)); 
         Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("Estimated number of windows: %1%, Estimated window size: %2%, Estimated K: %3% and the probability: %4%.") % betterN % betterW % betterK % p)); 
     } else {
-        // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Number of windows: {}, Window size: {}, K size: {}.", betterN, betterW, betterK)); 
         Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("Number of windows: %1%, Window size: %2%, K size: %3%.") % betterN % betterW % betterK));         
     }
     auto number_kmer = betterW - betterK + 1;
     if ((number_kmer) < 3 ){
-        // Utils::getInstance().logger(LOG_LEVEL_WARNING,  std::format("only {} kmers setted for minimizer selection.", number_kmer));
         Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("only %1% kmers setted for minimizer selection.") % number_kmer));
     }
 

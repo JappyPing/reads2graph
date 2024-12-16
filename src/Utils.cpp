@@ -25,8 +25,8 @@
 
 int num_cores_to_use;  // Define the global variable
 
-#define reads2graph_VERSION "1.1.0"
-#define last_update_date "19.10.2024"
+#define reads2graph_VERSION "1.2.0"
+#define last_update_date "2.11.2024"
 
 using namespace std;
 
@@ -255,6 +255,10 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
     parser.add_option(args.bucketing_mode,
                       sharg::config{.long_id = "bucketing_mode",
                                     .description = "Specify the bucketing mode using the following options: minimizer_gomh, minimizer_only, original_omh, and brute_force. The default option is minimizer_gomh. The minimizer_only, original_omh, and brute_force modes are implemented for assessing the performance of our method, reads2graph. The minimizer_gomh mode uses minimizers for bucketing reads in a random order to construct an edit-distance graph. The original_omh mode utilizes the original OMH method for bucketing short reads to create an edit-distance graph, while the brute_force mode calculates the pairwise edit distance for a set of short reads."});
+
+    parser.add_option(args.win_overlap,
+                      sharg::config{.long_id = "win_overlap",
+                                    .description = "If ture, reads2graph generates multiple minimizers based on overlapping windows; otherwise, it indepedently generates multiple minimizers based on non-overlapped windows."});
 
     // parser.add_option(args.ori_omh,
     //                   sharg::config{.long_id = "ori_omh",

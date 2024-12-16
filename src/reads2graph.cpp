@@ -154,10 +154,10 @@ int main(int argc, char** argv) {
         }
     } else if (args.bucketing_mode == "minimizer_gomh") {
         // minimizer grouping first and then omh
-        auto betterParams = MinimizerGenerator(args).possibleBetterParameters();
+        // auto betterParams = MinimizerGenerator(args).possibleBetterParameters();
 
-        auto hash2reads = MinimizerGenerator(args).minimizer2reads_main(unique_reads, betterParams);  
-
+        // auto hash2reads = MinimizerGenerator(args).minimizer2reads_main(unique_reads, betterParams);  
+        auto hash2reads = MinimizerGenerator(args).minimizer2reads_main(unique_reads);
         GraphConstructor graph_constructor(read2count, args);
         graph_constructor.construct_graph(hash2reads);
         // if (args.read_length < 16){
