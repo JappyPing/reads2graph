@@ -108,7 +108,7 @@ public:
     // Function to group reads by OMH sketch using m hash functions
     template<typename EngineT>
     std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>>
-    ori_omh2read_main(std::vector<std::vector<seqan3::dna5>> unique_reads, omh_sketcher<EngineT>& sketcher, EngineT& prg, unsigned m, int num_process) {
+    omh2read_main(std::vector<std::vector<seqan3::dna5>> unique_reads, omh_sketcher<EngineT>& sketcher, EngineT& prg, unsigned m, int num_process) {
         std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> omh2reads;
         xxhash hash;
 

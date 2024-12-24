@@ -1,6 +1,8 @@
 // MinimizerGenerator.cpp
 #include "MinimizerGenerator.hpp"
 #include "ReadWrite.hpp"
+#include "omh.hpp"
+
 #include <algorithm>
 #include <execution>
 #include <omp.h>
@@ -9,8 +11,11 @@
 #include <random>
 #include <string>
 #include <cmath>
-// #include <format>
 #include <boost/format.hpp>
+#include <xxhash.hpp>
+#include <seeded_prg.hpp>
+#include <seqan3/search/views/kmer_hash.hpp>
+#include <seqan3/core/debug_stream.hpp>
 
 MinimizerGenerator::MinimizerGenerator(cmd_arguments args) : args(args) {}
 
@@ -18,6 +23,7 @@ MinimizerGenerator::MinimizerGenerator(cmd_arguments args) : args(args) {}
 std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> MinimizerGenerator::minimizer2reads_main(std::vector<std::vector<seqan3::dna5>> unique_reads)
 {   
     std::mt19937_64 generator(args.seed);
+    std::uniform_int_distribution<std::uint64_t> distribution(std::numeric_limits<std::uint64_t>::min(), std::numeric_limits<std::uint64_t>::max());
     std::uint64_t cur_seed = distribution(generator);
     // #pragma omp parallel for
     #pragma omp parallel for num_threads(args.num_process) schedule(static)
@@ -32,7 +38,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
             // auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{k1}) | seqan3::views::minimiser(win_size - k1 + 1);
             auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{k1})
                             | std::views::transform(
-                                [](uint64_t i)
+                                [cur_seed](uint64_t i)
                                 {
                                     return i ^ cur_seed;
                                 })
@@ -65,14 +71,14 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                 // consider foreard only with random ordering 
                 auto minimisers = window | seqan3::views::kmer_hash(seqan3::ungapped{better_k})
                                 | std::views::transform(
-                                    [](uint64_t i)
+                                    [cur_seed](uint64_t i)
                                     {
                                         return i ^ cur_seed;
                                     })
                                 | seqan3::views::minimiser(substr_size - better_k + 1);    
 
                 //debug
-                seqan3::debug_stream << window << "--" << minimizers << "--" << minimisers.size() << endl;
+                seqan3::debug_stream << window << "--" << minimisers << endl;
 
                 // Get the first (and only) minimizer since the window spans the entire read
                 std::uint64_t converted_minimiser = static_cast<std::uint64_t>(*minimisers.begin());
@@ -97,7 +103,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
 // }
 
 // Function to split each sequence in the read vector into num_windows
-std::vector<std::vector<seqan3::dna5>> split_into_windows(const std::vector<seqan3::dna5> & read, int num_windows)
+std::vector<std::vector<seqan3::dna5>> MinimizerGenerator::split_into_windows(const std::vector<seqan3::dna5> & read, int num_windows)
 {
     std::vector<std::vector<seqan3::dna5>> windows;
     int total_length = read.size();
@@ -248,6 +254,7 @@ std::tuple<unsigned, unsigned, unsigned, double> MinimizerGenerator::non_overlap
     return std::make_tuple(betterN, betterW, betterK, p);   
 }
 
+/*
 // using minimizer only with random ordering to bucket reads multiple times
 std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> MinimizerGenerator::minimizer_only2reads_main(std::vector<std::vector<seqan3::dna5>> unique_reads, uint8_t k, unsigned m)
 {
@@ -274,7 +281,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
     Utils::getInstance().logger(LOG_LEVEL_DEBUG, boost::str(boost::format("Size of minimiser_to_reads: %1%!") % minimiser_to_reads.size()));
     return minimiser_to_reads;     
 }
-
+*/
 
 // // Function to sample p percentage of elements
 // std::size_t MinimizerGenerator::min_k_in_sampling(const std::vector<std::vector<seqan3::dna5>>& unique_reads, double p) {

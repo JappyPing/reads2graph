@@ -1,5 +1,5 @@
 {% set name = "reads2graph" %}
-{% set version = "1.0.0" %}
+{% set version = "1.1.0" %}
 {% set sha256 = "1c054034fe139c60d521f349c824885594f30f04695c669d66072002fd1306e4" %}
 
 package:
@@ -7,7 +7,7 @@ package:
   version: {{ version }}
 
 source:
-  url: "https://github.com/Jappy0/reads2graph/archive/refs/tags/{{name}}-v{{version}}.tar.gz"
+  url: "https://github.com/JappyPing/reads2graph/archive/refs/tags/{{name}}-v{{version}}.tar.gz"
   sha256: {{ sha256 }}
 
 build:
@@ -20,23 +20,26 @@ requirements:
   build:
     - {{ compiler('c') }} 
     - {{ compiler('cxx') }} 
-    - gxx >=12.0
+    - gxx ==13.2.0
     - cmake >=3.21
     - make
     - seqan3 ==3.3.0
     - sharg ==1.1.1
     - boost ==1.82.0
     - openmp ==8.0.1
+    - xxhash ==0.8.2
   host:
     - seqan3 ==3.3.0
     - sharg ==1.1.1
     - boost ==1.82.0
     - openmp ==8.0.1
+    - xxhash ==0.8.2
   run:
     - seqan3 ==3.3.0
     - sharg ==1.1.1
     - boost ==1.82.0
     - openmp ==8.0.1
+    - xxhash ==0.8.2
 
 test:
   commands:
@@ -56,4 +59,4 @@ extra:
   # additional-platforms: 
   #   - linux-aarch64 
   recipe-maintainers:
-    - Jappy0 
+    - JappyPing 

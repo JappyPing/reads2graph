@@ -44,11 +44,13 @@ struct cmd_arguments
     std::string bucketing_mode{"minimizer_gomh"};
     bool win_overlap{true};
 
-    unsigned ori_omh_l{2};
-    unsigned ori_omh_m{3};
-    unsigned ori_omh_k{18};
-    unsigned minimizer_m{3};
-    unsigned minimizer_k{3};
+    unsigned omh_l{2};
+    unsigned omh_m{3};
+    unsigned omh_k{18};
+    // unsigned minimizer_m{3};
+    // unsigned minimizer_k{3};
+    unsigned miniception_w{};
+    unsigned miniception_k{};    
 };
 
 // Utility function to validate the bucketing mode

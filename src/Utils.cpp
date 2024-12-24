@@ -25,14 +25,14 @@
 
 int num_cores_to_use;  // Define the global variable
 
-#define reads2graph_VERSION "1.2.0"
-#define last_update_date "2.11.2024"
+#define reads2graph_VERSION "1.1.0"
+#define last_update_date "20.12.2024"
 
 using namespace std;
 
 // Function to validate the bucketing mode
 bool is_valid_bucketing_mode(const std::string &mode) {
-    return mode == "minimizer_only" || mode == "original_omh" || 
+    return mode == "miniception" || mode == "omh" || 
            mode == "minimizer_gomh" || mode == "brute_force";
 }
 
@@ -260,40 +260,28 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                       sharg::config{.long_id = "win_overlap",
                                     .description = "If ture, reads2graph generates multiple minimizers based on overlapping windows; otherwise, it indepedently generates multiple minimizers based on non-overlapped windows."});
 
-    // parser.add_option(args.ori_omh,
-    //                   sharg::config{.long_id = "ori_omh",
+    // parser.add_option(args.omh,
+    //                   sharg::config{.long_id = "omh",
     //                                 .description = "If ture, reads2graph will use original OMH only for constructing edit-distance graph."});   
-    parser.add_option(args.ori_omh_k,
-                      sharg::config{.long_id = "ori_omh_k",
+    parser.add_option(args.omh_k,
+                      sharg::config{.long_id = "omh_k",
                                     .description = "K-mer size for bucketing reads used in the original OMH only to construct edit-distance graph."});  
 
-    parser.add_option(args.ori_omh_m,
-                      sharg::config{.long_id = "ori_omh_m",
+    parser.add_option(args.omh_m,
+                      sharg::config{.long_id = "omh_m",
                                     .description = "The parameter m, the number of hash functions, for bucketing reads used in the original OMH only to construct edit-distance graph."});                                       
-    parser.add_option(args.ori_omh_l,
-                      sharg::config{.long_id = "ori_omh_l",
+    parser.add_option(args.omh_l,
+                      sharg::config{.long_id = "omh_l",
                                     .description = "The parameter l for bucketing reads used in the original OMH only to construct edit-distance graph."});  
-    // parser.add_option(args.ori_omh_seed,
-    //                   sharg::config{.long_id = "ori_omh_seed",
-    //                                 .description = "The seed to generate a series of seeds for original OMH bucketing only."});     
-    parser.add_option(args.minimizer_k,
-                      sharg::config{.long_id = "minimizer_k",
-                                    .description = "K-mer size for bucketing reads used in the minimizer only mode to construct edit-distance graph."});  
 
-    parser.add_option(args.minimizer_m,
-                      sharg::config{.long_id = "minimizer_m",
-                                    .description = "The parameter m is the times of permutation for bucketing reads used in the minimizer only mode to construct edit-distance graph."});                                     
+    parser.add_option(args.miniception_k,
+                      sharg::config{.long_id = "miniception_k",
+                                    .description = "K-mer size for bucketing reads used in the miniception mode to construct edit-distance graph."});  
 
-    // parser.add_option(args.minimizer_omh,
-    //                   sharg::config{.long_id = "minimizer_omh",
-    //                                 .description = "If ture, reads2graph employs minimizer bucketing first and then OMH bucketing; otherwise, OMH first then minimizer."});
+    parser.add_option(args.miniception_w,
+                      sharg::config{.long_id = "miniception_w",
+                                    .description = "The window size for bucketing reads in the miniception mode to construct edit-distance graph."});                                     
 
-    // parser.add_option(args.omh_k_step_size,
-    //                   sharg::config{.long_id = "omh_k_step_size",
-    //                                 .description = "The step size for varied k from the estimated better k for OMH bucketing."});
-    // parser.add_option(args.sampling_rate,
-    //                   sharg::config{.long_id = "sampling_rate",
-    //                                 .description = "Sampling rate for estimating the kmer size."}); 
     // other dependencies
     // std::cout << "Boost version: 1.82.0" << "\n";
     // std::cout << "OpenMP version: 8.0.1" << "\n";

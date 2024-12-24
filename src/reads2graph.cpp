@@ -129,46 +129,25 @@ int main(int argc, char** argv) {
 
     // Validate the input mode
     if (!is_valid_bucketing_mode(args.bucketing_mode)) {
-        std::cerr << "Error: Invalid bucketing mode selected! Choose from: minimizer_gomh, minimizer_only, original_omh, brute_force. Default minimizer_gomh. minimizer_only, original_omh and brute_force are implemented to assess the performance of reads2graph." << std::endl;
+        std::cerr << "Error: Invalid bucketing mode selected! Choose from: minimizer_gomh, miniception, omh, brute_force. Default minimizer_gomh. miniception, omh and brute_force are implemented to assess the performance of reads2graph." << std::endl;
         return EXIT_FAILURE;
     }
 
     std::map<std::set<std::vector<seqan3::dna5>>, int> edge_lst;
+    GraphConstructor graph_constructor(read2count, args);
     if (args.bucketing_mode == "brute_force") {
-        GraphConstructor graph_constructor(read2count, args);
         graph_constructor.construt_graph_via_pairwise_comparison(unique_reads);
-        if (args.save_graph){
-            graph_constructor.save_graph();
-        }
-    } else if (args.bucketing_mode == "original_omh") {
-        GraphConstructor graph_constructor(read2count, args);
-        graph_constructor.construt_graph_via_original_omh_only(unique_reads);
-        if (args.save_graph){
-            graph_constructor.save_graph();
-        }
-    } else if (args.bucketing_mode == "minimizer_only") {
-        GraphConstructor graph_constructor(read2count, args);
-        graph_constructor.construt_graph_via_minimizer_only(unique_reads);
-        if (args.save_graph){
-            graph_constructor.save_graph();
-        }
+    } else if (args.bucketing_mode == "omh") {
+        graph_constructor.construt_graph_via_omh(unique_reads);
+    } else if (args.bucketing_mode == "miniception") {
+        graph_constructor.construt_graph_via_miniception(unique_reads);   
     } else if (args.bucketing_mode == "minimizer_gomh") {
-        // minimizer grouping first and then omh
-        // auto betterParams = MinimizerGenerator(args).possibleBetterParameters();
-
-        // auto hash2reads = MinimizerGenerator(args).minimizer2reads_main(unique_reads, betterParams);  
         auto hash2reads = MinimizerGenerator(args).minimizer2reads_main(unique_reads);
-        GraphConstructor graph_constructor(read2count, args);
         graph_constructor.construct_graph(hash2reads);
-        // if (args.read_length < 16){
-        //     graph_constructor.update_graph_omh(unique_reads); 
-        // }
-        // Utils::getInstance().logger(LOG_LEVEL_INFO,  "Edit-distance-based read graph construction done!");
-        if (args.save_graph){
-            graph_constructor.save_graph();
-        }
     }
-
+    if (args.save_graph){
+        graph_constructor.save_graph();
+    }
     ////////////////////////////////////////////////////////////////////////////////////////////
     // Utils::getInstance().logger(LOG_LEVEL_INFO,  "edit-distance-based graph construction done!");
     //Print the stored read pairs and edit distances
