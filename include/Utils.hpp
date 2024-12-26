@@ -28,7 +28,7 @@ struct cmd_arguments
     std::filesystem::path output_dir{std::filesystem::current_path()};
     unsigned read_length{};
     uint8_t k_size{4};
-    uint8_t window_number{3};
+    uint8_t substr_number{3};
     uint8_t max_edit_dis{2};
     uint8_t min_edit_dis{1};
     int num_process{1};
@@ -42,7 +42,8 @@ struct cmd_arguments
     unsigned visit_depth{15};
     bool save_graph{false};
     std::string bucketing_mode{"minimizer_gomh"};
-    bool win_overlap{true};
+    bool segmentation{true};
+    bool miniception_gomh{true};
 
     unsigned omh_l{2};
     unsigned omh_m{3};

@@ -24,9 +24,9 @@ public:
     std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> minimizer2reads_main(std::vector<std::vector<seqan3::dna5>> unique_reads);
     double proba(unsigned L, unsigned k);
     int kSize(int L, double p);
-    std::vector<std::vector<seqan3::dna5>> split_into_windows(const std::vector<seqan3::dna5> & read, int num_windows);
+    std::vector<std::vector<seqan3::dna5>> divide_into_substrings(const std::vector<seqan3::dna5> & read, int num_substrs);
     std::tuple<unsigned, unsigned, unsigned, double> overlappingWindowParameters();
-    std::tuple<unsigned, unsigned, unsigned, double> non_overlappingWindowParameters();
+    std::tuple<unsigned, unsigned, unsigned, double> segmentation_parameters();
     // std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> minimizer_only2reads_main(std::vector<std::vector<seqan3::dna5>> unique_reads, uint8_t k, unsigned m);
     // std::tuple<int, int, double> findBestParameters(int l, int dt, double pt);
     // long double prob(int l, int n, int k, int dt);

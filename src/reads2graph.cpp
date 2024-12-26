@@ -144,6 +144,9 @@ int main(int argc, char** argv) {
     } else if (args.bucketing_mode == "minimizer_gomh") {
         auto hash2reads = MinimizerGenerator(args).minimizer2reads_main(unique_reads);
         graph_constructor.construct_graph(hash2reads);
+    } else if (args.bucketing_mode == "miniception_gomh") {
+        auto hash2reads = MinimizerGenerator(args).minimizer2reads_main(unique_reads);
+        graph_constructor.construct_graph(hash2reads);
     }
     if (args.save_graph){
         graph_constructor.save_graph();

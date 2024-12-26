@@ -7,6 +7,7 @@
 #include "miniception.hpp"
 
 // #include <format>
+#include <seeded_prg.hpp>
 #include <boost/format.hpp>
 #include <algorithm>
 #include <ranges>
@@ -696,6 +697,76 @@ void GraphConstructor::construt_graph_via_pairwise_comparison(std::vector<std::v
     Utils::getInstance().logger(LOG_LEVEL_INFO, "*****************************************************************");
 }
 
+void GraphConstructor::construt_graph_via_miniception(std::vector<std::vector<seqan3::dna5>> unique_reads)
+{
+    init_graph();
+
+    auto config = seqan3::align_cfg::method_global{} | seqan3::align_cfg::edit_scheme | seqan3::align_cfg::min_score{-1 * args.max_edit_dis} | seqan3::align_cfg::output_score{};
+    
+    std::mt19937_64 prg(args.seed);
+    Miniception miniception;
+    auto cur_hash2reads = miniception.miniception2read_main(unique_reads, args.miniception_k, args.miniception_w, prg, args.num_process);
+
+    auto cur_bin_n = cur_hash2reads.size();
+    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of buckets: %1%.") % cur_bin_n));
+
+    StatisticsRecorder recorder(cur_bin_n);
+    int bucket_id = 0;
+    int singleton_bucket_num = 0;
+    for (auto i = 0u; i < cur_bin_n; ++i) {
+        const auto &cur_entry = *std::next(cur_hash2reads.begin(), i);
+        const std::vector<std::vector<seqan3::dna5>> &cur_reads_vec = cur_entry.second;
+        auto cur_num = cur_reads_vec.size();
+        if ( cur_num == 1){
+            singleton_bucket_num++;
+            continue;
+        } else if (cur_num >= 2){ 
+            // Atomic variables for positive and negative cases
+            std::atomic<int> positive_cases{0};
+            std::atomic<int> negative_cases{0};  
+            auto pairwise_combinations = seqan3::views::pairwise_combine(cur_reads_vec);
+            auto total_pairs = pairwise_combinations.size();
+            #pragma omp parallel for num_threads(args.num_process) schedule(static)
+            for (size_t i = 0; i < total_pairs; ++i)
+            {
+                auto const &combination = pairwise_combinations[i];
+                auto const &seq1 = std::get<0>(combination);
+                auto const &seq2 = std::get<1>(combination);
+                auto alignment_results = seqan3::align_pairwise(std::tie(seq1, seq2), config);
+                // Iterate over alignment results and access the scores
+                for (auto const &result : alignment_results)
+                {
+                    int edit_distance = -1 * result.score();
+                    if ((edit_distance >= 1) && (edit_distance <= args.max_edit_dis)) 
+                    {
+                        positive_cases++;
+                        #pragma omp critical
+                        {
+                            // edge_lst[read_pair_set] = edit_distance;
+                            insert_edge(seq1, seq2, edit_distance);
+                        }                    
+                    } else {
+                        negative_cases++;
+                    }
+                }
+            }  
+            recorder.record_bucket(bucket_id, cur_num, total_pairs, positive_cases, negative_cases);   
+            bucket_id++;    
+        }
+    }
+    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of buckets containing one unique read: %1%.") % singleton_bucket_num));
+    std::ostringstream oss;
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+    std::tm now_tm = *std::localtime(&now_time);
+    oss << std::put_time(&now_tm, "miniception_bucket_stats_%Y%m%d_%H%M%S.txt");
+    std::filesystem::path output_file = args.output_dir / oss.str();
+    recorder.write_statistics_to_file(output_file);  
+    edge_summary();
+    Utils::getInstance().logger(LOG_LEVEL_INFO, "Constructing edit-distance-based read graph via miniception bucketing done!");
+    Utils::getInstance().logger(LOG_LEVEL_INFO, "******************************************************************************");
+}
+
 void GraphConstructor::construt_graph_via_omh(std::vector<std::vector<seqan3::dna5>> unique_reads)
 {
     init_graph();
@@ -774,76 +845,6 @@ void GraphConstructor::construt_graph_via_omh(std::vector<std::vector<seqan3::dn
     Utils::getInstance().logger(LOG_LEVEL_INFO, "******************************************************************");
 }
 
-void GraphConstructor::construt_graph_via_miniception(std::vector<std::vector<seqan3::dna5>> unique_reads)
-{
-    init_graph();
-
-    auto config = seqan3::align_cfg::method_global{} | seqan3::align_cfg::edit_scheme | seqan3::align_cfg::min_score{-1 * args.max_edit_dis} | seqan3::align_cfg::output_score{};
-    
-    std::mt19937_64 prg(args.seed);
-    Miniception miniception;
-    auto cur_hash2reads = miniception.miniception2read_main(unique_reads, args.miniception_k, args.miniception_w, prg, args.num_process);
-
-    auto cur_bin_n = cur_hash2reads.size();
-    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of buckets: %1%.") % cur_bin_n));
-
-    StatisticsRecorder recorder(cur_bin_n);
-    int bucket_id = 0;
-    int singleton_bucket_num = 0;
-    for (auto i = 0u; i < cur_bin_n; ++i) {
-        const auto &cur_entry = *std::next(cur_hash2reads.begin(), i);
-        const std::vector<std::vector<seqan3::dna5>> &cur_reads_vec = cur_entry.second;
-        auto cur_num = cur_reads_vec.size();
-        if ( cur_num == 1){
-            singleton_bucket_num++;
-            continue;
-        } else if (cur_num >= 2){ 
-            // Atomic variables for positive and negative cases
-            std::atomic<int> positive_cases{0};
-            std::atomic<int> negative_cases{0};  
-            auto pairwise_combinations = seqan3::views::pairwise_combine(cur_reads_vec);
-            auto total_pairs = pairwise_combinations.size();
-            #pragma omp parallel for num_threads(args.num_process) schedule(static)
-            for (size_t i = 0; i < total_pairs; ++i)
-            {
-                auto const &combination = pairwise_combinations[i];
-                auto const &seq1 = std::get<0>(combination);
-                auto const &seq2 = std::get<1>(combination);
-                auto alignment_results = seqan3::align_pairwise(std::tie(seq1, seq2), config);
-                // Iterate over alignment results and access the scores
-                for (auto const &result : alignment_results)
-                {
-                    int edit_distance = -1 * result.score();
-                    if ((edit_distance >= 1) && (edit_distance <= args.max_edit_dis)) 
-                    {
-                        positive_cases++;
-                        #pragma omp critical
-                        {
-                            // edge_lst[read_pair_set] = edit_distance;
-                            insert_edge(seq1, seq2, edit_distance);
-                        }                    
-                    } else {
-                        negative_cases++;
-                    }
-                }
-            }  
-            recorder.record_bucket(bucket_id, cur_num, total_pairs, positive_cases, negative_cases);   
-            bucket_id++;    
-        }
-    }
-    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of buckets containing one unique read: %1%.") % singleton_bucket_num));
-    std::ostringstream oss;
-    auto now = std::chrono::system_clock::now();
-    std::time_t now_time = std::chrono::system_clock::to_time_t(now);
-    std::tm now_tm = *std::localtime(&now_time);
-    oss << std::put_time(&now_tm, "miniception_bucket_stats_%Y%m%d_%H%M%S.txt");
-    std::filesystem::path output_file = args.output_dir / oss.str();
-    recorder.write_statistics_to_file(output_file);  
-    edge_summary();
-    Utils::getInstance().logger(LOG_LEVEL_INFO, "Constructing edit-distance-based read graph via miniception bucketing done!");
-    Utils::getInstance().logger(LOG_LEVEL_INFO, "******************************************************************************");
-}
-
 /* 
 void GraphConstructor::construt_graph_via_minimizer_only(std::vector<std::vector<seqan3::dna5>> unique_reads)
 {
@@ -913,4 +914,87 @@ void GraphConstructor::construt_graph_via_minimizer_only(std::vector<std::vector
     Utils::getInstance().logger(LOG_LEVEL_INFO, "Constructing edit-distance-based read graph via minimizer bucketing only done!");
     Utils::getInstance().logger(LOG_LEVEL_INFO, "******************************************************************************");
 }
+*/
+
+/*
+void GraphConstructor::construt_graph_via_omh(std::vector<std::vector<seqan3::dna5>> unique_reads)
+{
+    init_graph();
+
+    auto config = seqan3::align_cfg::method_global{} | seqan3::align_cfg::edit_scheme | seqan3::align_cfg::min_score{-1 * args.max_edit_dis} | seqan3::align_cfg::output_score{};
+
+    std::mt19937_64 generator(args.seed);
+    std::uniform_int_distribution<std::uint64_t> distribution(std::numeric_limits<std::uint64_t>::min(), std::numeric_limits<std::uint64_t>::max());
+    std::uint64_t cur_seed = distribution(generator);
+    omh_sketcher<std::mt19937_64> sketcher(args.omh_k, args.omh_l, cur_seed);
+
+    // Group reads by OMH sketches
+    OMH omh;
+    std::mt19937_64 prg(args.seed);
+    auto cur_hash2reads = omh.omh2read_main(unique_reads, sketcher, prg, args.omh_m, args.num_process);
+    auto cur_bin_n = cur_hash2reads.size();
+    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of buckets: %1%.") % cur_bin_n));
+    // StatisticsRecorder recorder(cur_bin_n);
+    // int bucket_id = 0;
+    // int singleton_bucket_num = 0;
+    #pragma omp parallel for num_threads(args.num_process) schedule(static)
+    for (auto i = 0u; i < cur_bin_n; ++i) {
+        const auto &cur_entry = *std::next(cur_hash2reads.begin(), i);
+        const std::vector<std::vector<seqan3::dna5>> &cur_reads_vec = cur_entry.second;
+        auto cur_num = cur_reads_vec.size();
+        if ( cur_num == 1){
+            continue;
+        } else if (cur_num >= 2){ 
+            // Atomic variables for positive and negative cases
+            std::atomic<int> positive_cases{0};
+            std::atomic<int> negative_cases{0};  
+
+            auto pairwise_combinations = seqan3::views::pairwise_combine(cur_reads_vec);
+            auto total_pairs = pairwise_combinations.size();
+
+            #pragma omp parallel num_threads(args.num_process) schedule(dynamic)
+            {
+                // Thread-local storage for edges to insert
+                std::vector<std::tuple<std::vector<seqan3::dna5>, std::vector<seqan3::dna5>, int>> local_edges;
+
+                #pragma omp for schedule(dynamic)
+                for (size_t i = 0; i < total_pairs; ++i) {
+                    auto const& combination = pairwise_combinations[i];
+                    auto const& seq1 = std::get<0>(combination);
+                    auto const& seq2 = std::get<1>(combination);
+                    auto alignment_results = seqan3::align_pairwise(std::tie(seq1, seq2), config);
+
+                    for (auto const& result : alignment_results) {
+                        int edit_distance = -1 * result.score();
+                        if (edit_distance >= 1 && edit_distance <= args.max_edit_dis) {
+                            local_edges.emplace_back(seq1, seq2, edit_distance);
+                        }
+                    }
+                }
+
+                // Critical section for merging local edges into global structure
+                #pragma omp critical
+                {
+                    for (auto const& edge : local_edges) {
+                        const auto& [read1, read2, edit_dis] = edge;
+                        insert_edge(read1, read2, edit_dis);
+                    }
+                }
+            }  
+        }
+    }
+    // Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of buckets containing one unique read is %1%.") % singleton_bucket_num));
+
+    // std::ostringstream oss;
+    // auto now = std::chrono::system_clock::now();
+    // std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+    // std::tm now_tm = *std::localtime(&now_time);
+    // oss << std::put_time(&now_tm, "omh_bucket_stats_%Y%m%d_%H%M%S.txt");
+    // std::filesystem::path output_file = args.output_dir / oss.str();
+    // recorder.write_statistics_to_file(output_file);   
+    edge_summary();
+    Utils::getInstance().logger(LOG_LEVEL_INFO, "Constructing edit-distance-based read graph via original OMH done!");
+    Utils::getInstance().logger(LOG_LEVEL_INFO, "******************************************************************");
+}
+
 */

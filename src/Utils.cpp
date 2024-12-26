@@ -33,7 +33,7 @@ using namespace std;
 // Function to validate the bucketing mode
 bool is_valid_bucketing_mode(const std::string &mode) {
     return mode == "miniception" || mode == "omh" || 
-           mode == "minimizer_gomh" || mode == "brute_force";
+           mode == "minimizer_gomh" || mode == "miniception_gomh" || mode == "brute_force";
 }
 
 Utils& Utils::getInstance() {
@@ -172,9 +172,9 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                                     .long_id = "k_size",
                                     .description = "The size for minimiser."});
 
-    parser.add_option(args.window_number,
+    parser.add_option(args.substr_number,
                       sharg::config{.short_id = 'w',
-                                    .long_id = "window_number",
+                                    .long_id = "substr_number",
                                     .description = "The window number for minimiser."});
 
     // parser.add_option(args.window_size,
@@ -254,15 +254,16 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
     // Add option for bucketing mode with description and default value
     parser.add_option(args.bucketing_mode,
                       sharg::config{.long_id = "bucketing_mode",
-                                    .description = "Specify the bucketing mode using the following options: minimizer_gomh, minimizer_only, original_omh, and brute_force. The default option is minimizer_gomh. The minimizer_only, original_omh, and brute_force modes are implemented for assessing the performance of our method, reads2graph. The minimizer_gomh mode uses minimizers for bucketing reads in a random order to construct an edit-distance graph. The original_omh mode utilizes the original OMH method for bucketing short reads to create an edit-distance graph, while the brute_force mode calculates the pairwise edit distance for a set of short reads."});
+                                    .description = "Specify the bucketing mode using the following options: minimizer_gomh, miniception_gomh, miniception, omh, and brute_force. The default option is minimizer_gomh. The miniception, omh, and brute_force modes are implemented for assessing the performance of our method, reads2graph. The minimizer_gomh and miniception_gomh modes use minimizers implemented in seqan3 and miniception for bucketing reads in a random order to construct an edit-distance graph. The omh mode utilizes the original OMH method for bucketing short reads to create an edit-distance graph, while the brute_force mode calculates the pairwise edit distance for a set of short reads."});
 
-    parser.add_option(args.win_overlap,
-                      sharg::config{.long_id = "win_overlap",
-                                    .description = "If ture, reads2graph generates multiple minimizers based on overlapping windows; otherwise, it indepedently generates multiple minimizers based on non-overlapped windows."});
+    parser.add_option(args.segmentation,
+                      sharg::config{.long_id = "segmentation",
+                                    .description = "If ture, reads2graph divides reads into separate substrings and generates multiple minimizers for each read; otherwise, it generates minimizers for the entire read."});
 
-    // parser.add_option(args.omh,
-    //                   sharg::config{.long_id = "omh",
-    //                                 .description = "If ture, reads2graph will use original OMH only for constructing edit-distance graph."});   
+    parser.add_option(args.miniception_gomh,
+                      sharg::config{.long_id = "miniception_gomh",
+                                    .description = "If ture, reads2graph uses miniception for bucketing reads first and then uses gOMH for bucketing."});
+
     parser.add_option(args.omh_k,
                       sharg::config{.long_id = "omh_k",
                                     .description = "K-mer size for bucketing reads used in the original OMH only to construct edit-distance graph."});  
