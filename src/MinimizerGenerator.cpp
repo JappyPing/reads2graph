@@ -33,7 +33,13 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
             } else {
                 auto minimiser_range = read | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{args.k_size}}) | seqan3::views::minimiser(args.w_size - args.k_size + 1);    
                 std::ranges::copy(minimiser_range, std::back_inserter(minimisers));        
-            }   
+            }
+            for (auto const &minimiser : minimisers) {
+                #pragma omp critical
+                {
+                    minimiser2reads[minimiser].push_back(read);
+                }
+            }                 
         } else {           
             if (args.segmentation){
                 uint8_t num_substr;
@@ -58,6 +64,12 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                     }
                     //debug
                     // seqan3::debug_stream << sub_str << "--" << minimisers << endl;
+                    for (auto const &minimiser : minimisers) {
+                        #pragma omp critical
+                        {
+                            minimiser2reads[minimiser].push_back(read);
+                        }
+                    }                      
                 }
             } else {
                 auto better_k = k_estimate(1, args.read_length);
@@ -67,15 +79,15 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                 } else {
                     auto minimiser_range = read | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{better_k}}) | seqan3::views::minimiser(better_w - better_k + 1);    
                     std::ranges::copy(minimiser_range, std::back_inserter(minimisers));        
-                }       
+                } 
+                for (auto const &minimiser : minimisers) {
+                    #pragma omp critical
+                    {
+                        minimiser2reads[minimiser].push_back(read);
+                    }
+                }                        
             }
         }
-        for (auto const &minimiser : minimisers) {
-            #pragma omp critical
-            {
-                minimiser2reads[minimiser].push_back(read);
-            }
-        }         
     }
     Utils::getInstance().logger(LOG_LEVEL_DEBUG, boost::str(boost::format("Size of minimiser2reads: %1%!") % minimiser2reads.size()));
     return minimiser2reads;     

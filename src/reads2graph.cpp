@@ -141,13 +141,10 @@ int main(int argc, char** argv) {
         graph_constructor.construt_graph_via_omh(unique_reads);
     } else if (args.bucketing_mode == "miniception") {
         graph_constructor.construt_graph_via_miniception(unique_reads);   
-    } else if (args.bucketing_mode == "minimizer_gomh") {
+    } else if (args.bucketing_mode == "minimizer_gomh" || args.bucketing_mode == "miniception_gomh") {
         auto hash2reads = MinimizerGenerator(args).minimizer2reads_main(unique_reads);
         graph_constructor.construct_graph(hash2reads);
-    } else if (args.bucketing_mode == "miniception_gomh") {
-        auto hash2reads = MinimizerGenerator(args).minimizer2reads_main(unique_reads);
-        graph_constructor.construct_graph(hash2reads);
-    }
+    } 
     if (args.save_graph){
         graph_constructor.save_graph();
     }
