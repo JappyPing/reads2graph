@@ -20,75 +20,66 @@
 
 MinimizerGenerator::MinimizerGenerator(cmd_arguments args) : args(args) {}
 
-// std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> MinimizerGenerator::minimizer2reads_main(std::vector<std::vector<seqan3::dna5>> unique_reads,std::tuple<unsigned, unsigned, unsigned, double> betterParams)
 std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> MinimizerGenerator::minimizer2reads_main(std::vector<std::vector<seqan3::dna5>> unique_reads)
 {   
     std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> minimiser2reads;
     // #pragma omp parallel for
     #pragma omp parallel for num_threads(args.num_process) schedule(static)
     for (auto const & read : unique_reads){
-        if (args.segmentation){
-            auto betterParams = segmentation_parameters();
-            auto better_n = static_cast<uint8_t>(std::get<1>(betterParams));
-            auto better_k = static_cast<uint8_t>(std::get<2>(betterParams));   
-            auto better_w = ;
-
-            auto sub_strs = divide_into_substrings(read, args.substr_number);
-            for (auto const & sub_str : sub_strs){
-                unsigned int substr_size = sub_str.size();
-                std::vector<std::uint64_t> minimisers;
-                if (args.bucketing_mode == "miniception_gomh") {
-                    Miniception miniception;
-                    minimisers = miniception.miniception_main(read, better_k, better_w, args.seed);                 
-                } else {
-                    minimisers = sub_str | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{better_k}}) | seqan3::views::minimiser(substr_size - better_k + 1);                      
-                }
-                //debug
-                seqan3::debug_stream << sub_str << "--" << minimisers << endl;
-
-                for (auto const &minimiser : minimisers) {
-                    std::uint64_t converted_minimiser = static_cast<std::uint64_t>(minimiser);
-                    #pragma omp critical
-                    {
-                        minimiser2reads[converted_minimiser].push_back(read);
-                    }
-                }   
-            }
-        } else {
-            //sliding over the windows in a read
-            auto betterParams = overlappingWindowParameters();
-            auto win_size = static_cast<uint8_t>(std::get<1>(betterParams));
-            auto better_k = static_cast<uint8_t>(std::get<2>(betterParams));   
-
-            std::vector<std::uint64_t> minimisers;
+        std::vector<std::uint64_t> minimisers;
+        if (args.read_length >= 6 && args.read_length < 16){
             if (args.bucketing_mode == "miniception_gomh") {
-                Miniception miniception;
-                minimisers = miniception.miniception_main(read, better_k, better_w, args.seed);                 
+                minimisers = Miniception(args).miniception_main(read, args.k_size, args.w_size, args.seed);                 
             } else {
-                minimisers = sub_str | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{better_k}}) | seqan3::views::minimiser(win_size - better_k + 1);                      
-            }        
-
-            // Iterate over minimisers and group reads
-            for (auto const &minimiser : minimisers) {
-                std::uint64_t converted_minimiser = static_cast<std::uint64_t>(minimiser);
-                #pragma omp critical
-                {
-                    minimiser2reads[converted_minimiser].push_back(read);
-                }
+                auto minimiser_range = read | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{args.k_size}}) | seqan3::views::minimiser(args.w_size - args.k_size + 1);    
+                std::ranges::copy(minimiser_range, std::back_inserter(minimisers));        
             }   
+        } else {           
+            if (args.segmentation){
+                uint8_t num_substr;
+                if (args.read_length >= 16 && args.read_length < 50){
+                    num_substr = args.substr_number - 1;
+                } else if (args.read_length >= 50 && args.read_length <= 300) {
+                    num_substr = args.substr_number;
+                }
+                auto sub_strs = divide_into_substrings(read, num_substr);
+                for (auto const & sub_str : sub_strs){
+
+                    auto substr_size = static_cast<uint8_t>(sub_str.size());
+                    uint8_t better_w = substr_size - num_substr; 
+                    auto better_k = k_estimate(num_substr, substr_size);
+
+                    std::vector<std::uint64_t> minimisers;
+                    if (args.bucketing_mode == "miniception_gomh") {
+                        minimisers = Miniception(args).miniception_main(sub_str, better_k, better_w, args.seed);                 
+                    } else {
+                        auto minimiser_range = sub_str | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{better_k}}) | seqan3::views::minimiser(better_w - better_k + 1);              
+                        std::ranges::copy(minimiser_range, std::back_inserter(minimisers));        
+                    }
+                    //debug
+                    // seqan3::debug_stream << sub_str << "--" << minimisers << endl;
+                }
+            } else {
+                auto better_k = k_estimate(1, args.read_length);
+                auto better_w = wSize(better_k);
+                if (args.bucketing_mode == "miniception_gomh") {
+                    minimisers = Miniception(args).miniception_main(read, better_k, better_w, args.seed);                 
+                } else {
+                    auto minimiser_range = read | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{better_k}}) | seqan3::views::minimiser(better_w - better_k + 1);    
+                    std::ranges::copy(minimiser_range, std::back_inserter(minimisers));        
+                }       
+            }
         }
+        for (auto const &minimiser : minimisers) {
+            #pragma omp critical
+            {
+                minimiser2reads[minimiser].push_back(read);
+            }
+        }         
     }
     Utils::getInstance().logger(LOG_LEVEL_DEBUG, boost::str(boost::format("Size of minimiser2reads: %1%!") % minimiser2reads.size()));
     return minimiser2reads;     
 }
-
-// long double MinimizerGenerator::prob(int l, int n, int k, int dt) {
-//     int w = round(static_cast<double>(l) / n);
-//     // long double p1 = ((w - (round(static_cast<double>(dt) / n) + 1) * k) + 1) / (w - k + 1);
-//     long double p1 = (static_cast<long double>(dt) * k) / (n * (w - k + 1));
-//     long double p2 = 1 - std::pow(p1, n);
-//     return p2;
-// }
 
 // Function to split each sequence in the read vector into substrings
 std::vector<std::vector<seqan3::dna5>> MinimizerGenerator::divide_into_substrings(const std::vector<seqan3::dna5> & read, int num_substrs)
@@ -114,10 +105,72 @@ int MinimizerGenerator::kSize(int L, double p) {
     return ceil((p*(1+L))/(1+p));
 }
 
+uint8_t MinimizerGenerator::wSize(uint8_t k) {
+    uint8_t w;
+    if (args.bucketing_mode == "miniception_gomh") {
+        w = k + 1;
+    } else {
+        w = static_cast<uint8_t>(std::ceil(std::pow(10, k / 4)));
+    }
+    return w;
+}
+
+uint8_t MinimizerGenerator::k_estimate(uint8_t num_substr, uint8_t substr_size) {
+    uint8_t k;
+    if (num_substr == 1) {
+        k = ceil((1-args.probability)*(1+substr_size)/(1+args.max_edit_dis-args.probability));
+    } else {
+        k = static_cast<uint8_t>(kSize(substr_size, args.bad_kmer_ratio));
+    }
+    return k;
+}
+
 double MinimizerGenerator::proba(unsigned L, unsigned k) {
     double p;
     p = (static_cast<double>(k))/(L-k+1);
     return p;
+}
+
+/*
+std::tuple<unsigned, unsigned, unsigned, double> MinimizerGenerator::k_w_estimate() {
+    unsigned betterK;
+    unsigned betterN;
+    unsigned betterW;
+    double p=0;
+    if (args.read_length >= 6 && args.read_length < 16){
+        betterK = args.k_size;
+        betterN = 1;
+        betterW = args.read_length;
+    } else if (args.read_length >= 16 && args.read_length < 50){
+        betterK = args.k_size;
+        betterN = 2;
+        betterW = round(args.read_length/betterN);
+    } else if (args.read_length >= 50 && args.read_length <= 300) {
+        betterN = args.substr_number;
+        betterW = round(args.read_length/betterN);
+        betterK = kSize(betterW, args.bad_kmer_ratio);
+        if (betterK < 4){
+            // Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Estimated k={} has been changed to 4.", betterK));
+            Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 4.") % betterK));
+
+            betterK = 4;
+        } else if (betterK >= 28) {
+            Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 27 as the maximum size of unggaped shape is stricted by 28 in Seqan3.") % betterK)); 
+            betterK = 27;             
+        }
+    } 
+    if (args.read_length >= 50 && args.read_length <= 300){
+        p = 1 - std::pow(proba(betterW, betterK), betterN);
+        Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("Estimated number of windows: %1%, Estimated window size: %2%, Estimated K: %3% and the probability: %4%.") % betterN % betterW % betterK % p)); 
+    } else {
+        Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("Number of windows: %1%, Window size: %2%, K size: %3%.") % betterN % betterW % betterK));         
+    }
+    auto number_kmer = betterW - betterK + 1;
+    if ((number_kmer) < 3 ){
+        Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("only %1% kmers setted for minimizer selection.") % number_kmer));
+    }
+
+    return std::make_tuple(betterN, betterW, betterK, p);   
 }
 
 std::tuple<unsigned, unsigned, unsigned, double> MinimizerGenerator::overlappingWindowParameters() {
@@ -164,144 +217,6 @@ std::tuple<unsigned, unsigned, unsigned, double> MinimizerGenerator::overlapping
     return std::make_tuple(betterN, betterW, betterK, p);   
 }
 
-std::tuple<unsigned, unsigned, unsigned, double> MinimizerGenerator::segmentation_parameters() {
-    unsigned betterK;
-    unsigned betterN;
-    unsigned betterW;
-    double p=0;
-    if (args.read_length >= 6 && args.read_length < 10){
-        betterK = args.k_size;
-        betterN = args.substr_number;
-        betterW = args.read_length;
-    } else if (args.read_length >= 10 && args.read_length < 16){
-        betterK = args.k_size;
-        betterN = args.substr_number;
-        // betterW = args.read_length;
-        betterW = round(args.read_length/betterN);
-    } else if (args.read_length >= 16 && args.read_length < 50){
-        betterK = args.k_size;
-        betterN = args.substr_number;
-        betterW = round(args.read_length/betterN);
-    } else if (args.read_length >= 50 && args.read_length <= 300) {
-        // if (args.max_edit_dis == 1 || args.max_edit_dis == 2){
-        //     betterN = 3;
-        // } else {
-        //     betterN = ceil((static_cast<double>(args.max_edit_dis))/2)+1;
-        // }
-        betterN = args.substr_number;
-        betterW = round(args.read_length/betterN);
-        betterK = kSize(betterW, args.bad_kmer_ratio);
-        if (betterK < 4){
-            // Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Estimated k={} has been changed to 4.", betterK));
-            Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 4.") % betterK));
-
-            betterK = 4;
-        } else if (betterK >= 28) {
-            Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 27 as the maximum size of unggaped shape is stricted by 28 in Seqan3.") % betterK)); 
-            betterK = 27;             
-        }
-    } 
-    // if (betterK < 4){
-    //     Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Better k {} has been changed to 4.", betterK));
-    //     betterK = 4;
-    // } else 
-    // if (betterK >= 28) {
-    //     Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Better k {} has been changed to 27 as the maximum size of unggaped shape is stricted by 28 in Seqan3.", betterK));  
-    //     betterK = 27;             
-    // }
-    if (args.read_length >= 50 && args.read_length <= 300){
-        p = 1 - std::pow(proba(betterW, betterK), betterN);
-        Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("Estimated number of windows: %1%, Estimated window size: %2%, Estimated K: %3% and the probability: %4%.") % betterN % betterW % betterK % p)); 
-    } else {
-        Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("Number of windows: %1%, Window size: %2%, K size: %3%.") % betterN % betterW % betterK));         
-    }
-    auto number_kmer = betterW - betterK + 1;
-    if ((number_kmer) < 3 ){
-        Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("only %1% kmers setted for minimizer selection.") % number_kmer));
-    }
-
-    return std::make_tuple(betterN, betterW, betterK, p);   
-}
-
-std::tuple<unsigned, unsigned, unsigned, double> MinimizerGenerator::segmentation_parameters() {
-    unsigned betterK;
-    unsigned betterN;
-    unsigned betterW;
-    double p=0;
-    // if (args.read_length >= 8 && args.read_length < 16){
-    //     betterK = 3;
-    //     betterN = 2;
-    //     // betterW = args.read_length;
-    //     betterW = round(args.read_length/betterN);
-    // } else if (args.read_length >= 16 && args.read_length < 50){
-    //     betterK = 4;
-    //     betterN = 2;
-    //     betterW = round(args.read_length/betterN);
-    // } else if (args.read_length >= 50 && args.read_length <= 300) {
-    //     // if (args.max_edit_dis == 1 || args.max_edit_dis == 2){
-    //     //     betterN = 3;
-    //     // } else {
-    //     //     betterN = ceil((static_cast<double>(args.max_edit_dis))/2)+1;
-    //     // }
-    //     betterN = 3;
-    //     betterW = round(args.read_length/betterN);
-    //     betterK = kSize(betterW, args.bad_kmer_ratio);
-    // } 
-    if (args.read_length >= 6 && args.read_length < 10){
-        betterK = args.k_size;
-        betterN = args.substr_number;
-        betterW = args.read_length;
-    } else if (args.read_length >= 10 && args.read_length < 16){
-        betterK = args.k_size;
-        betterN = args.substr_number;
-        // betterW = args.read_length;
-        betterW = round(args.read_length/betterN);
-    } else if (args.read_length >= 16 && args.read_length < 50){
-        betterK = args.k_size;
-        betterN = args.substr_number;
-        betterW = round(args.read_length/betterN);
-    } else if (args.read_length >= 50 && args.read_length <= 300) {
-        // if (args.max_edit_dis == 1 || args.max_edit_dis == 2){
-        //     betterN = 3;
-        // } else {
-        //     betterN = ceil((static_cast<double>(args.max_edit_dis))/2)+1;
-        // }
-        betterN = args.substr_number;
-        betterW = round(args.read_length/betterN);
-        betterK = kSize(betterW, args.bad_kmer_ratio);
-        if (betterK < 4){
-            // Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Estimated k={} has been changed to 4.", betterK));
-            Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 4.") % betterK));
-
-            betterK = 4;
-        } else if (betterK >= 28) {
-            Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 27 as the maximum size of unggaped shape is stricted by 28 in Seqan3.") % betterK)); 
-            betterK = 27;             
-        }
-    } 
-    // if (betterK < 4){
-    //     Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Better k {} has been changed to 4.", betterK));
-    //     betterK = 4;
-    // } else 
-    // if (betterK >= 28) {
-    //     Utils::getInstance().logger(LOG_LEVEL_WARNING, std::format("Better k {} has been changed to 27 as the maximum size of unggaped shape is stricted by 28 in Seqan3.", betterK));  
-    //     betterK = 27;             
-    // }
-    if (args.read_length >= 50 && args.read_length <= 300){
-        p = 1 - std::pow(proba(betterW, betterK), betterN);
-        Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("Estimated number of windows: %1%, Estimated window size: %2%, Estimated K: %3% and the probability: %4%.") % betterN % betterW % betterK % p)); 
-    } else {
-        Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("Number of windows: %1%, Window size: %2%, K size: %3%.") % betterN % betterW % betterK));         
-    }
-    auto number_kmer = betterW - betterK + 1;
-    if ((number_kmer) < 3 ){
-        Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("only %1% kmers setted for minimizer selection.") % number_kmer));
-    }
-
-    return std::make_tuple(betterN, betterW, betterK, p);   
-}
-
-/*
 // using minimizer only with random ordering to bucket reads multiple times
 std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> MinimizerGenerator::minimizer_only2reads_main(std::vector<std::vector<seqan3::dna5>> unique_reads, uint8_t k, unsigned m)
 {
@@ -389,7 +304,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
 //     // Here a consecutive shape with size 4 (so the k-mer size is 4) and a window size of 8 is used.
 //     // auto minimisers = read | seqan3::views::minimiser_hash(seqan3::shape{seqan3::ungapped{4}}, seqan3::window_size{8});
 //     auto minimisers = read | seqan3::views::kmer_hash(seqan3::ungapped{args.k_size}) | seqan3::views::minimiser(args.window_size - args.k_size + 1);
-//     uint64_t hash_sum = 0;
+//     std::uint64_t hash_sum = 0;
 //     for (auto const &minimiser : minimisers) {
 //         // std::uint64_t converted_minimiser = static_cast<std::uint64_t>(minimiser);
 //         // seqan3::debug_stream << "Minimiser: " << minimiser << " " << converted_minimiser << '\n';
@@ -524,3 +439,10 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
 //     return minimiser_to_reads;     
 // }
 
+// long double MinimizerGenerator::prob(int l, int n, int k, int dt) {
+//     int w = round(static_cast<double>(l) / n);
+//     // long double p1 = ((w - (round(static_cast<double>(dt) / n) + 1) * k) + 1) / (w - k + 1);
+//     long double p1 = (static_cast<long double>(dt) * k) / (n * (w - k + 1));
+//     long double p2 = 1 - std::pow(p1, n);
+//     return p2;
+// }

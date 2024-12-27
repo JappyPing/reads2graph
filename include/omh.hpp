@@ -20,9 +20,9 @@ Guillaume Marçais, Dan DeBlasio, Prashant Pandey, Carl Kingsford, Locality-sens
 
 struct mer_info {
   size_t pos;
-  uint64_t hash;
+  std::uint64_t hash;
   unsigned occ;
-  mer_info(size_t p, unsigned o, uint64_t h)
+  mer_info(size_t p, unsigned o, std::uint64_t h)
     : pos(p)
     , hash(h)
     , occ(o)
@@ -44,7 +44,7 @@ void omh_pos(const std::string& seq, unsigned k, unsigned l, EngineT& prg, BT bl
     // Create list of k-mers with occurrence numbers
     for (size_t i = 0; i < seq.size() - k + 1; ++i) {
         auto occ = occurrences[seq.substr(i, k)]++;
-        mers.emplace_back(i, occ, (uint64_t)0);
+        mers.emplace_back(i, occ, (std::uint64_t)0);
     }
 
     // Sort k-mers by position
@@ -67,7 +67,7 @@ template<typename EngineT = std::mt19937_64>
 class omh_sketcher {
 protected:
     unsigned m_k, m_l;         // Parameters for sketching
-    uint64_t m_seed;           // Seed for PRG
+    std::uint64_t m_seed;           // Seed for PRG
     EngineT m_prg;             // Random number generator (PRG)
 
     // Compute sketch positions for the given sequence and store them in 'ptr'
@@ -80,7 +80,7 @@ protected:
 
 public:
     // Constructor: Initialize k, l, values and the PRG with a fixed seed
-    omh_sketcher(unsigned k, unsigned l, uint64_t seed)
+    omh_sketcher(unsigned k, unsigned l, std::uint64_t seed)
         : m_k(k), m_l(l), m_seed(seed), m_prg(seed) // Pass seed to PRG
     { }
 
@@ -126,7 +126,7 @@ public:
                 // Compute the sketch for the current read
                 sketch sk = sketcher.compute(read_str);
 
-                // Hash the sketch to generate a uint64_t key using the current seed
+                // Hash the sketch to generate a std::uint64_t key using the current seed
                 hash.reset(seed);
                 hash.update(sk.data.data(), sk.data.size());
                 std::uint64_t sketch_hash = hash.digest();

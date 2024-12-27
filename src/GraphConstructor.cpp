@@ -703,9 +703,7 @@ void GraphConstructor::construt_graph_via_miniception(std::vector<std::vector<se
 
     auto config = seqan3::align_cfg::method_global{} | seqan3::align_cfg::edit_scheme | seqan3::align_cfg::min_score{-1 * args.max_edit_dis} | seqan3::align_cfg::output_score{};
     
-    std::mt19937_64 prg(args.seed);
-    Miniception miniception;
-    auto cur_hash2reads = miniception.miniception2read_main(unique_reads, args.miniception_k, args.miniception_w, prg, args.num_process);
+    auto cur_hash2reads = Miniception(args).miniception2read_main(unique_reads, args.miniception_k, args.miniception_w,  args.num_process);
 
     auto cur_bin_n = cur_hash2reads.size();
     Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of buckets: %1%.") % cur_bin_n));

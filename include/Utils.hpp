@@ -28,6 +28,7 @@ struct cmd_arguments
     std::filesystem::path output_dir{std::filesystem::current_path()};
     unsigned read_length{};
     uint8_t k_size{4};
+    uint8_t w_size{30};
     uint8_t substr_number{3};
     uint8_t max_edit_dis{2};
     uint8_t min_edit_dis{1};
@@ -48,10 +49,8 @@ struct cmd_arguments
     unsigned omh_l{2};
     unsigned omh_m{3};
     unsigned omh_k{18};
-    // unsigned minimizer_m{3};
-    // unsigned minimizer_k{3};
-    unsigned miniception_w{};
-    unsigned miniception_k{};    
+    unsigned miniception_w{40};
+    unsigned miniception_k{18};    
 };
 
 // Utility function to validate the bucketing mode

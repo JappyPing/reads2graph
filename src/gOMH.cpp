@@ -142,7 +142,7 @@ std::string gOMH::getGappedSubstring(const std::string& str, size_t startPos, si
     return gappedSubstring;
 }
 
-uint64_t gOMH::gomh_pos(const std::vector<seqan3::dna5>& read, unsigned k, std::uint64_t seed) {
+std::uint64_t gOMH::gomh_pos(const std::vector<seqan3::dna5>& read, unsigned k, std::uint64_t seed) {
     if(read.size() < 2*k - 1) return {};
     std::vector<std::uint64_t> hash_vec;
     std::unordered_map<std::string, unsigned> occurrences;

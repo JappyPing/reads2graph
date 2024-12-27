@@ -20,6 +20,7 @@ set(SOURCES
     MinimizerGenerator.cpp
     GraphConstructor.cpp
     gOMH.cpp
+    miniception.cpp
 )
 #include_directories
 include_directories(include)

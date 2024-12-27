@@ -2,6 +2,8 @@
 #include "LoggingLevels.hpp"
 #include "miniception.hpp"
 
+#include <xxhash.hpp>
+
 Miniception::Miniception(cmd_arguments args) : args(args) {}
 
 std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Miniception::miniception2read_main(
@@ -26,7 +28,8 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minice
     return miniception2reads;
 }
 
-std::vector<std::uint64_t> Miniception::miniception_main(std::vector<seqan3::dna5> read, unsigned kmer_size, unsigned window_size, uint64_t seed){
+// std::vector<std::uint64_t> Miniception::miniception_main(std::vector<seqan3::dna5> read, unsigned kmer_size, unsigned window_size, std::uint64_t seed){
+std::vector<std::uint64_t> Miniception::miniception_main(std::vector<seqan3::dna5> read, unsigned kmer_size, unsigned window_size, std::uint64_t seed){
     auto seql = read | seqan3::views::to_char;
     std::vector<char> read_vec(seql.begin(), seql.end());
 

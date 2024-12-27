@@ -11,7 +11,6 @@ Hongyu Zheng, Carl Kingsford, Guillaume Marçais, Improved design and analysis o
 #include <unordered_map>
 #include <seqan3/alphabet/all.hpp>
 #include <xxhash.h>
-#include <seeded_prg.hpp>
 #include <set>
 #include <deque>
 #include <utility>
@@ -43,10 +42,13 @@ class MonotonicQueue {
 
 class Miniception {
 public:
+    Miniception(cmd_arguments args);
     std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> miniception2read_main(
         std::vector<std::vector<seqan3::dna5>> unique_reads, unsigned kmer_size, unsigned window_size, unsigned num_process);
 
-    std::vector<std::uint64_t> miniception_main(std::vector<seqan3::dna5> read, unsigned kmer_size, unsigned window_size, uint64_t seed);
+    std::vector<std::uint64_t> miniception_main(std::vector<seqan3::dna5> read, unsigned kmer_size, unsigned window_size, std::uint64_t seed);
+private:
+    cmd_arguments args;    
 };
 
 #endif // __MINICEPTION_H__

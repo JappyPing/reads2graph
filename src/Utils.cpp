@@ -172,15 +172,14 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                                     .long_id = "k_size",
                                     .description = "The size for minimiser."});
 
-    parser.add_option(args.substr_number,
+    parser.add_option(args.w_size,
                       sharg::config{.short_id = 'w',
-                                    .long_id = "substr_number",
-                                    .description = "The window number for minimiser."});
+                                    .long_id = "w_size",
+                                    .description = "The window size for minimiser."});
 
-    // parser.add_option(args.window_size,
-    //                   sharg::config{.short_id = 'w',
-    //                                 .long_id = "window_size",
-    //                                 .description = "The window size for minimiser."});
+    parser.add_option(args.substr_number,
+                      sharg::config{.long_id = "substr_number",
+                                    .description = "The window number for minimiser."});
 
     parser.add_option(args.max_edit_dis,
                       sharg::config{.short_id = 'x',
