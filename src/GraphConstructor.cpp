@@ -86,7 +86,13 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
     std::vector<std::vector<std::vector<seqan3::dna5>>> large_group;
     std::atomic<int> singleton_bucket_num{0};
     auto cur_bin_n = key2reads.size();
-    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of buckets by Multiple-Minimizer-One-Read (MMOR): %1%.") % cur_bin_n));
+    std::string bucket_method;
+    if (args.bucketing_mode == "miniception_gomh") {
+        bucket_method = "miniception";
+    } else if (args.bucketing_mode == "miniception_gomh") {
+        bucket_method = "random minimizer";
+    }
+    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of buckets by %1%: %2%.") % bucket_method % cur_bin_n));
     // #pragma omp parallel for
     #pragma omp parallel for num_threads(args.num_process) schedule(static, 1)
     for (auto i = 0u; i < cur_bin_n; ++i) {
@@ -112,7 +118,7 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
             }
         }
     }
-    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of buckets containing one unique read after bucketing by MMOR: %1%.") % singleton_bucket_num));
+    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of buckets containing one unique read after bucketing by %1%: %2%.") % bucket_method % singleton_bucket_num));
     ///////////////////////////
     // test the following function
     // auto unique_reads = mergeUniqueReads(medium_group);
@@ -122,7 +128,7 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
     auto config = seqan3::align_cfg::method_global{} | seqan3::align_cfg::edit_scheme | seqan3::align_cfg::min_score{-1 * args.max_edit_dis} | seqan3::align_cfg::output_score{};
     // large group
     auto bucket_num = medium_group.size();
-    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of buckets with size falling in [2, %1%) by MMOR: %2%.") % args.bin_size_max % bucket_num));
+    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of buckets with size falling in [2, %1%) by %2%: %3%.") % args.bin_size_max % bucket_method % bucket_num));
     if (bucket_num > 0){
         StatisticsRecorder recorder(bucket_num);
 
@@ -174,16 +180,20 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
         auto now = std::chrono::system_clock::now();
         std::time_t now_time = std::chrono::system_clock::to_time_t(now);
         std::tm now_tm = *std::localtime(&now_time);
-        oss << std::put_time(&now_tm, "mmor_bucket_stats_%Y%m%d_%H%M%S.txt");
+        if (args.bucketing_mode == "miniception_gomh") {
+            oss << std::put_time(&now_tm, "miniception_bucket_stats_%Y%m%d_%H%M%S.txt");
+        } else if (args.bucketing_mode == "miniception_gomh") {
+            oss << std::put_time(&now_tm, "minimizer_bucket_stats_%Y%m%d_%H%M%S.txt");
+        }        
         std::filesystem::path output_file = args.output_dir / oss.str();
         recorder.write_statistics_to_file(output_file);    
         Utils::getInstance().logger(LOG_LEVEL_INFO, "Pairwise comparison for the small- or medium-size-based buckets done!");       
     } else {
         // Utils::getInstance().logger(LOG_LEVEL_INFO,  "No bucket has a size larger than 100!");
-        Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("No bucket with size falling in [2, %1%) by MMOR!") % args.bin_size_max));
+        Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("No bucket with size falling in [2, %1%) by %2%!") % args.bin_size_max % bucket_method));
     }
     edge_summary();
-    Utils::getInstance().logger(LOG_LEVEL_INFO, "===== Graph construction based on MMOR bucketing done! =====");
+    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("===== Graph construction based on %1% bucketing done! =====") % bucket_method));
     // extra large group
     if (large_group.size() > 0){
         Utils::getInstance().logger(LOG_LEVEL_INFO, "Bucketing large-size-based bins using gOMH...");
@@ -376,7 +386,7 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
 }
 
 void GraphConstructor::update_graph_omh(std::vector<std::vector<seqan3::dna5>> unique_reads){
-    Utils::getInstance().logger(LOG_LEVEL_INFO, "Additional bucketing of reads in medium-sized buckets produced by MMOR using gOMH...!");
+    Utils::getInstance().logger(LOG_LEVEL_INFO, "Additional bucketing of reads in medium-sized buckets produced by minimizer or miniception using gOMH...!");
     std::mt19937_64 generator(args.seed + 1);
     // Specify the range of values for your seeds
     std::uniform_int_distribution<std::uint64_t> distribution(std::numeric_limits<std::uint64_t>::min(), std::numeric_limits<std::uint64_t>::max());

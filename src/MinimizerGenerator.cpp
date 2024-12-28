@@ -53,12 +53,13 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
 
                     auto substr_size = static_cast<uint8_t>(sub_str.size());
                     uint8_t better_w = substr_size - num_substr; 
-                    auto better_k = k_estimate(num_substr, substr_size);
-
+                    
                     std::vector<std::uint64_t> minimisers;
                     if (args.bucketing_mode == "miniception_gomh") {
+                        auto better_k = better_w - num_substr;
                         minimisers = Miniception(args).miniception_main(sub_str, better_k, better_w, args.seed);                 
                     } else {
+                        auto better_k = k_estimate(num_substr, substr_size);
                         auto minimiser_range = sub_str | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{better_k}}) | seqan3::views::minimiser(better_w - better_k + 1);              
                         std::ranges::copy(minimiser_range, std::back_inserter(minimisers));        
                     }
@@ -122,7 +123,7 @@ uint8_t MinimizerGenerator::wSize(uint8_t k) {
     if (args.bucketing_mode == "miniception_gomh") {
         w = k + 2;
     } else if (args.bucketing_mode == "minimizer_gomh") {
-        w = static_cast<uint8_t>(std::ceil(std::pow(4, k / 4)));
+        w = static_cast<uint8_t>(std::ceil(std::pow(4, k / 3)));
     }
     return w;
 }
