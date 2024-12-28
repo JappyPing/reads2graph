@@ -76,7 +76,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                 auto better_w = wSize(better_k);
                 if (args.bucketing_mode == "miniception_gomh") {
                     minimisers = Miniception(args).miniception_main(read, better_k, better_w, args.seed);                 
-                } else {
+                } else if (args.bucketing_mode == "minimizer_gomh") {
                     auto minimiser_range = read | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{better_k}}) | seqan3::views::minimiser(better_w - better_k + 1);    
                     std::ranges::copy(minimiser_range, std::back_inserter(minimisers));        
                 } 
@@ -120,9 +120,9 @@ int MinimizerGenerator::kSize(int L, double p) {
 uint8_t MinimizerGenerator::wSize(uint8_t k) {
     uint8_t w;
     if (args.bucketing_mode == "miniception_gomh") {
-        w = k + 1;
-    } else {
-        w = static_cast<uint8_t>(std::ceil(std::pow(10, k / 4)));
+        w = k + 2;
+    } else if (args.bucketing_mode == "minimizer_gomh") {
+        w = static_cast<uint8_t>(std::ceil(std::pow(4, k / 4)));
     }
     return w;
 }
@@ -130,9 +130,17 @@ uint8_t MinimizerGenerator::wSize(uint8_t k) {
 uint8_t MinimizerGenerator::k_estimate(uint8_t num_substr, uint8_t substr_size) {
     uint8_t k;
     if (num_substr == 1) {
+        // p = (L-k+1 - d*k)/(L-k+1)
         k = ceil((1-args.probability)*(1+substr_size)/(1+args.max_edit_dis-args.probability));
     } else {
         k = static_cast<uint8_t>(kSize(substr_size, args.bad_kmer_ratio));
+    }
+    if (k >= 28) {
+        Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 27 as the maximum size of unggaped shape is stricted by 28 in Seqan3.") % k)); 
+        k = 27;       
+    } else if (k < 4){
+        Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 4.") % k)); 
+        k = 4;       
     }
     return k;
 }

@@ -39,7 +39,7 @@ struct cmd_arguments
     bool gomh_flag{false};
     std::uint64_t seed{2024};
     double bad_kmer_ratio{0.3};
-    double probability{0.86};
+    double probability{0.9};
     unsigned visit_depth{15};
     bool save_graph{false};
     std::string bucketing_mode{"minimizer_gomh"};
