@@ -43,23 +43,12 @@ using namespace std;
 using namespace seqan3::literals;
 
 int main(int argc, char** argv) {
-    // check log whether log file exist or not, if exist, remove it
-    // char cwd[1024];
-    // if (getcwd(cwd, sizeof(cwd)) != NULL) {
-    //     std::string filePath = std::string(cwd) + "/reads2graph" + oss.str();
-    //     if (std::filesystem::exists(filePath)) {
-    //         std::filesystem::remove(filePath);
-    //     }
-    // } else {
-    //     std::cerr << "Error: unable to get current working directory." << std::endl;
-    // }
-    // say hello
-    // 
-	// Utils::getInstance().logger(LOG_LEVEL_INFO,  "Welcome to use reads2graph!");
     Utils::getInstance().logger(LOG_LEVEL_INFO,  "Welcome to use reads2graph!");
-
     std::string concatenatedArgs;
     bool num_process_input = false;
+    bool k_input = false;
+    bool w_input = false;    
+    bool n_input = false;
     for (int i = 0; i < argc; ++i) {
         concatenatedArgs += argv[i];
         if (i < argc - 1) {
@@ -69,7 +58,18 @@ int main(int argc, char** argv) {
             num_process_input = true;
         }
 
+        if (strcmp(argv[i], "--k_size") == 0 || strcmp(argv[i], "-k") == 0) {
+            k_input = true;
+        }
+
+        if (strcmp(argv[i], "--w_size") == 0 || strcmp(argv[i], "-w") == 0) {
+            w_input = true;
+        }
+        if (strcmp(argv[i], "--substr_number") == 0) {
+            n_input = true;
+        }
     }
+
     sharg::parser reads2graphParser{"reads2graph", argc, argv, sharg::update_notifications::off}; // initialise parser
     cmd_arguments args{};
 
@@ -84,10 +84,18 @@ int main(int argc, char** argv) {
     }
     catch (sharg::parser_error const & ext) // catch user errors
     {
-        std::cerr << "[Invalid Options] " << ext.what() << "\n"; // customise your error message
+        std::cerr << "[Invalid Options] " << ext.what() << std::endl; // customise your error message
         return -1;
     }
-    // Utils::getInstance().logger(LOG_LEVEL_INFO,  std::format("Parameters: -o {} -k {} -w {} --gomh_kmer_n {} --gomh_times {}", args.output_dir.string(), args.k_size, args.window_size, args.gomh_kmer_n, args.gomh_times));
+
+    // if user set default_params as false, user must set k_size, w_size, and substr_number from CLI
+    if (!args.default_params) {
+        if (!(k_input & w_input & n_input)){
+            std::cerr << "ERROR: You must set k_size, w_size, and substr_number from CLI as you choose to not use the default parameters." << std::endl; 
+            return EXIT_FAILURE;
+        }
+    }
+
     omp_set_dynamic(0);
     setenv("OMP_PROC_BIND", "false", 1);
     omp_set_num_threads(args.num_process);
@@ -126,10 +134,12 @@ int main(int argc, char** argv) {
     auto total_uniq_num = unique_reads.size();
 
     Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of unique reads: %1%, minimum read length: %2%.") % total_uniq_num % min_read_length));
-
+    if (!args.default_params && args.segmentation && n_input && args.read_length >= 6 && args.read_length < 16) {
+        Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Your setting on 'segmentation' has been changed to false because your minimum read legth is %1%, which is too small.") % min_read_length)); 
+    }
     // Validate the input mode
     if (!is_valid_bucketing_mode(args.bucketing_mode)) {
-        std::cerr << "Error: Invalid bucketing mode selected! Choose from: minimizer_gomh, miniception, omh, brute_force. Default minimizer_gomh. miniception, omh and brute_force are implemented to assess the performance of reads2graph." << std::endl;
+        std::cerr << "ERROR: Invalid bucketing mode selected! Choose from: minimizer_gomh, miniception_gomh, miniception, omh, brute_force. Default minimizer_gomh. miniception, omh and brute_force are implemented to assess the performance of reads2graph." << std::endl;
         return EXIT_FAILURE;
     }
 
@@ -148,30 +158,5 @@ int main(int argc, char** argv) {
     if (args.save_graph){
         graph_constructor.save_graph();
     }
-    ////////////////////////////////////////////////////////////////////////////////////////////
-    // Utils::getInstance().logger(LOG_LEVEL_INFO,  "edit-distance-based graph construction done!");
-    //Print the stored read pairs and edit distances
-    // for (const auto &[read_pair, edit_distance] : edge_lst)
-    // {
-    //     seqan3::debug_stream << "Read Pair: " << read_pair.first << " - " << read_pair.second
-    //                         << ", Edit Distance: " << edit_distance << '\n';
-    // }   
-
-    // Parse command line arguments
-    // std::map<std::string, std::string> paras;
-    // paras = Utils::parseArgvs(argc, argv);
-	
-    // // ouput directory
-    // std::string outputFolder;
-    // if (paras.count("o") > 0) {
-    //     outputFolder = paras["o"];
-    // } else if ((paras.count("output_dir") > 0)) {
-    //     outputFolder = paras["output_dir"];
-    // } else {
-    //     outputFolder = std::string(cwd) + "/result/";
-    //     if (!std::filesystem::exists(outputFolder)) {
-    //         std::filesystem::create_directory(outputFolder);
-    //     }        
-    // }
     return 0;
 }

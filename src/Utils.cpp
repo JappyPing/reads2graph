@@ -167,6 +167,10 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                                     .long_id = "read_length",
                                     .description = "No need to input this parameter, reads2graph will calculate the minimum read length."});
 
+    parser.add_option(args.default_params,
+                      sharg::config{.long_id = "default_params",
+                                    .description = "Default true. If false, user must set k and w from CLI."});
+
     parser.add_option(args.k_size,
                       sharg::config{.short_id = 'k',
                                     .long_id = "k_size",

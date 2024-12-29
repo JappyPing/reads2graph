@@ -27,11 +27,34 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
     #pragma omp parallel for num_threads(args.num_process) schedule(static)
     for (auto const & read : unique_reads){
         std::vector<std::uint64_t> minimisers;
+        uint8_t k_size;
+        uint8_t w_size;
+        uint8_t num_substr;
+        if (args.default_params) {
+            if (args.segmentation) {
+                if (args.read_length >= 16 && args.read_length < 50){
+                    num_substr = args.substr_number - 1;
+                } else if (args.read_length >= 50 && args.read_length <= 300) {
+                    num_substr = args.substr_number;
+                }
+            } else {
+                num_substr = 1;
+                k_size = k_estimate(num_substr, args.read_length);
+                w_size = wSize(k_size, args.read_length);                
+            }          
+        } else { 
+            k_size = args.k_size;
+            w_size = args.w_size;
+            num_substr = args.substr_number;
+            if (!args.segmentation){
+                Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Your setting on 'substr_number'=%1% has no meaning because you have already set 'segmentation' as false.") % num_substr)); 
+            }
+        }     
         if (args.read_length >= 6 && args.read_length < 16){
             if (args.bucketing_mode == "miniception_gomh") {
-                minimisers = Miniception(args).miniception_main(read, args.k_size, args.w_size, args.seed);                 
+                minimisers = Miniception(args).miniception_main(read, k_size, w_size, args.seed);                 
             } else {
-                auto minimiser_range = read | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{args.k_size}}) | seqan3::views::minimiser(args.w_size - args.k_size + 1);    
+                auto minimiser_range = read | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{k_size}}) | seqan3::views::minimiser(w_size - k_size + 1);    
                 std::ranges::copy(minimiser_range, std::back_inserter(minimisers));        
             }
             for (auto const &minimiser : minimisers) {
@@ -42,29 +65,30 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
             }                 
         } else {           
             if (args.segmentation){
-                uint8_t num_substr;
-                if (args.read_length >= 16 && args.read_length < 50){
-                    num_substr = args.substr_number - 1;
-                } else if (args.read_length >= 50 && args.read_length <= 300) {
-                    num_substr = args.substr_number;
-                }
                 auto sub_strs = divide_into_substrings(read, num_substr);
                 for (auto const & sub_str : sub_strs){
-
                     auto substr_size = static_cast<uint8_t>(sub_str.size());
-                    uint8_t better_w = substr_size - num_substr; 
-                    
+                    if (args.default_params) {
+                        k_size = k_estimate(num_substr, substr_size);
+                        if (args.bucketing_mode == "miniception_gomh") {
+                            w_size = k_size + num_substr;
+                            // w_size = substr_size - num_substr; // this does not work for miniception
+                        } else if (args.bucketing_mode == "minimizer_gomh") {
+                            w_size = substr_size - num_substr;
+                            // w_size = wSize(k_size, substr_size); 
+                        }
+                    } else {
+                        k_size = args.k_size;
+                        w_size = args.w_size;
+                    }
+                    // std::cout << "subread size: " << static_cast<int>(substr_size) << ", k: " << static_cast<int>(k_size) << endl;
                     std::vector<std::uint64_t> minimisers;
                     if (args.bucketing_mode == "miniception_gomh") {
-                        auto better_k = better_w - num_substr;
-                        minimisers = Miniception(args).miniception_main(sub_str, better_k, better_w, args.seed);                 
-                    } else {
-                        auto better_k = k_estimate(num_substr, substr_size);
-                        auto minimiser_range = sub_str | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{better_k}}) | seqan3::views::minimiser(better_w - better_k + 1);              
+                        minimisers = Miniception(args).miniception_main(sub_str, k_size, w_size, args.seed);                 
+                    } else if (args.bucketing_mode == "minimizer_gomh") {
+                        auto minimiser_range = sub_str | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{k_size}}) | seqan3::views::minimiser(w_size - k_size + 1);              
                         std::ranges::copy(minimiser_range, std::back_inserter(minimisers));        
                     }
-                    //debug
-                    // seqan3::debug_stream << sub_str << "--" << minimisers << endl;
                     for (auto const &minimiser : minimisers) {
                         #pragma omp critical
                         {
@@ -73,12 +97,10 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                     }                      
                 }
             } else {
-                auto better_k = k_estimate(1, args.read_length);
-                auto better_w = wSize(better_k);
                 if (args.bucketing_mode == "miniception_gomh") {
-                    minimisers = Miniception(args).miniception_main(read, better_k, better_w, args.seed);                 
+                    minimisers = Miniception(args).miniception_main(read, k_size, w_size, args.seed);                 
                 } else if (args.bucketing_mode == "minimizer_gomh") {
-                    auto minimiser_range = read | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{better_k}}) | seqan3::views::minimiser(better_w - better_k + 1);    
+                    auto minimiser_range = read | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{k_size}}) | seqan3::views::minimiser(w_size - k_size + 1);    
                     std::ranges::copy(minimiser_range, std::back_inserter(minimisers));        
                 } 
                 for (auto const &minimiser : minimisers) {
@@ -114,27 +136,30 @@ std::vector<std::vector<seqan3::dna5>> MinimizerGenerator::divide_into_substring
     return substrings;
 }
 
-int MinimizerGenerator::kSize(int L, double p) {
-    return ceil((p*(1+L))/(1+p));
-}
+// int MinimizerGenerator::kSize(int L, double p) {
+//     return ceil((p*(1+L))/(1+p));
+// }
 
-uint8_t MinimizerGenerator::wSize(uint8_t k) {
+uint8_t MinimizerGenerator::wSize(uint8_t k, uint8_t read_len) {
     uint8_t w;
     if (args.bucketing_mode == "miniception_gomh") {
-        w = k + 2;
+        w = k + 1;
     } else if (args.bucketing_mode == "minimizer_gomh") {
-        w = static_cast<uint8_t>(std::ceil(std::pow(4, k / 3)));
+        w = static_cast<uint8_t>(std::ceil(std::pow(2, k / 4)));
+        if ((w > read_len) || (w < k)){
+            w = k + 1;
+        }
     }
     return w;
 }
 
-uint8_t MinimizerGenerator::k_estimate(uint8_t num_substr, uint8_t substr_size) {
+uint8_t MinimizerGenerator::k_estimate(uint8_t num_substr, uint8_t read_size) {
     uint8_t k;
     if (num_substr == 1) {
         // p = (L-k+1 - d*k)/(L-k+1)
-        k = ceil((1-args.probability)*(1+substr_size)/(1+args.max_edit_dis-args.probability));
+        k = ceil((1-args.probability)*(1+read_size)/(1+args.max_edit_dis-args.probability));
     } else {
-        k = static_cast<uint8_t>(kSize(substr_size, args.bad_kmer_ratio));
+        k = static_cast<uint8_t>(ceil((args.bad_kmer_ratio * (1 + read_size))/(1 + args.bad_kmer_ratio)));
     }
     if (k >= 28) {
         Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 27 as the maximum size of unggaped shape is stricted by 28 in Seqan3.") % k)); 
