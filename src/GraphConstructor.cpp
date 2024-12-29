@@ -182,7 +182,7 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
         std::tm now_tm = *std::localtime(&now_time);
         if (args.bucketing_mode == "miniception_gomh") {
             oss << std::put_time(&now_tm, "miniception_bucket_stats_%Y%m%d_%H%M%S.txt");
-        } else if (args.bucketing_mode == "miniception_gomh") {
+        } else if (args.bucketing_mode == "minimizer_gomh") {
             oss << std::put_time(&now_tm, "minimizer_bucket_stats_%Y%m%d_%H%M%S.txt");
         }        
         std::filesystem::path output_file = args.output_dir / oss.str();
