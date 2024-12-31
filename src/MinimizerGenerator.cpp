@@ -162,10 +162,10 @@ uint8_t MinimizerGenerator::k_estimate(uint8_t num_substr, uint8_t read_size) {
         k = static_cast<uint8_t>(ceil((args.bad_kmer_ratio * (1 + read_size))/(1 + args.bad_kmer_ratio)));
     }
     if (k >= 28) {
-        Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 27 as the maximum size of unggaped shape is stricted by 28 in Seqan3.") % k)); 
+        // Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 27 as the maximum size of unggaped shape is stricted by 28 in Seqan3.") % k)); 
         k = 27;       
     } else if (k < 4){
-        Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 4.") % k)); 
+        // Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 4.") % k)); 
         k = 4;       
     }
     return k;

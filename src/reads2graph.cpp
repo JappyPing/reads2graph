@@ -137,6 +137,14 @@ int main(int argc, char** argv) {
     if (!args.default_params && args.segmentation && n_input && args.read_length >= 6 && args.read_length < 16) {
         Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Your setting on 'segmentation' has been changed to false because your minimum read legth is %1%, which is too small.") % min_read_length)); 
     }
+
+    if (args.read_length >= 6 && args.read_length < 16){
+        if (args.segmentation) {
+            args.segmentation = false;
+            Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Your 'segmentation' setting has been forcibly changed to 'false' because the minimum read length is less than %1%") % args.read_length));             
+        }
+    }
+
     // Validate the input mode
     if (!is_valid_bucketing_mode(args.bucketing_mode)) {
         std::cerr << "ERROR: Invalid bucketing mode selected! Choose from: minimizer_gomh, miniception_gomh, miniception, omh, brute_force. Default minimizer_gomh. miniception, omh and brute_force are implemented to assess the performance of reads2graph." << std::endl;
