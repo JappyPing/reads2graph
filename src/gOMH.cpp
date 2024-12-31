@@ -24,11 +24,11 @@ unsigned gOMH::gomh_k(unsigned L, double p, uint8_t d) {
         k = args.gomh_k;
     } else if (args.read_length >= 50 && args.read_length <= 300){
         k = ceil(((1-p)*(2+L))/(d+2-2*p));
-        if (k < 4){
-            Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 4.") % k));
-            k = 4;
+        if (k < 3){
+            // Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 4.") % k));
+            k = 3;
         } else if (k > 27) {
-            Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 27.") % k));
+            // Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 27.") % k));
             k = 27;               
         }   
     }

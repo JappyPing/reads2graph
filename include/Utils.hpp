@@ -35,7 +35,7 @@ struct cmd_arguments
     uint8_t min_edit_dis{1};
     int num_process{1};
     unsigned int bin_size_max{10000};
-    unsigned gomh_k{4};
+    unsigned gomh_k{3};
     unsigned gomh_times{3};
     bool gomh_flag{false};
     std::uint64_t seed{2024};

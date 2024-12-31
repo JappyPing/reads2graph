@@ -164,9 +164,9 @@ uint8_t MinimizerGenerator::k_estimate(uint8_t num_substr, uint8_t read_size) {
     if (k >= 28) {
         // Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 27 as the maximum size of unggaped shape is stricted by 28 in Seqan3.") % k)); 
         k = 27;       
-    } else if (k < 4){
+    } else if (k < 3){
         // Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 4.") % k)); 
-        k = 4;       
+        k = 3;       
     }
     return k;
 }
