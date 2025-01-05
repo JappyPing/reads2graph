@@ -31,16 +31,22 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
         uint8_t w_size;
         uint8_t num_substr;
         if (args.default_params) {
-            if (args.segmentation) {
-                if (args.read_length >= 16 && args.read_length < 50){
-                    num_substr = args.substr_number - 1;
-                } else if (args.read_length >= 50 && args.read_length <= 300) {
-                    num_substr = args.substr_number;
-                }
-            } else {
-                num_substr = 1;
-                k_size = k_estimate(num_substr, args.read_length);
-                w_size = wSize(k_size, args.read_length);                
+            if (args.read_length >= 16 && args.read_length < 50){
+                num_substr = args.substr_number - 1;
+            } else if (args.read_length >= 50 && args.read_length <= 300) {
+                num_substr = std::max(args.substr_number, args.max_edit_dis);
+                uint8_t part_size = static_cast<uint8_t>(std::ceil(args.read_length / num_substr));
+                while (part_size <= 24) {
+                    num_substr--; 
+                }                
+            }     
+            if (!args.segmentation) {
+                // Use the num_substr to get the window size when no segmentaion was set, and use window size to estimate k_size.
+                w_size = static_cast<uint8_t>(std::ceil(args.read_length / num_substr));
+                k_size = k_estimate(num_substr, w_size);
+                // num_substr = 1;
+                // k_size = k_estimate(num_substr, args.read_length);
+                // w_size = wSize(k_size, args.read_length);                
             }          
         } else { 
             k_size = args.k_size;
@@ -51,6 +57,8 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
             }
         }     
         if (args.read_length >= 6 && args.read_length < 16){
+            w_size = static_cast<uint8_t>(std::ceil(args.read_length / num_substr));
+            k_size = k_estimate(num_substr, w_size);            
             if (args.bucketing_mode == "miniception_gomh") {
                 minimisers = Miniception(args).miniception_main(read, k_size, w_size, args.seed);                 
             } else {
@@ -71,9 +79,10 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                     if (args.default_params) {
                         k_size = k_estimate(num_substr, substr_size);
                         if (args.bucketing_mode == "miniception_gomh") {
-                            w_size = k_size + num_substr;
+                            w_size = k_size + 1;
                             // w_size = substr_size - num_substr; // this does not work for miniception
                         } else if (args.bucketing_mode == "minimizer_gomh") {
+                            // w_size = k_size + num_substr;
                             w_size = substr_size - num_substr;
                             // w_size = wSize(k_size, substr_size); 
                         }
@@ -164,9 +173,9 @@ uint8_t MinimizerGenerator::k_estimate(uint8_t num_substr, uint8_t read_size) {
     if (k >= 28) {
         // Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 27 as the maximum size of unggaped shape is stricted by 28 in Seqan3.") % k)); 
         k = 27;       
-    } else if (k < 3){
+    } else if (k < 4){
         // Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 4.") % k)); 
-        k = 3;       
+        k = 4;       
     }
     return k;
 }
