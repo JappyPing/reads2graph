@@ -33,12 +33,15 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
         if (args.default_params) {
             if (args.read_length >= 16 && args.read_length < 50){
                 num_substr = args.substr_number - 1;
-            } else if (args.read_length >= 50 && args.read_length <= 300) {
-                num_substr = std::max(args.substr_number, args.max_edit_dis);
-                uint8_t part_size = static_cast<uint8_t>(std::ceil(args.read_length / num_substr));
-                while (part_size <= 24) {
-                    num_substr--; 
-                }                
+            } else if (args.read_length >= 50 && args.read_length < 200) {
+                num_substr = args.substr_number;
+                // num_substr = std::max(args.substr_number, args.max_edit_dis);
+                // uint8_t part_size = static_cast<uint8_t>(std::ceil(args.read_length / num_substr));
+                // while (part_size <= 24) {
+                //     num_substr--; 
+                // }  
+            } else if (args.read_length >= 200 && args.read_length <= 300) {
+                num_substr = args.substr_number + 1;
             }     
             if (!args.segmentation) {
                 // Use the num_substr to get the window size when no segmentaion was set, and use window size to estimate k_size.
@@ -77,13 +80,16 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                 for (auto const & sub_str : sub_strs){
                     auto substr_size = static_cast<uint8_t>(sub_str.size());
                     if (args.default_params) {
+                      
                         k_size = k_estimate(num_substr, substr_size);
                         if (args.bucketing_mode == "miniception_gomh") {
                             w_size = k_size + 1;
                             // w_size = substr_size - num_substr; // this does not work for miniception
                         } else if (args.bucketing_mode == "minimizer_gomh") {
+                            uint8_t w_est = std::ceil((args.max_edit_dis / static_cast<double>(num_substr)) * k_size);
+                            w_size = std::min(w_est, static_cast<uint8_t>(substr_size - num_substr));                              
                             // w_size = k_size + num_substr;
-                            w_size = substr_size - num_substr;
+                            // w_size = substr_size - num_substr;
                             // w_size = wSize(k_size, substr_size); 
                         }
                     } else {
@@ -163,6 +169,15 @@ uint8_t MinimizerGenerator::wSize(uint8_t k, uint8_t read_len) {
 }
 
 uint8_t MinimizerGenerator::k_estimate(uint8_t num_substr, uint8_t read_size) {
+    double L_seg = static_cast<double>(read_size) / num_substr;
+    double term = std::pow(1 - args.probability, 1.0 / num_substr);
+    double k_max = std::min((term * (L_seg + 1)) / (args.max_edit_dis / static_cast<double>(num_substr) + term), L_seg / args.max_edit_dis);
+    uint8_t k = std::min(std::max(4, static_cast<int>(std::floor(k_max))), 28);
+    return k;
+}
+
+/*
+uint8_t MinimizerGenerator::k_estimate(uint8_t num_substr, uint8_t read_size) {
     uint8_t k;
     if (num_substr == 1) {
         // p = (L-k+1 - d*k)/(L-k+1)
@@ -179,6 +194,7 @@ uint8_t MinimizerGenerator::k_estimate(uint8_t num_substr, uint8_t read_size) {
     }
     return k;
 }
+*/
 
 double MinimizerGenerator::proba(unsigned L, unsigned k) {
     double p;
