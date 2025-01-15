@@ -89,7 +89,7 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
     std::string bucket_method;
     if (args.bucketing_mode == "miniception_gomh") {
         bucket_method = "miniception";
-    } else if (args.bucketing_mode == "miniception_gomh") {
+    } else if (args.bucketing_mode == "minimizer_gomh") {
         bucket_method = "minimizer";
     }
     Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of buckets by %1%: %2%.") % bucket_method % cur_bin_n));
@@ -212,7 +212,7 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
             //     // times = args.omh_times - args.max_edit_dis + 1;
             //     times = args.gomh_times;
             // } else {
-            //     times = 1;
+            //     times = 2;
             // }
 
             for (unsigned int cur_d = d_t; cur_d >= 1; cur_d--) {

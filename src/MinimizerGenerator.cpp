@@ -71,10 +71,9 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                             w_size = k_size + 1;
                             // w_size = substr_size - num_substr; // this does not work for miniception
                         } else if (args.bucketing_mode == "minimizer_gomh") {
-                            // uint8_t w_est = std::ceil((args.max_edit_dis / static_cast<double>(num_substr)) * k_size);
-                            // w_size = std::min(w_est, static_cast<uint8_t>(substr_size - num_substr));                              
-                            // w_size = k_size + num_substr;
-                            w_size = substr_size - num_substr;
+                            // w_size = k_size + 1;
+                            w_size = static_cast<uint8_t>(substr_size * 2/3);
+                            // w_size = substr_size - num_substr;
                             // w_size = wSize(k_size, substr_size); 
                         }
                     } 
@@ -144,9 +143,9 @@ uint8_t MinimizerGenerator::wSize(uint8_t k, uint8_t read_len) {
     if (args.bucketing_mode == "miniception_gomh") {
         w = k + 1;
     } else if (args.bucketing_mode == "minimizer_gomh") {
-        w = static_cast<uint8_t>(std::ceil(std::pow(2, k / 4)));
+        // w = static_cast<uint8_t>(std::ceil(std::pow(4, k / 4)));
         if ((w > read_len) || (w < k)){
-            w = k + 1;
+            w = 2*k;
         }
     }
     return w;
