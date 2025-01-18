@@ -207,14 +207,15 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
         std::vector<std::pair<std::uint64_t, unsigned>> seeds_k;
         uint8_t d_t = args.max_edit_dis;
         if (args.min_edit_dis <= args.max_edit_dis){
-            uint8_t times = args.gomh_times;
-            // if (args.max_edit_dis == 1 || args.max_edit_dis == 2){
-            //     // times = args.omh_times - args.max_edit_dis + 1;
-            //     times = args.gomh_times;
-            // } else {
-            //     times = 2;
-            // }
-
+            // uint8_t times = args.gomh_times;
+            uint8_t times;
+            if (args.max_edit_dis == 1 || args.max_edit_dis == 2){
+                // times = args.omh_times - args.max_edit_dis + 1;
+                times = args.gomh_times;
+            } else {
+                times = 1;
+            }
+            // std::uint64_t cur_k = gOMH(args).gomh_k(args.read_length, args.probability, d_t);
             for (unsigned int cur_d = d_t; cur_d >= 1; cur_d--) {
                 for (unsigned j = 0; j < times; ++j) {
                     std::uint64_t cur_seed = distribution(generator);

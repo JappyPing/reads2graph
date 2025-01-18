@@ -38,7 +38,7 @@ struct cmd_arguments
     unsigned gomh_k{4};
     unsigned gomh_times{3};
     bool gomh_flag{false};
-    std::uint64_t seed{2024};
+    std::uint64_t seed{20250116};
     double bad_kmer_ratio{0.3};
     double probability{0.9};
     unsigned visit_depth{15};

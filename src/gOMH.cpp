@@ -15,16 +15,16 @@
 gOMH::gOMH(cmd_arguments args) : args(args) {}
 
 unsigned gOMH::gomh_k(unsigned L, double p, uint8_t d) {
+    unsigned k;
     if (args.default_params) {
-        unsigned k= ceil(((1-p)*(2+L))/(d+2-2*p));
+        k = ceil(((1-p)*(2+L))/(d+2-2*p));
         if (k < 4){
             k = 4;
         } else if (k > 28) {
             k = 28;               
         }      
-        auto gomh_kmer_n = args.read_length- 2 * k + 1;
+        auto gomh_kmer_n = L - 2 * k + 1;
         while ((gomh_kmer_n <= args.gomh_times + 1) && k > 4){
-            // Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("only %1% kmers setted for gOMH selection.") % gomh_kmer_n));
             k--;
         }
     } else {

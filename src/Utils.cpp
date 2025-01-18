@@ -26,7 +26,7 @@
 int num_cores_to_use;  // Define the global variable
 
 #define reads2graph_VERSION "1.1.0"
-#define last_update_date "05.Jan.2025"
+#define last_update_date "18.Jan.2025"
 
 using namespace std;
 
