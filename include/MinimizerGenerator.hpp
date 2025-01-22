@@ -25,7 +25,7 @@ public:
     double proba(unsigned L, unsigned k);
     int kSize(int L, double p);
     std::vector<std::vector<seqan3::dna5>> divide_into_substrings(const std::vector<seqan3::dna5> & read, int num_substrs);
-    uint8_t k_estimate(uint8_t substr_size);
+    uint8_t k_estimate(uint8_t N);
     uint8_t wSize(uint8_t k, uint8_t read_len);
     // std::tuple<unsigned, unsigned, unsigned, double> overlappingWindowParameters();
     // std::tuple<unsigned, unsigned, unsigned, double> segmentation_parameters();
