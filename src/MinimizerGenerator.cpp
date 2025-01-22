@@ -98,7 +98,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                 }
             } else {
                 k_size = k_estimate(num_substr);
-                section_size = static_cast<uint8_t>(std::ceil(args.read_length / num_substr));
+                uint8_t section_size = static_cast<uint8_t>(std::ceil(args.read_length / num_substr));
                 if (args.bucketing_mode == "miniception_gomh") {
                     minimisers = Miniception(args).miniception_main(read, k_size, k_size + 1, args.seed);                 
                 } else if (args.bucketing_mode == "minimizer_gomh") {
@@ -168,7 +168,7 @@ uint8_t MinimizerGenerator::k_estimate(uint8_t N) {
     uint8_t k;
     if (args.segmentation) {
         int segment_size = args.read_length / N;
-        k = static_cast<uint8_t>(ceil((args.differ_kmer_ratio * N * (1 + segment_size))/(args.max_edit_dis + N * args.differ_kmer_ratio)));
+        k = static_cast<uint8_t>(ceil((args.differ_kmer_ratio * N * (1 + segment_size))/(2 + N * args.differ_kmer_ratio)));
     } else {
         // p = (L-k+1 - d*k)/(L-k+1)
         k = ceil((1-args.probability)*(1+args.read_length)/(1+args.max_edit_dis-args.probability));         

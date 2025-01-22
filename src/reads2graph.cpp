@@ -25,7 +25,7 @@
 #include <seqan3/core/debug_stream.hpp> // for debug_stream
 // #include <format>
 #include <boost/format.hpp>
-
+#include <thread>
 #include <array>  // std::array
 #include <string> // std::string
 #include <vector> // std::vector
@@ -100,7 +100,8 @@ int main(int argc, char** argv) {
     setenv("OMP_PROC_BIND", "false", 1);
     omp_set_num_threads(args.num_process);
     // Determine the number of cores available
-    int available_cores = omp_get_max_threads();
+    // int available_cores = omp_get_max_threads();
+    int available_cores = std::thread::hardware_concurrency();
     // Log the maximum number of threads available
     Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The maximum number of CPU cores available: %1%") % available_cores));
 

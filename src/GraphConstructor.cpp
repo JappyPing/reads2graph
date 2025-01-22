@@ -378,15 +378,15 @@ void GraphConstructor::update_graph_omh(std::vector<std::vector<seqan3::dna5>> u
     std::vector<std::pair<std::uint64_t, unsigned>> seeds_k;
     uint8_t d_t = args.max_edit_dis;
     if (args.min_edit_dis <= args.max_edit_dis){
-        uint8_t times = args.gomh_times;
-        // if (args.max_edit_dis == 1 || args.max_edit_dis == 2){
-        //     // times = args.omh_times - args.max_edit_dis + 1;
-        //     times = args.gomh_times;
-        // } else {
-        //     times = 1;
-        // }
+        uint8_t permutation_times;
+        if (args.max_edit_dis == 1 || args.max_edit_dis == 2){
+            permutation_times = args.gomh_times - args.max_edit_dis + 1;
+            // permutation_times = args.gomh_times;
+        } else {
+            permutation_times = 1;
+        }
         for (unsigned int cur_d = d_t; cur_d >= 1; cur_d--) {
-            for (unsigned j = 0; j < times; ++j) {
+            for (unsigned j = 0; j < permutation_times; ++j) {
                 std::uint64_t cur_seed = distribution(generator);
                 std::uint64_t cur_k = gOMH(args).gomh_k(args.read_length, args.probability, cur_d);
                 std::pair<std::uint64_t, unsigned> cur_pair = std::make_pair(cur_seed, cur_k);
@@ -405,8 +405,8 @@ void GraphConstructor::update_graph_omh(std::vector<std::vector<seqan3::dna5>> u
         }
         if (flag == 0) {
             auto gomh_kmer_n = static_cast<int>(args.read_length - 2 * first_k + 1);
-            auto permutation_times = args.max_edit_dis * times;  
-            if (permutation_times >= gomh_kmer_n){
+            auto modifyied_times = args.max_edit_dis * permutation_times;  
+            if (modifyied_times >= gomh_kmer_n){
                 args.gomh_flag = true;
             }              
         }
