@@ -380,8 +380,8 @@ void GraphConstructor::update_graph_omh(std::vector<std::vector<seqan3::dna5>> u
     if (args.min_edit_dis <= args.max_edit_dis){
         uint8_t permutation_times;
         if (args.max_edit_dis == 1 || args.max_edit_dis == 2){
-            permutation_times = args.gomh_times - args.max_edit_dis + 1;
-            // permutation_times = args.gomh_times;
+            // permutation_times = args.gomh_times - args.max_edit_dis + 1;
+            permutation_times = args.gomh_times;
         } else {
             permutation_times = 1;
         }
