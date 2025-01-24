@@ -90,11 +90,11 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                     } else if (args.bucketing_mode == "minimizer_gomh") {
                         if ((w_size - k_size + 1) <= 2){
                             auto minimiser_range = sub_str | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{k_size}}) | seqan3::views::minimiser(w_size); 
+                            std::ranges::copy(minimiser_range, std::back_inserter(minimisers));
                         } else {
                             auto minimiser_range = sub_str | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{k_size}}) | seqan3::views::minimiser(w_size - k_size + 1); 
-                        }
-             
-                        std::ranges::copy(minimiser_range, std::back_inserter(minimisers));        
+                            std::ranges::copy(minimiser_range, std::back_inserter(minimisers));
+                        }          
                     }
                     for (auto const &minimiser : minimisers) {
                         #pragma omp critical
