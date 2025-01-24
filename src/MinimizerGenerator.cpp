@@ -34,12 +34,14 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
         if (args.default_params) {
             if (args.read_length >= 6 && args.read_length < 16){
                 args.segmentation = false;
-                num_substr = 1;
-                k_size = k_estimate(num_substr);  
-                w_size = (args.read_length) / 2 - k_size + 1;
-                if (w_size == 1){
-                    w_size = 2;
-                }      
+                k_size = 4;
+                w_size = 3;
+                // num_substr = 1;
+                // k_size = k_estimate(num_substr);  
+                // w_size = ((args.read_length) / 2) - k_size + 1;
+                // if (w_size <= 1){
+                //     w_size = 2;
+                // }      
                 // w_size = k_size + 1;                   
             } else if (args.read_length >= 16 && args.read_length < 50){
                 num_substr = args.substr_number - 1;
