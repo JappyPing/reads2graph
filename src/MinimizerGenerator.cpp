@@ -34,7 +34,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
         if (args.default_params) {
             if (args.read_length >= 6 && args.read_length < 16){
                 args.segmentation = false;
-                k_size = 4;
+                k_size = 3;
                 w_size = 3;                  
             } else if (args.read_length >= 16 && args.read_length < 50){
                 num_substr = 2;

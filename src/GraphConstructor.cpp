@@ -183,6 +183,11 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
     }
     edge_summary();
     Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("===== Graph construction based on %1% bucketing done! =====") % bucket_method));
+    
+    if (args.default_params && args.read_length >= 6 && args.read_length < 16) {
+        args.gomh_times = 3;
+    }
+
     // extra large group
     if (large_group.size() > 0){
         Utils::getInstance().logger(LOG_LEVEL_INFO, "Bucketing large-size-based bins using gOMH...");
@@ -369,6 +374,7 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
 
 void GraphConstructor::update_graph_omh(std::vector<std::vector<seqan3::dna5>> unique_reads){
     Utils::getInstance().logger(LOG_LEVEL_INFO, "Additional bucketing of reads in medium-sized buckets produced by minimizer or miniception using gOMH...!");
+    
     std::mt19937_64 generator(args.seed + 1);
     std::uniform_int_distribution<std::uint64_t> distribution(std::numeric_limits<std::uint64_t>::min(), std::numeric_limits<std::uint64_t>::max());
 
