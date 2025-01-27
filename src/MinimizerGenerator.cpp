@@ -73,11 +73,11 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                             w_size = k_size + 1; 
                             // w_size = substr_size - num_substr; // this does not work for miniception
                         } else if (args.bucketing_mode == "minimizer_gomh") {
-                            // w_size = k_size + 1;
-                            w_size = static_cast<uint8_t>(substr_size * 0.5);
-                            // w_size = substr_size;
-                            // w_size = substr_size - num_substr;
-                            // w_size = wSize(k_size, substr_size); 
+                            if (args.total_uniq_num > 1000000) {
+                                w_size = static_cast<uint8_t>(substr_size * (0.6));
+                            } else {
+                                w_size = static_cast<uint8_t>(substr_size * 0.5);
+                            }
                         }
                     } 
                     // std::cout << "subread size: " << static_cast<int>(substr_size) << ", k: " << static_cast<int>(k_size) << endl;

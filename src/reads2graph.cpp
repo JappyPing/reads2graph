@@ -132,11 +132,11 @@ int main(int argc, char** argv) {
     // auto read2count = ReadWrite(args).get_unique_reads_counts();
     auto [unique_reads, read2count, min_read_length] = ReadWrite(args).get_unique_reads_counts();
     args.read_length = min_read_length;
-    auto total_uniq_num = unique_reads.size();
+    args.total_uniq_num = unique_reads.size();
 
-    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of unique reads: %1%, minimum read length: %2%.") % total_uniq_num % min_read_length));
+    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of unique reads: %1%, minimum read length: %2%.") % args.total_uniq_num % args.read_length));
     if (!args.default_params && args.segmentation && n_input && args.read_length >= 6 && args.read_length < 16) {
-        Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Your setting on 'segmentation' has been changed to false because your minimum read legth is %1%, which is too small.") % min_read_length)); 
+        Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Your setting on 'segmentation' has been changed to false because your minimum read legth is %1%, which is too small.") % args.read_length)); 
     }
 
     if (args.read_length >= 6 && args.read_length < 16){

@@ -27,6 +27,7 @@ struct cmd_arguments
     std::filesystem::path input_data{};
     std::filesystem::path output_dir{std::filesystem::current_path()};
     unsigned read_length{};
+    std::size_t total_uniq_num{};
     bool default_params{true};
     uint8_t k_size{};
     uint8_t w_size{};
