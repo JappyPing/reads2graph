@@ -184,8 +184,22 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
     edge_summary();
     Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("===== Graph construction based on %1% bucketing done! =====") % bucket_method));
     
-    if (args.default_params && args.read_length >= 6 && args.read_length < 16) {
-        args.gomh_times = 3;
+    if (args.default_params){
+        if (args.read_length >= 6 && args.read_length < 16) {
+            if (args.max_edit_dis == 1){
+                args.gomh_times = 5;
+            } else if (args.max_edit_dis == 1){
+                args.gomh_times = 3;
+            } else {
+                args.gomh_times = 2;
+            }
+        } else {
+            if (args.max_edit_dis == 1 || args.max_edit_dis == 2){
+                args.gomh_times = args.gomh_times;
+            } else {
+                args.gomh_times = 1;
+            }
+        }
     }
 
     // extra large group
@@ -201,17 +215,8 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
         std::vector<std::pair<std::uint64_t, unsigned>> seeds_k;
         uint8_t d_t = args.max_edit_dis;
         if (args.min_edit_dis <= args.max_edit_dis){
-            // uint8_t times = args.gomh_times;
-            uint8_t times;
-            if (args.max_edit_dis == 1 || args.max_edit_dis == 2){
-                // times = args.omh_times - args.max_edit_dis + 1;
-                times = args.gomh_times;
-            } else {
-                times = 1;
-            }
-            // std::uint64_t cur_k = gOMH(args).gomh_k(args.read_length, args.probability, d_t);
             for (unsigned int cur_d = d_t; cur_d >= 1; cur_d--) {
-                for (unsigned j = 0; j < times; ++j) {
+                for (unsigned j = 0; j < args.gomh_times; ++j) {
                     std::uint64_t cur_seed = distribution(generator);
                     std::uint64_t cur_k = gOMH(args).gomh_k(args.read_length, args.probability, cur_d);
                     std::pair<std::uint64_t, unsigned> cur_pair = std::make_pair(cur_seed, cur_k);
@@ -229,7 +234,7 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
             }
             if (flag == 0) {
                 auto gomh_kmer_n = static_cast<int>(args.read_length - 2 * first_k + 1);
-                auto permutation_times = args.max_edit_dis * times;  
+                auto permutation_times = args.max_edit_dis * args.gomh_times;  
                 if (permutation_times >= gomh_kmer_n){
                     args.gomh_flag = true;
                 }              
@@ -384,15 +389,8 @@ void GraphConstructor::update_graph_omh(std::vector<std::vector<seqan3::dna5>> u
     std::vector<std::pair<std::uint64_t, unsigned>> seeds_k;
     uint8_t d_t = args.max_edit_dis;
     if (args.min_edit_dis <= args.max_edit_dis){
-        uint8_t permutation_times;
-        if (args.max_edit_dis == 1 || args.max_edit_dis == 2){
-            // permutation_times = args.gomh_times - args.max_edit_dis + 1;
-            permutation_times = args.gomh_times;
-        } else {
-            permutation_times = 1;
-        }
         for (unsigned int cur_d = d_t; cur_d >= 1; cur_d--) {
-            for (unsigned j = 0; j < permutation_times; ++j) {
+            for (unsigned j = 0; j < args.gomh_times; ++j) {
                 std::uint64_t cur_seed = distribution(generator);
                 std::uint64_t cur_k = gOMH(args).gomh_k(args.read_length, args.probability, cur_d);
                 std::pair<std::uint64_t, unsigned> cur_pair = std::make_pair(cur_seed, cur_k);
@@ -411,7 +409,7 @@ void GraphConstructor::update_graph_omh(std::vector<std::vector<seqan3::dna5>> u
         }
         if (flag == 0) {
             auto gomh_kmer_n = static_cast<int>(args.read_length - 2 * first_k + 1);
-            auto modifyied_times = args.max_edit_dis * permutation_times;  
+            auto modifyied_times = args.max_edit_dis * args.gomh_times;  
             if (modifyied_times >= gomh_kmer_n){
                 args.gomh_flag = true;
             }              
