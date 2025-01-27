@@ -38,11 +38,12 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                 w_size = 3;                  
             } else if (args.read_length >= 16 && args.read_length < 50){
                 num_substr = 2;
-            } else if (args.read_length >= 50 && args.read_length <= 100) {
+            } else if (args.read_length >= 50 && args.read_length <= 300) {
                 num_substr = 3;
-            } else if (args.read_length > 100 && args.read_length <= 300) {
-                num_substr = 4;
-            }        
+            } 
+            // else if (args.read_length > 100 && args.read_length <= 300) {
+            //     num_substr = 4;
+            // }        
         } else { 
             k_size = args.k_size;
             w_size = args.w_size;
