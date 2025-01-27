@@ -70,11 +70,12 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                     if (args.default_params) {
                         k_size = k_estimate(num_substr);
                         if (args.bucketing_mode == "miniception_gomh") {
-                            w_size = k_size + 1;
+                            w_size = k_size + 1; 
                             // w_size = substr_size - num_substr; // this does not work for miniception
                         } else if (args.bucketing_mode == "minimizer_gomh") {
                             // w_size = k_size + 1;
-                            w_size = static_cast<uint8_t>(substr_size * 0.5);
+                            w_size = static_cast<uint8_t>(substr_size * 0.7);
+                            // w_size = substr_size;
                             // w_size = substr_size - num_substr;
                             // w_size = wSize(k_size, substr_size); 
                         }
