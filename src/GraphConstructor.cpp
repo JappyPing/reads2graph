@@ -233,7 +233,7 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
                 }
             }
             if (flag == 0) {
-                auto gomh_kmer_n = static_cast<int>(args.read_length - 2 * first_k + 1);
+                auto gomh_kmer_n = args.read_length - 2 * first_k + 1;
                 auto permutation_times = args.max_edit_dis * args.gomh_times;  
                 if (permutation_times >= gomh_kmer_n){
                     args.gomh_flag = true;
@@ -408,7 +408,7 @@ void GraphConstructor::update_graph_omh(std::vector<std::vector<seqan3::dna5>> u
             }
         }
         if (flag == 0) {
-            auto gomh_kmer_n = static_cast<int>(args.read_length - 2 * first_k + 1);
+            auto gomh_kmer_n = args.read_length - 2 * first_k + 1;
             auto modifyied_times = args.max_edit_dis * args.gomh_times;  
             if (modifyied_times >= gomh_kmer_n){
                 args.gomh_flag = true;
