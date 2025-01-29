@@ -31,7 +31,7 @@ struct cmd_arguments
     bool default_params{true};
     uint8_t k_size{};
     uint8_t w_size{};
-    double bin2reads_ratio{1.2};
+    double bin2reads_ratio{1.5};
     uint8_t substr_number{3};
     uint8_t max_edit_dis{2};
     uint8_t min_edit_dis{1};
