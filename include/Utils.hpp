@@ -27,10 +27,11 @@ struct cmd_arguments
     std::filesystem::path input_data{};
     std::filesystem::path output_dir{std::filesystem::current_path()};
     unsigned read_length{};
-    std::size_t total_uniq_num{};
+    std::size_t uni_reads_num{};
     bool default_params{true};
     uint8_t k_size{};
     uint8_t w_size{};
+    double bin2reads_ratio{1.2};
     uint8_t substr_number{3};
     uint8_t max_edit_dis{2};
     uint8_t min_edit_dis{1};

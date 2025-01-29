@@ -26,7 +26,7 @@
 int num_cores_to_use;  // Define the global variable
 
 #define reads2graph_VERSION "1.1.0"
-#define last_update_date "27.Jan.2025"
+#define last_update_date "29.Jan.2025"
 
 using namespace std;
 
@@ -162,10 +162,12 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                                     .long_id = "output_dir",
                                     .description = "The directory for outputs."});
 
-    parser.add_option(args.read_length,
-                      sharg::config{.short_id = 'r',
-                                    .long_id = "read_length",
-                                    .description = "No need to input this parameter, reads2graph will calculate the minimum read length."});
+    // parser.add_option(args.read_length,
+    //                   sharg::config{.short_id = 'r',
+    //                                 .long_id = "read_length",
+    //                                 .description = "No need to input this parameter, reads2graph will calculate the minimum read length."});
+
+bin2total_ratio
 
     parser.add_option(args.default_params,
                       sharg::config{.long_id = "default_params",
@@ -199,6 +201,10 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                       sharg::config{.short_id = 'p',
                                     .long_id = "num_process",
                                     .description = "The number of expected processes."});
+
+    parser.add_option(args.bin2reads_ratio,
+                      sharg::config{.long_id = "bin2reads_ratio",
+                                    .description = "The maximum allowable ratio of bin size to the total number of unique reads after minimizer bucketing. If the initially estimated k results in too many bins, this parameter will adjust k to reduce the bin count."});
 
     // parser.add_option(args.graph_filename,
     //                   sharg::config{.short_id = 'g',

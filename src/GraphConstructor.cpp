@@ -79,9 +79,9 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
 {
     init_graph();
 
-    std::vector<std::vector<std::vector<seqan3::dna5>>> medium_group;
+    std::vector<std::vector<std::vector<seqan3::dna5>>> normal_group;
     std::vector<std::vector<std::vector<seqan3::dna5>>> large_group;
-    std::atomic<int> singleton_bucket_num{0};
+    // std::atomic<int> singleton_bucket_num{0};
     auto cur_bin_n = key2reads.size();
     std::string bucket_method;
     if (args.bucketing_mode == "miniception_gomh") {
@@ -96,40 +96,36 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
         const auto &entry = *std::next(key2reads.begin(), i);
         const std::vector<std::vector<seqan3::dna5>> &reads_vec = entry.second;
         auto cur_read_num = reads_vec.size();
-        if ( cur_read_num == 1){
-            singleton_bucket_num++;
-            continue;
-        } else if ( cur_read_num >= 2 && cur_read_num < args.bin_size_max){
+        // if ( cur_read_num == 1){
+        //     singleton_bucket_num++;
+        // } else 
+        if ( cur_read_num >= 2 && cur_read_num < args.bin_size_max){
             #pragma omp critical
             {
-                // std::cout << cur_read_num << " ";
-                // Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("{} ", cur_read_num));
-                medium_group.emplace_back(reads_vec);
+                normal_group.emplace_back(reads_vec);
             } 
         } else {
             #pragma omp critical
             {
-                // Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("{} ", cur_read_num));
                 large_group.emplace_back(reads_vec); 
-                // large_group.emplace_back(reads_vec);   
             }
         }
     }
-    Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of buckets containing one unique read after bucketing by %1%: %2%.") % bucket_method % singleton_bucket_num));
+    // Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of buckets containing one unique read after bucketing by %1%: %2%.") % bucket_method % singleton_bucket_num));
     ///////////////////////////
     // test the following function
-    // auto unique_reads = mergeUniqueReads(medium_group);
+    // auto unique_reads = mergeUniqueReads(normal_group);
     // Utils::getInstance().logger(LOG_LEVEL_INFO,  format("Test passed, unique number {}!", unique_reads.size()));
 
     /////////////////////////////
     auto config = seqan3::align_cfg::method_global{} | seqan3::align_cfg::edit_scheme | seqan3::align_cfg::min_score{-1 * args.max_edit_dis} | seqan3::align_cfg::output_score{};
-    // large group
-    auto bucket_num = medium_group.size();
+    // normal group
+    auto bucket_num = normal_group.size();
     Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of buckets with size falling in [2, %1%) by %2%: %3%.") % args.bin_size_max % bucket_method % bucket_num));
     if (bucket_num > 0){
         // StatisticsRecorder recorder(bucket_num);
         // int bucket_id = 0;
-        for (const auto &group : medium_group)
+        for (const auto &group : normal_group)
         {
             // Atomic variables for positive and negative cases
             // std::atomic<int> positive_cases{0};
@@ -213,7 +209,7 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
         // Specify the range of values for your seeds
         std::uniform_int_distribution<std::uint64_t> distribution(std::numeric_limits<std::uint64_t>::min(), std::numeric_limits<std::uint64_t>::max());
 
-        std::vector<std::vector<std::vector<seqan3::dna5>>> m_group;
+        std::vector<std::vector<std::vector<seqan3::dna5>>> normal_group;
         std::vector<std::vector<std::vector<seqan3::dna5>>> l_group;
 
         std::vector<std::pair<std::uint64_t, unsigned>> seeds_k;
@@ -264,7 +260,7 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
                     {
                         // std::cout << cur_num << " ";
                         // Utils::getInstance().logger(LOG_LEVEL_DEBUG,  std::format("{} ", cur_num));
-                        m_group.emplace_back(cur_reads_vec);
+                        normal_group.emplace_back(cur_reads_vec);
                     } 
                 } else {
                     #pragma omp critical
@@ -273,12 +269,12 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
             }
         }
         args.gomh_flag = false; // make this flag false after using gomh2read_main
-        auto bucket_num = m_group.size();
+        auto bucket_num = normal_group.size();
         Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("After bucketing large-size groups with gOMH, there are %1% single-size buckets and %2% buckets ranging from size 2 to %3%.") % singleton_bucket_num % bucket_num % args.bin_size_max));
         if (bucket_num > 0){
             // StatisticsRecorder recorder(bucket_num);
             // int bucket_id = 0;
-            for (const auto &cur_reads_vec : m_group){
+            for (const auto &cur_reads_vec : normal_group){
                 // Atomic variables for positive and negative cases
                 // std::atomic<int> positive_cases{0};
                 // std::atomic<int> negative_cases{0};  
@@ -364,8 +360,8 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
         }
     }
     /////////////////////////////////////////////////////////////////////////////////////////
-    if ((args.read_length < 16) && (medium_group.size() > 0)){
-        auto medium_unique_reads = mergeUniqueReads(medium_group);
+    if ((args.read_length < 16) && (normal_group.size() > 0)){
+        auto medium_unique_reads = mergeUniqueReads(normal_group);
         update_graph_omh(medium_unique_reads); 
         Utils::getInstance().logger(LOG_LEVEL_INFO, "===== Graph update with additional gOMH done! =====");
     }
@@ -387,7 +383,7 @@ void GraphConstructor::update_graph_omh(std::vector<std::vector<seqan3::dna5>> u
     std::mt19937_64 generator(args.seed + 1);
     std::uniform_int_distribution<std::uint64_t> distribution(std::numeric_limits<std::uint64_t>::min(), std::numeric_limits<std::uint64_t>::max());
 
-    std::vector<std::vector<std::vector<seqan3::dna5>>> m_group;
+    std::vector<std::vector<std::vector<seqan3::dna5>>> normal_group;
     std::vector<std::vector<std::vector<seqan3::dna5>>> l_group;
 
     std::vector<std::pair<std::uint64_t, unsigned>> seeds_k;
@@ -442,7 +438,7 @@ void GraphConstructor::update_graph_omh(std::vector<std::vector<seqan3::dna5>> u
         } else if (cur_bin_n >= 2 && cur_bin_n < args.bin_size_max){
             #pragma omp critical
             {
-                m_group.emplace_back(cur_reads_vec);
+                normal_group.emplace_back(cur_reads_vec);
             } 
         } else {
             #pragma omp critical
@@ -451,11 +447,11 @@ void GraphConstructor::update_graph_omh(std::vector<std::vector<seqan3::dna5>> u
     }
     Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("The number of buckets containing one unique read after bucketing by gOMH is %1%.") % singleton_bucket_num));
     Utils::getInstance().logger(LOG_LEVEL_INFO, "Bucketing unique reads using gOMH done!");
-    auto bucket_num = m_group.size();
+    auto bucket_num = normal_group.size();
     if (bucket_num > 0){
         // StatisticsRecorder recorder(bucket_num);
         // int bucket_id = 0;
-        for (const auto &cur_reads_vec : m_group){
+        for (const auto &cur_reads_vec : normal_group){
             // Atomic variables for positive and negative cases
             // std::atomic<int> positive_cases{0};
             // std::atomic<int> negative_cases{0};
