@@ -56,7 +56,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
         w_size = args.w_size;
         num_substr = args.substr_number;
     }  
-    std::size_t bin_n = args.uni_reads_num;
+
     while (1){
         std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> minimiser2reads;
         #pragma omp parallel for num_threads(args.num_process) schedule(static)
@@ -90,10 +90,10 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                     minimisers = Miniception(args).miniception_main(read, k_size, k_size + 1, args.seed);                 
                 } else if (args.bucketing_mode == "minimizer_gomh") {
                     if ((w_size - k_size + 1) <= 2){
-                        auto minimiser_range = sub_str | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{k_size}}) | seqan3::views::minimiser(w_size); 
+                        auto minimiser_range = read | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{k_size}}) | seqan3::views::minimiser(w_size); 
                         std::ranges::copy(minimiser_range, std::back_inserter(minimisers));
                     } else {
-                        auto minimiser_range = sub_str | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{k_size}}) | seqan3::views::minimiser(w_size - k_size + 1); 
+                        auto minimiser_range = read | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{k_size}}) | seqan3::views::minimiser(w_size - k_size + 1); 
                         std::ranges::copy(minimiser_range, std::back_inserter(minimisers));
                     }        
                 } 

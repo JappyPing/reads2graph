@@ -167,8 +167,6 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
     //                                 .long_id = "read_length",
     //                                 .description = "No need to input this parameter, reads2graph will calculate the minimum read length."});
 
-bin2total_ratio
-
     parser.add_option(args.default_params,
                       sharg::config{.long_id = "default_params",
                                     .description = "Default true. If false, user must set k and w from CLI."});
