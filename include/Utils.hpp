@@ -31,6 +31,9 @@ struct cmd_arguments
     bool default_params{true};
     uint8_t k_size{};
     uint8_t w_size{};
+    uint8_t w_k{1}; // the difference (w-k) between k and w
+    uint8_t n_kmer{6}; // expected kmer for miniception
+
     double bin2reads_ratio{0.8};
     uint8_t substr_number{3};
     uint8_t max_edit_dis{2};

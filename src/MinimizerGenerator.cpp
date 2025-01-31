@@ -88,7 +88,8 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                 } 
             } else {
                 if (args.bucketing_mode == "miniception_gomh") {
-                    minimisers = Miniception(args).miniception_main(read, k_size, k_size + 1, args.seed);                 
+                    k_size = static_cast<uint8_t>(std::ceil((2 * (args.read_length + 1) - args.n_kmer * (args.w_k + 1)) / (args.n_kmer + 2)));
+                    minimisers = Miniception(args).miniception_main(read, k_size, k_size + args.w_k, args.seed);                 
                 } else if (args.bucketing_mode == "minimizer_gomh") {
                     if ((w_size - k_size + 1) <= 2){
                         auto minimiser_range = read | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{k_size}}) | seqan3::views::minimiser(w_size); 
