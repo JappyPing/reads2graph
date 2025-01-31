@@ -34,7 +34,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
         } else {
             if (args.read_length >= 16 && args.read_length < 50){
                 num_substr = 2;
-            } else if (args.read_length >= 50 && args.read_length <= 300) {
+            } else if (args.read_length >= 50 && args.read_length <= 100) {
                 num_substr = 3;
             } 
             else if (args.read_length > 100 && args.read_length <= 300) {
@@ -56,7 +56,8 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
         w_size = args.w_size;
         num_substr = args.substr_number;
     }  
-
+    // uint8_t estimated_k = k_size;
+    uint8_t max_w = static_cast<uint8_t>(std::ceil(args.read_length / num_substr));
     while (1){
         std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> minimiser2reads;
         #pragma omp parallel for num_threads(args.num_process) schedule(static)
@@ -110,7 +111,11 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
             Utils::getInstance().logger(LOG_LEVEL_DEBUG, boost::str(boost::format("Size of minimiser2reads: %1%!") % bin_n));
             return minimiser2reads;  
         } else {
-            k_size++;
+            k_size--;
+            w_size++;
+            if (w_size >= (max_w - 1) || k_size == 4){
+                return minimiser2reads;
+            }
         }
     }
 }
@@ -163,8 +168,8 @@ uint8_t MinimizerGenerator::wSize(uint8_t k, uint8_t read_len) {
 uint8_t MinimizerGenerator::k_estimate(uint8_t N) {
     int segment_size = args.read_length / N;
     uint8_t k = static_cast<uint8_t>(ceil((args.differ_kmer_ratio * N * (1 + segment_size))/(2 + N * args.differ_kmer_ratio)));
-    if (k > 28) {
-        k = 28;       
+    if (k >= 28) {
+        k = 27;       
     } else if (k < 4){
         k = 4;       
     }

@@ -23,8 +23,8 @@ unsigned gOMH::gomh_k(unsigned L, double p, uint8_t d) {
             k = ceil(((1-p)*(2+L))/(d+2-2*p));
             if (k < 4){
                 k = 4;
-            } else if (k > 28) {
-                k = 28;               
+            } else if (k > 27) {
+                k = 27;               
             }      
             auto gomh_kmer_n = L - 2 * k + 1;
             while ((gomh_kmer_n <= args.gomh_times + 1) && k > 4){
