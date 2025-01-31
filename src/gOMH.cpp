@@ -68,18 +68,18 @@ std::vector<std::pair<std::uint64_t, unsigned>> OMH::get_seeds_k(){
     return seeds_k;
 }
 */
-std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> gOMH::gomh2reads_main(std::vector<std::vector<seqan3::dna5>> unique_reads, std::uint64_t seed, unsigned k){
-    #pragma omp parallel for num_threads(args.num_process) schedule(static)
-    for (auto const & read : unique_reads){
-        auto gomh_value = gomh_pos(read, k, seed); 
-        #pragma omp critical
-        {
-            gomh2reads[gomh_value].push_back(read);
-        }        
-    }
-    Utils::getInstance().logger(LOG_LEVEL_DEBUG, "All the unique reads for gOMH done.");  
-    return gomh2reads;            
-}
+// std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> gOMH::gomh2reads_main(std::vector<std::vector<seqan3::dna5>> unique_reads, std::uint64_t seed, unsigned k){
+//     #pragma omp parallel for num_threads(args.num_process) schedule(static)
+//     for (auto const & read : unique_reads){
+//         auto gomh_value = gomh_pos(read, k, seed); 
+//         #pragma omp critical
+//         {
+//             gomh2reads[gomh_value].push_back(read);
+//         }        
+//     }
+//     Utils::getInstance().logger(LOG_LEVEL_DEBUG, "All the unique reads for gOMH done.");  
+//     return gomh2reads;            
+// }
 
 // std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> OMH::omh2read_main(std::vector<std::vector<seqan3::dna5>> unique_reads, std::vector<std::uint64_t> seeds, unsigned k){
 
