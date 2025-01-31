@@ -34,12 +34,12 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
         } else {
             if (args.read_length >= 16 && args.read_length < 50){
                 num_substr = 2;
-            } else if (args.read_length >= 50 && args.read_length <= 100) {
+            } else if (args.read_length >= 50 && args.read_length <= 300) {
                 num_substr = 3;
             } 
-            else if (args.read_length > 100 && args.read_length <= 300) {
-                num_substr = 4;
-            }   
+            // else if (args.read_length > 100 && args.read_length <= 300) {
+            //     num_substr = 4;
+            // }   
             k_size = k_estimate(num_substr);
         }
         if (args.bucketing_mode == "minimizer_gomh" && args.read_length >= 16) {
@@ -111,8 +111,8 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
             Utils::getInstance().logger(LOG_LEVEL_DEBUG, boost::str(boost::format("Size of minimiser2reads: %1%!") % bin_n));
             return minimiser2reads;  
         } else {
-            k_size--;
-            w_size++;
+            k_size -= 2;
+            w_size += 2;
             if (w_size >= (max_w - 1) || k_size == 4){
                 return minimiser2reads;
             }

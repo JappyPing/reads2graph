@@ -57,7 +57,7 @@ public:
 private:
     // std::map<std::vector<seqan3::dna5>, uint32_t> read2count;
     // std::vector<std::vector<seqan3::dna5>> unique_reads;
-    std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> gomh2reads;
+    // std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> gomh2reads;
     cmd_arguments args;
 
 };

@@ -100,39 +100,90 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> gOMH::
 
 
 std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> gOMH::gomh2read_main(std::vector<std::vector<seqan3::dna5>> unique_reads, std::vector<std::pair<std::uint64_t, unsigned>> seeds_k){
+    std::size_t reads_n = unique_reads.size();
     if (args.gomh_flag){
         // When the permutation_times larger than the number of k-mer candidates and the kmer size are the same one, bucketing the reads using each kmer candidate
         auto first_pair = seeds_k[0];
         std::uint64_t seed = first_pair.first;
         unsigned k = first_pair.second;
-        #pragma omp parallel for num_threads(args.num_process) schedule(static)
-        for (auto const & read : unique_reads){  
-            auto gomh_values = gomh_pos2(read, k, seed);
-            for (auto const & gomh_val : gomh_values){
-                #pragma omp critical
-                {
-                    gomh2reads[gomh_val].push_back(read);
-                }                    
-            }
-        }  
-    } else {
-        #pragma omp parallel for num_threads(args.num_process) schedule(static)
-        for (auto const & read : unique_reads){
+        while (1) {
+            std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> gomh2reads;
             #pragma omp parallel for num_threads(args.num_process) schedule(static)
-            for(auto &pair : seeds_k){
-                std::uint64_t seed = pair.first;
-                unsigned k = pair.second;
-                auto gomh_value = gomh_pos(read, k, seed); 
-                #pragma omp critical
-                {
-                    gomh2reads[gomh_value].push_back(read);
-                }        
-            } 
-        }        
+            for (auto const & read : unique_reads){  
+                auto gomh_values = gomh_pos2(read, k, seed);
+                for (auto const & gomh_val : gomh_values){
+                    #pragma omp critical
+                    {
+                        gomh2reads[gomh_val].push_back(read);
+                    }                    
+                }
+            }
+            std::size_t bin_n = gomh2reads.size();
+            if (bin_n < (reads_n * args.bin2reads_ratio)){
+                return gomh2reads;  
+            } else {
+                k -= 2;
+                if (k == 4){
+                    return gomh2reads;
+                }
+            }                
+        } 
+    } else {
+        std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> gomh2reads;
+        for(auto &pair : seeds_k){
+            std::uint64_t seed = pair.first;
+            unsigned k = pair.second;
+            while (1) {
+                std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> temp_gomh2reads;
+                #pragma omp parallel for num_threads(args.num_process) schedule(static)
+                for (auto const & read : unique_reads){
+
+                    auto gomh_value = gomh_pos(read, k, seed); 
+                    #pragma omp critical
+                    {
+                        temp_gomh2reads[gomh_value].push_back(read);
+                    }        
+                } 
+                std::size_t bin_n = temp_gomh2reads.size();
+                if (bin_n < (reads_n * args.bin2reads_ratio)){
+                    for (auto& [key, value] : temp_gomh2reads) {
+                        gomh2reads[key].insert(gomh2reads[key].end(), 
+                                            std::make_move_iterator(value.begin()), 
+                                            std::make_move_iterator(value.end()));
+                    }
+                    temp_gomh2reads.clear();              
+                    break;  
+                } else {
+                    k -= 2;
+                    if (k == 4){
+                        for (auto& [key, value] : temp_gomh2reads) {
+                            gomh2reads[key].insert(gomh2reads[key].end(), 
+                                                std::make_move_iterator(value.begin()), 
+                                                std::make_move_iterator(value.end()));
+                        }
+                        temp_gomh2reads.clear();                             
+                        break;
+                    }
+                }                       
+            }
+        } 
+        Utils::getInstance().logger(LOG_LEVEL_DEBUG, "All the unique reads for gOMH done.");
+        return gomh2reads;       
     }
-    Utils::getInstance().logger(LOG_LEVEL_DEBUG, "All the unique reads for gOMH done.");  
-    return gomh2reads;            
-}
+    // std::size_t bin_n = gomh2reads.size();
+    // if (bin_n < (reads_n * args.bin2reads_ratio)){
+    //     Utils::getInstance().logger(LOG_LEVEL_DEBUG, boost::str(boost::format("Size of gomh2reads: %1%!") % bin_n));
+    //     return minimiser2reads;  
+    // } else {
+    //     k -= 2;
+    //     if (k == 4){
+    //         return minimiser2reads;
+    //     }
+    // }
+
+    // Utils::getInstance().logger(LOG_LEVEL_DEBUG, "All the unique reads for gOMH done.");  
+    // return gomh2reads;
+}            
 
 std::string gOMH::getGappedSubstring(const std::string& str, size_t startPos, size_t length) {
     std::string gappedSubstring;
