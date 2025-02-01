@@ -182,23 +182,25 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
     
     if (args.default_params){
         if (args.read_length >= 6 && args.read_length < 16) {
-            if (args.max_edit_dis == 1){
-                args.gomh_times = 5;
-            } else if (args.max_edit_dis == 2){
-                args.gomh_times = 3;
-            } else {
-                args.gomh_times = 2;
-            }
+            // if (args.max_edit_dis == 1){
+            //     args.gomh_times = 5;
+            // } else if (args.max_edit_dis == 2){
+            //     args.gomh_times = 3;
+            // } else {
+            //     args.gomh_times = 2;
+            // }
+            args.gomh_times = 5;
         } else {
-            if (args.max_edit_dis == 1){
-                args.gomh_times = 4;
-            } else if (args.max_edit_dis == 2){
-                args.gomh_times = 3;
-            } else if (args.max_edit_dis == 3){
-                args.gomh_times = 2;                
-            } else {
-                args.gomh_times = 1;
-            }
+            args.gomh_times = 4;
+            // if (args.max_edit_dis == 1){
+            //     args.gomh_times = 4;
+            // } else if (args.max_edit_dis == 2){
+            //     args.gomh_times = 3;
+            // } else if (args.max_edit_dis == 3){
+            //     args.gomh_times = 2;                
+            // } else {
+            //     args.gomh_times = 1;
+            // }
         }
     }
 
@@ -215,14 +217,15 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
         std::vector<std::pair<std::uint64_t, unsigned>> seeds_k;
         uint8_t d_t = args.max_edit_dis;
         if (args.min_edit_dis <= args.max_edit_dis){
-            for (unsigned int cur_d = d_t; cur_d >= 1; cur_d--) {
+            std::uint64_t cur_k = gOMH(args).gomh_k(args.read_length, args.probability, d_t);
+            // for (unsigned int cur_d = d_t; cur_d >= 1; cur_d--) {
+                // std::uint64_t cur_k = gOMH(args).gomh_k(args.read_length, args.probability, cur_d);
                 for (unsigned j = 0; j < args.gomh_times; ++j) {
                     std::uint64_t cur_seed = distribution(generator);
-                    std::uint64_t cur_k = gOMH(args).gomh_k(args.read_length, args.probability, cur_d);
                     std::pair<std::uint64_t, unsigned> cur_pair = std::make_pair(cur_seed, cur_k);
                     seeds_k.push_back(cur_pair);                   
                 } 
-            }   
+            // }   
             /////////////////////////////////////////////////////
             // When the permutation_times larger than the number of k-mer candidates and the kmer size are the same one, bucketing the reads using each kmer candidate
             int flag = 0;
