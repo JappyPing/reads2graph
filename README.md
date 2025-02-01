@@ -41,7 +41,7 @@ conda config --add channels conda-forge
 ```
 conda create -n reads2graph-env
 conda activate reads2graph-env
-conda install cmake==3.27.6 gxx_linux-64==13.2.0 sharg==1.1.1 seqan3==3.3.0 boost==1.82.0 openmp==8.0.1
+conda install cmake==3.27.6 gxx_linux-64==13.2.0 sharg==1.1.1 seqan3==3.3.0 boost==1.82.0 openmp==8.0.1 xxhash==0.8.2
 ```
 #### Compile read2graph
 ```
