@@ -181,9 +181,9 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                                     .long_id = "w_size",
                                     .description = "The window size for minimiser."});
 
-    parser.add_option(args.w_k,
-                      sharg::config{.long_id = "w_k",
-                                    .description = "The difference (w-k) between k and w"});
+    parser.add_option(args.beta,
+                      sharg::config{.long_id = "beta",
+                                    .description = "The relationship (w=beta * k) between k and w"});
 
     parser.add_option(args.n_kmer,
                       sharg::config{.long_id = "n_kmer",

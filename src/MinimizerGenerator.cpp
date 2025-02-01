@@ -40,23 +40,35 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
             // else if (args.read_length > 100 && args.read_length <= 300) {
             //     num_substr = 4;
             // }   
-            k_size = k_estimate(num_substr);
+            // k_size = k_estimate(num_substr);
         }
-        if (args.bucketing_mode == "minimizer_gomh" && args.read_length >= 16) {
+        if (args.segmentation) {
             uint8_t segment_size = static_cast<uint8_t>(std::ceil(args.read_length / num_substr));
-            if (args.segmentation) {
+            if (args.bucketing_mode == "minimizer_gomh" && args.read_length >= 16) {
+                k_size = k_estimate(num_substr);
                 // auto substr_size = static_cast<uint8_t>(sub_str.size());
-                w_size = static_cast<uint8_t>(segment_size * 0.5);
+                w_size = static_cast<uint8_t>(segment_size * 0.5);  
+            } else if (args.bucketing_mode == "miniception_gomh"){
+                k_size = static_cast<uint8_t>(std::ceil((2 * (args.read_length + 1) - args.n_kmer * (args.beta + 1)) / (args.n_kmer + 2))); 
+                if (k_size < 3){
+                    k_size = 3;
+                }                   
+                w_size = static_cast<uint8_t>(std::ceil(k_size * args.beta));
+                if (w_size >= segment_size) {
+                    w_size = static_cast<uint8_t>(segment_size * 0.5); 
+                }
+            }          
+        } else {
+            if (args.bucketing_mode == "miniception_gomh"){
+                // k_size = static_cast<uint8_t>(std::ceil((2 * (args.read_length + 1) - args.n_kmer * (args.beta + 1)) / (args.n_kmer + 2)));
+                k_size = static_cast<uint8_t>(std::ceil((2 * (args.read_length + 1) - args.n_kmer) / (args.n_kmer * args.beta + 2)));
+                if (k_size < 3){
+                    k_size = 3;
+                }  
             } else {
-                w_size = segment_size;
-            }                
-        }
-        if (args.bucketing_mode == "miniception_gomh" && !args.segmentation){
-            k_size = static_cast<uint8_t>(std::ceil((2 * (args.read_length + 1) - args.n_kmer * (args.w_k + 1)) / (args.n_kmer + 2)));
-            w_size = k_size + args.w_k;
-            if (k_size < 3){
-                k_size = 3;
-            }
+                k_size = k_estimate(num_substr);
+            } 
+            w_size = static_cast<uint8_t>(std::ceil(k_size * args.beta));
         }
     } else { 
         k_size = args.k_size;
@@ -74,7 +86,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                 auto sub_strs = divide_into_substrings(read, num_substr);
                 for (auto const & sub_str : sub_strs){
                     if (args.bucketing_mode == "miniception_gomh") {
-                        minimisers = Miniception(args).miniception_main(sub_str, k_size, k_size + args.w_k, args.seed);                 
+                        minimisers = Miniception(args).miniception_main(sub_str, k_size, k_size + args.beta, args.seed);                 
                     } else if (args.bucketing_mode == "minimizer_gomh") {
                         // auto substr_size = static_cast<uint8_t>(sub_str.size());
                         // uint8_t w_size = static_cast<uint8_t>(substr_size * 0.5);
@@ -118,8 +130,8 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
             Utils::getInstance().logger(LOG_LEVEL_DEBUG, boost::str(boost::format("Size of minimiser2reads: %1%!") % bin_n));
             return minimiser2reads;  
         } else {
-            k_size -= 2;
-            w_size += 2;
+            k_size--;
+            w_size++;
             if (w_size >= (max_w - 1) || k_size == 4){
                 return minimiser2reads;
             }
