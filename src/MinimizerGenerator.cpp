@@ -43,13 +43,12 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
             // k_size = k_estimate(num_substr);
         }
         if (args.segmentation) {
+            k_size = k_estimate(num_substr);
             uint8_t segment_size = static_cast<uint8_t>(std::ceil(args.read_length / num_substr));
             if (args.bucketing_mode == "minimizer_gomh" && args.read_length >= 16) {
-                k_size = k_estimate(num_substr);
-                // auto substr_size = static_cast<uint8_t>(sub_str.size());
                 w_size = static_cast<uint8_t>(segment_size * 0.5);  
             } else if (args.bucketing_mode == "miniception_gomh"){
-                k_size = static_cast<uint8_t>(std::ceil((2 * (args.read_length + 1) - args.n_kmer * (args.beta + 1)) / (args.n_kmer + 2))); 
+                k_size = static_cast<uint8_t>(std::ceil((2 * (segment_size + 1) - 2 * (args.beta + 1)) / (2 + 2))); // here, n_kmer = 2
                 if (k_size < 3){
                     k_size = 3;
                 }                   
@@ -65,7 +64,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                 if (k_size < 3){
                     k_size = 3;
                 }  
-            } else {
+            } else if (args.bucketing_mode == "minimizer_gomh") {
                 k_size = k_estimate(num_substr);
             } 
             w_size = static_cast<uint8_t>(std::ceil(k_size * args.beta));
@@ -184,33 +183,33 @@ uint8_t MinimizerGenerator::wSize(uint8_t k, uint8_t read_len) {
 //     return k;
 // }
 
-uint8_t MinimizerGenerator::k_estimate(uint8_t N) {
-    int segment_size = args.read_length / N;
-    uint8_t k = static_cast<uint8_t>(ceil((args.differ_kmer_ratio * N * (1 + segment_size))/(1 + N * args.differ_kmer_ratio)));
-    if (k >= 28) {
-        k = 27;       
-    } else if (k < 4){
-        k = 4;       
-    }
-    return k;
-}
-
 // uint8_t MinimizerGenerator::k_estimate(uint8_t N) {
-//     uint8_t k;
-//     if (args.segmentation) {
-//         int segment_size = args.read_length / N;
-//         k = static_cast<uint8_t>(ceil((args.differ_kmer_ratio * N * (1 + segment_size))/(2 + N * args.differ_kmer_ratio)));
-//     } else {
-//         // p = (L-k+1 - d*k)/(L-k+1)
-//         k = ceil((1-args.probability)*(1+args.read_length)/(1+args.max_edit_dis-args.probability));         
-//     }
-//     if (k > 28) {
-//         k = 28;       
+//     int segment_size = args.read_length / N;
+//     uint8_t k = static_cast<uint8_t>(ceil((args.differ_kmer_ratio * N * (1 + segment_size))/(1 + N * args.differ_kmer_ratio)));
+//     if (k >= 28) {
+//         k = 27;       
 //     } else if (k < 4){
 //         k = 4;       
 //     }
 //     return k;
 // }
+
+uint8_t MinimizerGenerator::k_estimate(uint8_t N) {
+    uint8_t k;
+    if (args.segmentation) {
+        int segment_size = args.read_length / N;
+        k = static_cast<uint8_t>(ceil((args.differ_kmer_ratio * N * (1 + segment_size))/(2 + N * args.differ_kmer_ratio)));
+    } else {
+        // p = (L-k+1 - d*k)/(L-k+1)
+        k = ceil((1-args.probability)*(1+args.read_length)/(1+args.max_edit_dis-args.probability));         
+    }
+    if (k > 28) {
+        k = 28;       
+    } else if (k < 4){
+        k = 4;       
+    }
+    return k;
+}
 
 
 double MinimizerGenerator::proba(unsigned L, unsigned k) {
