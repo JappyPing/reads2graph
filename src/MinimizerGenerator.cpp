@@ -51,6 +51,12 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                 w_size = segment_size;
             }                
         }
+        if (args.bucketing_mode == "miniception_gomh" && !args.segmentation){
+            k_size = static_cast<uint8_t>(std::ceil((2 * (args.read_length + 1) - args.n_kmer * (args.w_k + 1)) / (args.n_kmer + 2)));
+            if (k_size < 3){
+                k_size = 3;
+            }
+        }
     } else { 
         k_size = args.k_size;
         w_size = args.w_size;
@@ -67,7 +73,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                 auto sub_strs = divide_into_substrings(read, num_substr);
                 for (auto const & sub_str : sub_strs){
                     if (args.bucketing_mode == "miniception_gomh") {
-                        minimisers = Miniception(args).miniception_main(sub_str, k_size, k_size + 1, args.seed);                 
+                        minimisers = Miniception(args).miniception_main(sub_str, k_size, k_size + args.w_k, args.seed);                 
                     } else if (args.bucketing_mode == "minimizer_gomh") {
                         // auto substr_size = static_cast<uint8_t>(sub_str.size());
                         // uint8_t w_size = static_cast<uint8_t>(substr_size * 0.5);
@@ -88,10 +94,6 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                 } 
             } else {
                 if (args.bucketing_mode == "miniception_gomh") {
-                    k_size = static_cast<uint8_t>(std::ceil((2 * (args.read_length + 1) - args.n_kmer * (args.w_k + 1)) / (args.n_kmer + 2)));
-                    if (k_size < 3){
-                        k_size = 3;
-                    }
                     minimisers = Miniception(args).miniception_main(read, k_size, k_size + args.w_k, args.seed);                 
                 } else if (args.bucketing_mode == "minimizer_gomh") {
                     if ((w_size - k_size + 1) <= 2){
