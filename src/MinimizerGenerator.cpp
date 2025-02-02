@@ -68,8 +68,8 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                 k_size = k_estimate(num_substr);
             } 
             w_size = static_cast<uint8_t>(std::ceil(k_size * args.beta));
-            if (w_size >= args.read_length - l + 1) {
-                w_size = k_size; 
+            if (w_size >= args.read_length - k_size + 1) {
+                w_size = k_size + 1; 
             }            
         }
     } else { 
@@ -186,33 +186,33 @@ uint8_t MinimizerGenerator::wSize(uint8_t k, uint8_t read_len) {
 //     return k;
 // }
 
-// uint8_t MinimizerGenerator::k_estimate(uint8_t N) {
-//     int segment_size = args.read_length / N;
-//     uint8_t k = static_cast<uint8_t>(ceil((args.differ_kmer_ratio * N * (1 + segment_size))/(1 + N * args.differ_kmer_ratio)));
-//     if (k >= 28) {
-//         k = 27;       
-//     } else if (k < 4){
-//         k = 4;       
-//     }
-//     return k;
-// }
-
 uint8_t MinimizerGenerator::k_estimate(uint8_t N) {
-    uint8_t k;
-    if (args.segmentation) {
-        int segment_size = args.read_length / N;
-        k = static_cast<uint8_t>(ceil((args.differ_kmer_ratio * N * (1 + segment_size))/(2 + N * args.differ_kmer_ratio)));
-    } else {
-        // p = (L-k+1 - d*k)/(L-k+1)
-        k = ceil((1-args.probability)*(1+args.read_length)/(1+args.max_edit_dis-args.probability));         
-    }
-    if (k > 28) {
-        k = 28;       
+    int segment_size = args.read_length / N;
+    uint8_t k = static_cast<uint8_t>(ceil((args.differ_kmer_ratio * N * (1 + segment_size))/(1 + N * args.differ_kmer_ratio)));
+    if (k >= 28) {
+        k = 27;       
     } else if (k < 4){
         k = 4;       
     }
     return k;
 }
+
+// uint8_t MinimizerGenerator::k_estimate(uint8_t N) {
+//     uint8_t k;
+//     if (args.segmentation) {
+//         int segment_size = args.read_length / N;
+//         k = static_cast<uint8_t>(ceil((args.differ_kmer_ratio * N * (1 + segment_size))/(2 + N * args.differ_kmer_ratio)));
+//     } else {
+//         // p = (L-k+1 - d*k)/(L-k+1)
+//         k = ceil((1-args.probability)*(1+args.read_length)/(1+args.max_edit_dis-args.probability));         
+//     }
+//     if (k > 28) {
+//         k = 28;       
+//     } else if (k < 4){
+//         k = 4;       
+//     }
+//     return k;
+// }
 
 
 double MinimizerGenerator::proba(unsigned L, unsigned k) {
