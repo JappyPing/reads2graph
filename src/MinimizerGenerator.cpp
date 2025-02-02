@@ -188,9 +188,9 @@ uint8_t MinimizerGenerator::wSize(uint8_t k, uint8_t read_len) {
 
 uint8_t MinimizerGenerator::k_estimate(uint8_t N) {
     int segment_size = args.read_length / N;
-    uint8_t k = static_cast<uint8_t>(ceil((args.differ_kmer_ratio * N * (1 + segment_size))/(1 + N * args.differ_kmer_ratio)));
-    if (k >= 28) {
-        k = 27;       
+    uint8_t k = static_cast<uint8_t>(ceil((args.differ_kmer_ratio * N * (1 + segment_size))/(2 + N * args.differ_kmer_ratio)));
+    if (k > 28) {
+        k = 28;       
     } else if (k < 4){
         k = 4;       
     }
