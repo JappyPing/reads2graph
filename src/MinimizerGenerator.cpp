@@ -68,6 +68,9 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                 k_size = k_estimate(num_substr);
             } 
             w_size = static_cast<uint8_t>(std::ceil(k_size * args.beta));
+            if (w_size >= args.read_length - l + 1) {
+                w_size = k_size; 
+            }            
         }
     } else { 
         k_size = args.k_size;
