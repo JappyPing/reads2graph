@@ -101,6 +101,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> gOMH::
 
 
 std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> gOMH::gomh2read_main(std::vector<std::vector<seqan3::dna5>> unique_reads, std::vector<std::pair<std::uint64_t, unsigned>> seeds_k){
+    std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> cur_gomh2reads;
     if (args.gomh_flag){
         // When the permutation_times larger than the number of k-mer candidates and the kmer size are the same one, bucketing the reads using each kmer candidate
         auto first_pair = seeds_k[0];
@@ -112,7 +113,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> gOMH::
             for (auto const & gomh_val : gomh_values){
                 #pragma omp critical
                 {
-                    gomh2reads[gomh_val].push_back(read);
+                    cur_gomh2reads[gomh_val].push_back(read);
                 }                    
             }
         }  
@@ -126,13 +127,13 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> gOMH::
                 auto gomh_value = gomh_pos(read, k, seed); 
                 #pragma omp critical
                 {
-                    gomh2reads[gomh_value].push_back(read);
+                    cur_gomh2reads[gomh_value].push_back(read);
                 }        
             } 
         }        
     }
     Utils::getInstance().logger(LOG_LEVEL_DEBUG, "All the unique reads for gOMH done.");  
-    return gomh2reads;            
+    return cur_gomh2reads;            
 }
 
 std::string gOMH::getGappedSubstring(const std::string& str, size_t startPos, size_t length) {

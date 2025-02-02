@@ -191,16 +191,16 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
             // }
             args.gomh_times = 5;
         } else {
-            args.gomh_times = 4;
-            // if (args.max_edit_dis == 1){
-            //     args.gomh_times = 4;
-            // } else if (args.max_edit_dis == 2){
-            //     args.gomh_times = 3;
-            // } else if (args.max_edit_dis == 3){
-            //     args.gomh_times = 2;                
-            // } else {
-            //     args.gomh_times = 1;
-            // }
+            // args.gomh_times = 4;
+            if (args.max_edit_dis == 1){
+                args.gomh_times = 4;
+            } else if (args.max_edit_dis == 2){
+                args.gomh_times = 3;
+            } else if (args.max_edit_dis == 3){
+                args.gomh_times = 2;                
+            } else {
+                args.gomh_times = 1;
+            }
         }
     }
 
@@ -217,31 +217,31 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
         std::vector<std::pair<std::uint64_t, unsigned>> seeds_k;
         uint8_t d_t = args.max_edit_dis;
         if (args.min_edit_dis <= args.max_edit_dis){
-            std::uint64_t cur_k = gOMH(args).gomh_k(args.read_length, args.probability, d_t);
-            // for (unsigned int cur_d = d_t; cur_d >= 1; cur_d--) {
-                // std::uint64_t cur_k = gOMH(args).gomh_k(args.read_length, args.probability, cur_d);
+            // std::uint64_t cur_k = gOMH(args).gomh_k(args.read_length, args.probability, d_t);
+            for (unsigned int cur_d = d_t; cur_d >= 1; cur_d--) {
+                std::uint64_t cur_k = gOMH(args).gomh_k(args.read_length, args.probability, cur_d);
                 for (unsigned j = 0; j < args.gomh_times; ++j) {
                     std::uint64_t cur_seed = distribution(generator);
                     std::pair<std::uint64_t, unsigned> cur_pair = std::make_pair(cur_seed, cur_k);
                     seeds_k.push_back(cur_pair);                   
                 } 
-            // }   
+            }   
             /////////////////////////////////////////////////////
             // When the permutation_times larger than the number of k-mer candidates and the kmer size are the same one, bucketing the reads using each kmer candidate
-            // int flag = 0;
-            // unsigned first_k = seeds_k.front().second;
-            // for (const auto& pair : seeds_k) {
-            //     if (pair.second != first_k) {
-            //         flag += 1;
-            //     }
-            // }
-            // if (flag == 0) {
-            //     auto gomh_kmer_n = args.read_length - 2 * first_k + 1;
-            //     auto permutation_times = args.max_edit_dis * args.gomh_times;  
-            //     if (permutation_times >= gomh_kmer_n){
-            //         args.gomh_flag = true;
-            //     }              
-            // }
+            int flag = 0;
+            unsigned first_k = seeds_k.front().second;
+            for (const auto& pair : seeds_k) {
+                if (pair.second != first_k) {
+                    flag += 1;
+                }
+            }
+            if (flag == 0) {
+                auto gomh_kmer_n = args.read_length - 2 * first_k + 1;
+                auto permutation_times = args.max_edit_dis * args.gomh_times;  
+                if (permutation_times >= gomh_kmer_n){
+                    args.gomh_flag = true;
+                }              
+            }
             /////////////////////////////////////////////////////
         } else {
              Utils::getInstance().logger(LOG_LEVEL_ERROR, boost::str(boost::format("min_edit_dis(%1%) should not be larger than max_edit_dis(%2%)") % args.min_edit_dis % args.max_edit_dis));
@@ -249,50 +249,50 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
         // std::atomic<int> singleton_bucket_num{0};
 
         for (const auto &el_group : large_group){
-            std::size_t n_unique_reads = el_group.size();
-            for(auto &pair : seeds_k){ // k is the same k, but with different seed the bucketing changes
-                std::uint64_t seed = pair.first;
-                unsigned k = pair.second;            
-                // auto cur_hash2reads = gOMH(args).gomh2read_main(el_group, seeds_k);
-                std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> cur_hash2reads;
-                while (1){
-                    cur_hash2reads = gOMH(args).gomh2reads_main(el_group, seed, k);
-                    auto cur_bin_n = cur_hash2reads.size();
+            // std::size_t n_unique_reads = el_group.size();
+            // for(auto &pair : seeds_k){ // k is the same k, but with different seed the bucketing changes
+            //     std::uint64_t seed = pair.first;
+            //     unsigned k = pair.second;            
+            auto cur_hash2reads = gOMH(args).gomh2read_main(el_group, seeds_k);
+                // std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> cur_hash2reads;
+                // while (1){
+                //     cur_hash2reads = gOMH(args).gomh2reads_main(el_group, seed, k);
+                //     auto cur_bin_n = cur_hash2reads.size();
 
-                    if (cur_bin_n < (n_unique_reads * args.bin2reads_ratio)){
-                        break;  
-                    } else {
-                        k--;
-                        if (k == 3){
-                            break;
-                        }
-                    }
-                }
-                auto bin_size = cur_hash2reads.size();
-                #pragma omp parallel for num_threads(args.num_process) schedule(static)
-                for (auto i = 0u; i < bin_size; ++i) {
-                    const auto &cur_entry = *std::next(cur_hash2reads.begin(), i);
-                    const std::vector<std::vector<seqan3::dna5>> &cur_reads_vec = cur_entry.second;
-                    // auto cur_num = cur_reads_vec.size();
-                    // if ( cur_num == 1){
-                    //     singleton_bucket_num++;
-                    //     continue;
-                    // } else 
-                    if (bin_size >= 2 && bin_size < args.bin_size_max){
-                        #pragma omp critical
-                        {
-                            normal_group.emplace_back(cur_reads_vec);
-                        } 
-                    } else if (bin_size >= args.bin_size_max) {
-                        #pragma omp critical
-                        {
-                            l_group.emplace_back(cur_reads_vec); 
-                        }
+                //     if (cur_bin_n < (n_unique_reads * args.bin2reads_ratio)){
+                //         break;  
+                //     } else {
+                //         k--;
+                //         if (k == 3){
+                //             break;
+                //         }
+                //     }
+                // }
+            auto bin_size = cur_hash2reads.size();
+            #pragma omp parallel for num_threads(args.num_process) schedule(static)
+            for (auto i = 0u; i < bin_size; ++i) {
+                const auto &cur_entry = *std::next(cur_hash2reads.begin(), i);
+                const std::vector<std::vector<seqan3::dna5>> &cur_reads_vec = cur_entry.second;
+                // auto cur_num = cur_reads_vec.size();
+                // if ( cur_num == 1){
+                //     singleton_bucket_num++;
+                //     continue;
+                // } else 
+                if (bin_size >= 2 && bin_size < args.bin_size_max){
+                    #pragma omp critical
+                    {
+                        normal_group.emplace_back(cur_reads_vec);
                     } 
-                }
+                } else if (bin_size >= args.bin_size_max) {
+                    #pragma omp critical
+                    {
+                        l_group.emplace_back(cur_reads_vec); 
+                    }
+                } 
             }
+            // }
         }
-        // args.gomh_flag = false; // make this flag false after using gomh2read_main
+        args.gomh_flag = false; // make this flag false after using gomh2read_main
         auto bucket_num = normal_group.size();
         // Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("After bucketing large-size groups with gOMH, there are %1% single-size buckets and %2% buckets ranging from size 2 to %3%.") % singleton_bucket_num % bucket_num % args.bin_size_max));
         Utils::getInstance().logger(LOG_LEVEL_INFO, boost::str(boost::format("After %1% rounds bucketing large-size groups with gOMH, %2% buckets ranging from size 2 to %3%.") % args.gomh_times % bucket_num % args.bin_size_max));
