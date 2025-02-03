@@ -181,6 +181,10 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                                     .long_id = "w_size",
                                     .description = "The window size for minimiser."});
 
+    parser.add_option(args.alpha,
+                      sharg::config{.long_id = "alpha",
+                                    .description = "For window size determination from segment size. w = sge_size * alpha."});
+
     parser.add_option(args.beta,
                       sharg::config{.long_id = "beta",
                                     .description = "The relationship (w=beta * k) between k and w"});

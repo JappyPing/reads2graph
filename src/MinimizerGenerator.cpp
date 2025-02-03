@@ -46,7 +46,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
             k_size = k_estimate(num_substr);
             uint8_t segment_size = static_cast<uint8_t>(std::ceil(args.read_length / num_substr));
             if (args.bucketing_mode == "minimizer_gomh" && args.read_length >= 16) {
-                w_size = static_cast<uint8_t>(segment_size * 0.5);  
+                w_size = static_cast<uint8_t>(segment_size * args.alpha);  
             } else if (args.bucketing_mode == "miniception_gomh"){
                 k_size = static_cast<uint8_t>(std::ceil((2 * (segment_size + 1) - 2 * (args.beta + 1)) / (2 + 2))); // here, n_kmer = 2
                 if (k_size < 3){
@@ -54,16 +54,17 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                 }                   
                 w_size = static_cast<uint8_t>(std::ceil(k_size * args.beta));
                 if (w_size >= segment_size) {
-                    w_size = static_cast<uint8_t>(segment_size * 0.5); 
+                    w_size = static_cast<uint8_t>(segment_size * args.alpha); 
                 }
             }          
         } else {
             if (args.bucketing_mode == "miniception_gomh"){
-                // k_size = static_cast<uint8_t>(std::ceil((2 * (args.read_length + 1) - args.n_kmer * (args.beta + 1)) / (args.n_kmer + 2)));
+
                 k_size = static_cast<uint8_t>(std::ceil((2 * (args.read_length + 1) - args.n_kmer) / (args.n_kmer * args.beta + 2)));
                 if (k_size < 3){
                     k_size = 3;
                 }  
+                // w_size = static_cast<uint8_t>(std::ceil(k_size * args.beta));
             } else if (args.bucketing_mode == "minimizer_gomh") {
                 k_size = k_estimate(num_substr);
             } 
@@ -183,6 +184,17 @@ uint8_t MinimizerGenerator::wSize(uint8_t k, uint8_t read_len) {
 //     double term = std::pow(1 - args.probability, 1.0 / num_substr);
 //     double k_max = std::min((term * (L_seg + 1)) / (args.max_edit_dis / static_cast<double>(num_substr) + term), L_seg / args.max_edit_dis);
 //     uint8_t k = std::min(std::max(4, static_cast<int>(std::floor(k_max))), 28);
+//     return k;
+// }
+
+// uint8_t MinimizerGenerator::k_estimate(uint8_t N) {
+//     int segment_size = args.read_length / N;
+//     uint8_t k = static_cast<uint8_t>(ceil((args.differ_kmer_ratio * N * (1 + segment_size))/(1 + N * args.differ_kmer_ratio)));
+//     if (k > 28) {
+//         k = 28;       
+//     } else if (k < 4){
+//         k = 4;       
+//     }
 //     return k;
 // }
 
