@@ -114,13 +114,13 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                 if (args.bucketing_mode == "miniception_gomh") {
                     minimisers = Miniception(args).miniception_main(read, k_size, w_size, args.seed);                 
                 } else if (args.bucketing_mode == "minimizer_gomh") {
-                    if ((w_size - k_size + 1) <= 2){
-                        auto minimiser_range = read | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{k_size}}) | seqan3::views::minimiser(w_size); 
-                        std::ranges::copy(minimiser_range, std::back_inserter(minimisers));
-                    } else {
-                        auto minimiser_range = read | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{k_size}}) | seqan3::views::minimiser(w_size - k_size + 1); 
-                        std::ranges::copy(minimiser_range, std::back_inserter(minimisers));
-                    }        
+                    // if ((w_size - k_size + 1) <= 2){
+                    //     auto minimiser_range = read | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{k_size}}) | seqan3::views::minimiser(w_size); 
+                    //     std::ranges::copy(minimiser_range, std::back_inserter(minimisers));
+                    // } else {
+                    auto minimiser_range = read | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{k_size}}) | seqan3::views::minimiser(w_size - k_size + 1); 
+                    std::ranges::copy(minimiser_range, std::back_inserter(minimisers));
+                    // }        
                 } 
                 for (auto const &minimiser : minimisers) {
                     #pragma omp critical
