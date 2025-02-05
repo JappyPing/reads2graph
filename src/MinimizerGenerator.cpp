@@ -135,7 +135,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
         } else {
             k_size--;
             w_size++;
-            if (w_size >= (max_w - 1) || k_size == 4){
+            if (w_size >= (max_w - 1) || k_size <= 4){
                 return minimiser2reads;
             }
         }
