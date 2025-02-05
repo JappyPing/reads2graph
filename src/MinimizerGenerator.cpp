@@ -53,8 +53,10 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                     k_size = 3;
                 }                   
                 w_size = static_cast<uint8_t>(std::ceil(k_size * args.beta));
+                
                 if (w_size >= segment_size) {
-                    w_size = static_cast<uint8_t>(segment_size * args.alpha); 
+                    // w_size = static_cast<uint8_t>(segment_size * args.alpha);
+                    w_size = k_size + 1; 
                 }
             }          
         } else {
