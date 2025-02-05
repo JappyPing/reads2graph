@@ -64,14 +64,16 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                 if (k_size < 3){
                     k_size = 3;
                 }  
+                w_size = static_cast<uint8_t>(std::ceil(k_size * args.beta));
+                if (w_size >= args.read_length - k_size + 1) {
+                    w_size = k_size + 1; 
+                }                  
                 // w_size = static_cast<uint8_t>(std::ceil(k_size * args.beta));
             } else if (args.bucketing_mode == "minimizer_gomh") {
                 k_size = k_estimate(num_substr);
+                uint8_t segment_size = static_cast<uint8_t>(std::ceil(args.read_length / num_substr));
+                w_size = static_cast<uint8_t>(segment_size * args.alpha); 
             } 
-            w_size = static_cast<uint8_t>(std::ceil(k_size * args.beta));
-            if (w_size >= args.read_length - k_size + 1) {
-                w_size = k_size + 1; 
-            }            
         }
     } else { 
         k_size = args.k_size;
@@ -189,7 +191,7 @@ uint8_t MinimizerGenerator::wSize(uint8_t k, uint8_t read_len) {
 
 // uint8_t MinimizerGenerator::k_estimate(uint8_t N) {
 //     int segment_size = args.read_length / N;
-//     uint8_t k = static_cast<uint8_t>(ceil((args.differ_kmer_ratio * N * (1 + segment_size))/(1 + N * args.differ_kmer_ratio)));
+//     uint8_t k = static_cast<uint8_t>(ceil((args.differ_kmer_ratio * (1 + segment_size))/(1 + args.differ_kmer_ratio)));
 //     if (k > 28) {
 //         k = 28;       
 //     } else if (k < 4){
@@ -200,7 +202,7 @@ uint8_t MinimizerGenerator::wSize(uint8_t k, uint8_t read_len) {
 
 uint8_t MinimizerGenerator::k_estimate(uint8_t N) {
     int segment_size = args.read_length / N;
-    uint8_t k = static_cast<uint8_t>(ceil((args.differ_kmer_ratio * N * (1 + segment_size))/(2 + N * args.differ_kmer_ratio)));
+    uint8_t k = static_cast<uint8_t>(ceil((args.differ_kmer_ratio * N * (1 + segment_size))/(3 + N * args.differ_kmer_ratio)));
     if (k > 28) {
         k = 28;       
     } else if (k < 4){
