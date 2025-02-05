@@ -26,7 +26,7 @@
 int num_cores_to_use;  // Define the global variable
 
 #define reads2graph_VERSION "1.1.0"
-#define last_update_date "01.Feb.2025"
+#define last_update_date "05.Feb.2025"
 
 using namespace std;
 
@@ -183,11 +183,11 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
 
     parser.add_option(args.alpha,
                       sharg::config{.long_id = "alpha",
-                                    .description = "For window size determination from segment size. w = sge_size * alpha."});
+                                    .description = "For window size determination from segment size, w = sge_size * alpha for minimizer bucketing. Default 1"});
 
     parser.add_option(args.beta,
                       sharg::config{.long_id = "beta",
-                                    .description = "The relationship (w=beta * k) between k and w"});
+                                    .description = "The relationship (w=beta * k) between k and w for miniception bucketing. Default 2."});
 
     parser.add_option(args.n_kmer,
                       sharg::config{.long_id = "n_kmer",
