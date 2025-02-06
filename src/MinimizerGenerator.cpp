@@ -87,68 +87,70 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
         num_substr = args.substr_number;
     }  
     // uint8_t estimated_k = k_size;
-    uint8_t max_w = static_cast<uint8_t>(std::ceil(args.read_length / num_substr));
-    while (1){
-        std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> minimiser2reads;
-        #pragma omp parallel for num_threads(args.num_process) schedule(static)
-        for (auto const & read : unique_reads){
-            std::vector<std::uint64_t> minimisers;
-            if (args.segmentation){
-                auto sub_strs = divide_into_substrings(read, num_substr);
-                for (auto const & sub_str : sub_strs){
-                    if (args.bucketing_mode == "miniception_gomh") {
-                        minimisers = Miniception(args).miniception_main(sub_str, k_size, k_size + args.beta, args.seed);                 
-                    } else if (args.bucketing_mode == "minimizer_gomh") {
-                        // auto substr_size = static_cast<uint8_t>(sub_str.size());
-                        // uint8_t w_size = static_cast<uint8_t>(substr_size * 0.5);
-                        if ((w_size - k_size + 1) <= 2){
-                            auto minimiser_range = sub_str | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{k_size}}) | seqan3::views::minimiser(w_size); 
-                            std::ranges::copy(minimiser_range, std::back_inserter(minimisers));
-                        } else {
-                            auto minimiser_range = sub_str | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{k_size}}) | seqan3::views::minimiser(w_size - k_size + 1); 
-                            std::ranges::copy(minimiser_range, std::back_inserter(minimisers));
-                        }          
-                    }
-                    for (auto const &minimiser : minimisers) {
-                        #pragma omp critical
-                        {
-                            minimiser2reads[minimiser].push_back(read);
-                        }
-                    } 
-                } 
-            } else {
+    // uint8_t max_w = static_cast<uint8_t>(std::ceil(args.read_length / num_substr));
+    // while (1){
+    std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> minimiser2reads;
+    #pragma omp parallel for num_threads(args.num_process) schedule(static)
+    for (auto const & read : unique_reads){
+        std::vector<std::uint64_t> minimisers;
+        if (args.segmentation){
+            auto sub_strs = divide_into_substrings(read, num_substr);
+            for (auto const & sub_str : sub_strs){
                 if (args.bucketing_mode == "miniception_gomh") {
-                    minimisers = Miniception(args).miniception_main(read, k_size, w_size, args.seed);                 
+                    minimisers = Miniception(args).miniception_main(sub_str, k_size, k_size + args.beta, args.seed);                 
                 } else if (args.bucketing_mode == "minimizer_gomh") {
+                    // auto substr_size = static_cast<uint8_t>(sub_str.size());
+                    // uint8_t w_size = static_cast<uint8_t>(substr_size * 0.5);
                     if ((w_size - k_size + 1) <= 2){
-                        auto minimiser_range = read | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{k_size}}) | seqan3::views::minimiser(w_size); 
+                        auto minimiser_range = sub_str | seqan3::views::kmer_hash(seqan3::ungapped{k_size}) | seqan3::views::minimiser(w_size); 
                         std::ranges::copy(minimiser_range, std::back_inserter(minimisers));
                     } else {
-                        auto minimiser_range = read | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{k_size}}) | seqan3::views::minimiser(w_size - k_size + 1); 
+                        auto minimiser_range = sub_str | seqan3::views::kmer_hash(seqan3::ungapped{k_size}) | seqan3::views::minimiser(w_size - k_size + 1); 
                         std::ranges::copy(minimiser_range, std::back_inserter(minimisers));
-                    }        
-                } 
+                    }          
+                }
                 for (auto const &minimiser : minimisers) {
                     #pragma omp critical
                     {
                         minimiser2reads[minimiser].push_back(read);
                     }
-                }                
-            }
-        }
-        std::size_t bin_n = minimiser2reads.size();
-        if (bin_n < (args.uni_reads_num * args.bin2reads_ratio)){
-            Utils::getInstance().logger(LOG_LEVEL_DEBUG, boost::str(boost::format("Size of minimiser2reads: %1%!") % bin_n));
-            return minimiser2reads;  
+                } 
+            } 
         } else {
-            k_size--;
-            w_size++;
-            if (w_size >= (max_w - 1) || k_size <= 4){
-                return minimiser2reads;
-            }
+            if (args.bucketing_mode == "miniception_gomh") {
+                minimisers = Miniception(args).miniception_main(read, k_size, w_size, args.seed);                 
+            } else if (args.bucketing_mode == "minimizer_gomh") {
+                if ((w_size - k_size + 1) <= 2){
+                    auto minimiser_range = read | seqan3::views::kmer_hash(seqan3::ungapped{k_size}) | seqan3::views::minimiser(w_size); 
+                    std::ranges::copy(minimiser_range, std::back_inserter(minimisers));
+                } else {
+                    auto minimiser_range = read | seqan3::views::kmer_hash(seqan3::ungapped{k_size}) | seqan3::views::minimiser(w_size - k_size + 1); 
+                    std::ranges::copy(minimiser_range, std::back_inserter(minimisers));
+                }        
+            } 
+            for (auto const &minimiser : minimisers) {
+                #pragma omp critical
+                {
+                    minimiser2reads[minimiser].push_back(read);
+                }
+            }                
         }
     }
+    return minimiser2reads;
 }
+        // std::size_t bin_n = minimiser2reads.size();
+        // if (bin_n < (args.uni_reads_num * args.bin2reads_ratio)){
+        //     Utils::getInstance().logger(LOG_LEVEL_DEBUG, boost::str(boost::format("Size of minimiser2reads: %1%!") % bin_n));
+        //     return minimiser2reads;  
+        // } else {
+        //     k_size--;
+        //     w_size++;
+        //     if (w_size >= (max_w - 1) || k_size <= 4){
+        //         return minimiser2reads;
+        //     }
+        // }
+    // }
+// }
 
 // Function to split each sequence in the read vector into substrings
 std::vector<std::vector<seqan3::dna5>> MinimizerGenerator::divide_into_substrings(const std::vector<seqan3::dna5> & read, int num_substrs)
@@ -208,9 +210,9 @@ uint8_t MinimizerGenerator::wSize(uint8_t k, uint8_t read_len) {
 
 uint8_t MinimizerGenerator::k_estimate(uint8_t N) {
     int segment_size = args.read_length / N;
-    uint8_t k = static_cast<uint8_t>(ceil((args.differ_kmer_ratio * N * (1 + segment_size))/(3 + N * args.differ_kmer_ratio)));
-    if (k > 28) {
-        k = 28;       
+    uint8_t k = static_cast<uint8_t>(round((args.differ_kmer_ratio * N * (1 + segment_size))/(3 + N * args.differ_kmer_ratio)));
+    if (k >= 28) {
+        k = 27;       
     } else if (k < 4){
         k = 4;       
     }

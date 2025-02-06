@@ -26,7 +26,7 @@
 int num_cores_to_use;  // Define the global variable
 
 #define reads2graph_VERSION "1.1.0"
-#define last_update_date "05.Feb.2025"
+#define last_update_date "06.Feb.2025"
 
 using namespace std;
 
@@ -212,9 +212,9 @@ void Utils::initialise_parser(sharg::parser & parser, cmd_arguments & args)
                                     .long_id = "num_process",
                                     .description = "The number of expected processes."});
 
-    parser.add_option(args.bin2reads_ratio,
-                      sharg::config{.long_id = "bin2reads_ratio",
-                                    .description = "The maximum allowable ratio of bin size to the total number of unique reads after minimizer bucketing. If the initially estimated k results in too many bins, this parameter will adjust k to reduce the bin count."});
+    // parser.add_option(args.bin2reads_ratio,
+    //                   sharg::config{.long_id = "bin2reads_ratio",
+    //                                 .description = "The maximum allowable ratio of bin size to the total number of unique reads after minimizer bucketing. If the initially estimated k results in too many bins, this parameter will adjust k to reduce the bin count."});
 
     // parser.add_option(args.graph_filename,
     //                   sharg::config{.short_id = 'g',
