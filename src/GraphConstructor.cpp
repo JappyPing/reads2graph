@@ -248,7 +248,7 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
             for (auto i = 0u; i < bin_size; ++i) {
                 const auto &cur_entry = *std::next(cur_hash2reads.begin(), i);
                 const std::vector<std::vector<seqan3::dna5>> &cur_reads_vec = cur_entry.second;
-                // auto cur_num = cur_reads_vec.size();
+                auto cur_num = cur_reads_vec.size();
                 if ( cur_num == 1){
                     // singleton_bucket_num++;
                     continue;
@@ -447,12 +447,11 @@ void GraphConstructor::update_graph_omh(std::vector<std::vector<seqan3::dna5>> u
     for (auto i = 0u; i < cur_bin_n; ++i) {
         const auto &cur_entry = *std::next(cur_hash2reads.begin(), i);
         const std::vector<std::vector<seqan3::dna5>> &cur_reads_vec = cur_entry.second;
-        // auto cur_num = cur_reads_vec.size();
-        // if ( cur_num == 1){
-        //     singleton_bucket_num++;
-        //     continue;
-        // } else 
-        if (cur_bin_n >= 2 && cur_bin_n < args.bin_size_max){
+        auto cur_num = cur_reads_vec.size();
+        if ( cur_num == 1){
+            // singleton_bucket_num++;
+            continue;
+        } else if (cur_bin_n >= 2 && cur_bin_n < args.bin_size_max){
             #pragma omp critical
             {
                 normal_group.emplace_back(cur_reads_vec);
@@ -805,11 +804,10 @@ void GraphConstructor::construt_graph_via_miniception(std::vector<std::vector<se
         const auto &cur_entry = *std::next(cur_hash2reads.begin(), i);
         const std::vector<std::vector<seqan3::dna5>> &cur_reads_vec = cur_entry.second;
         auto cur_num = cur_reads_vec.size();
-        // if ( cur_num == 1){
-        //     singleton_bucket_num++;
-        //     continue;
-        // } else 
-        if (cur_num >= 2){ 
+        if ( cur_num == 1){
+            // singleton_bucket_num++;
+            continue;
+        } else if (cur_num >= 2){ 
             // Atomic variables for positive and negative cases
             // std::atomic<int> positive_cases{0};
             // std::atomic<int> negative_cases{0};  
@@ -882,11 +880,10 @@ void GraphConstructor::construt_graph_via_omh(std::vector<std::vector<seqan3::dn
         const auto &cur_entry = *std::next(cur_hash2reads.begin(), i);
         const std::vector<std::vector<seqan3::dna5>> &cur_reads_vec = cur_entry.second;
         auto cur_num = cur_reads_vec.size();
-        // if ( cur_num == 1){
-        //     singleton_bucket_num++;
-        //     continue;
-        // } else 
-        if (cur_num >= 2){ 
+        if ( cur_num == 1){
+            // singleton_bucket_num++;
+            continue;
+        } else if (cur_num >= 2){ 
             // Atomic variables for positive and negative cases
             // std::atomic<int> positive_cases{0};
             // std::atomic<int> negative_cases{0};  
