@@ -182,22 +182,15 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
     
     if (args.default_params){
         if (args.read_length >= 6 && args.read_length < 16) {
-            // if (args.max_edit_dis == 1){
-            //     args.gomh_times = 5;
-            // } else if (args.max_edit_dis == 2){
-            //     args.gomh_times = 3;
-            // } else {
-            //     args.gomh_times = 2;
-            // }
-            args.gomh_times = 5;
+            args.gomh_times = 4;
         } else {
             // args.gomh_times = 4;
-            if (args.max_edit_dis == 1){
-                args.gomh_times = 4;
-            } else if (args.max_edit_dis == 2){
+            if (args.max_edit_dis == 1 || args.max_edit_dis == 2){
                 args.gomh_times = 3;
-            } else if (args.max_edit_dis == 3){
-                args.gomh_times = 2;                
+            // } else if (args.max_edit_dis == 2){
+            //     args.gomh_times = 3;
+            // } else if (args.max_edit_dis == 3){
+            //     args.gomh_times = 2;                
             } else {
                 args.gomh_times = 1;
             }
@@ -247,38 +240,19 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
              Utils::getInstance().logger(LOG_LEVEL_ERROR, boost::str(boost::format("min_edit_dis(%1%) should not be larger than max_edit_dis(%2%)") % args.min_edit_dis % args.max_edit_dis));
         }
         // std::atomic<int> singleton_bucket_num{0};
-
-        for (const auto &el_group : large_group){
-            // std::size_t n_unique_reads = el_group.size();
-            // for(auto &pair : seeds_k){ // k is the same k, but with different seed the bucketing changes
-            //     std::uint64_t seed = pair.first;
-            //     unsigned k = pair.second;            
+        #pragma omp parallel for num_threads(args.num_process) schedule(dynamic)
+        for (const auto &el_group : large_group){         
             auto cur_hash2reads = gOMH(args).gomh2read_main(el_group, seeds_k);
-                // std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> cur_hash2reads;
-                // while (1){
-                //     cur_hash2reads = gOMH(args).gomh2reads_main(el_group, seed, k);
-                //     auto cur_bin_n = cur_hash2reads.size();
-
-                //     if (cur_bin_n < (n_unique_reads * args.bin2reads_ratio)){
-                //         break;  
-                //     } else {
-                //         k--;
-                //         if (k == 3){
-                //             break;
-                //         }
-                //     }
-                // }
             auto bin_size = cur_hash2reads.size();
             #pragma omp parallel for num_threads(args.num_process) schedule(static)
             for (auto i = 0u; i < bin_size; ++i) {
                 const auto &cur_entry = *std::next(cur_hash2reads.begin(), i);
                 const std::vector<std::vector<seqan3::dna5>> &cur_reads_vec = cur_entry.second;
                 // auto cur_num = cur_reads_vec.size();
-                // if ( cur_num == 1){
-                //     singleton_bucket_num++;
-                //     continue;
-                // } else 
-                if (bin_size >= 2 && bin_size < args.bin_size_max){
+                if ( cur_num == 1){
+                    // singleton_bucket_num++;
+                    continue;
+                } else if (bin_size >= 2 && bin_size < args.bin_size_max){
                     #pragma omp critical
                     {
                         normal_group.emplace_back(cur_reads_vec);

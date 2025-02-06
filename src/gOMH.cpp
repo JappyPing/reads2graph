@@ -17,24 +17,25 @@ gOMH::gOMH(cmd_arguments args) : args(args) {}
 unsigned gOMH::gomh_k(unsigned L, double p, uint8_t d) {
     unsigned k;
     if (args.default_params) {
-        if (args.read_length >= 6 && args.read_length < 16){ 
-            k = 3;
-        } else {
+        if (args.read_length >= 6 && args.read_length < 50){
+            auto omh_kmer_n = args.read_length- 2 * args.omh_k + 1;
+            if (omh_kmer_n < 3 ){
+                Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("only %1% kmers setted for gOMH selection.") % omh_kmer_n));
+            }        
+            k = args.omh_k;
+        } else if (args.read_length >= 50 && args.read_length <= 300){
             k = ceil(((1-p)*(2+L))/(d+2-2*p));
             if (k < 4){
+                Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 4.") % k));
                 k = 4;
             } else if (k > 27) {
+                Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("Estimated k=%1% has been changed to 27.") % k));
                 k = 27;               
-            }      
-            auto gomh_kmer_n = L - 2 * k + 1;
-            while ((gomh_kmer_n <= args.gomh_times + 1) && k > 4){
-                k--;
-            }
+            }   
         }
-
     } else {
         k = args.gomh_k;
-    }        
+    }   
     return k;
 }
 /*
