@@ -43,7 +43,7 @@ public:
     std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> gomh2read_main(std::vector<std::vector<seqan3::dna5>> unique_reads, std::vector<std::pair<std::uint64_t, unsigned>> seeds_k);
     std::uint64_t gomh_pos(const std::vector<seqan3::dna5>& read, unsigned k, std::uint64_t seed);
     
-    unsigned gomh_k(unsigned L, double p, uint8_t d);
+    unsigned gomh_k_size(unsigned L, double p, uint8_t d);
     std::string getGappedSubstring(const std::string& str, size_t startPos, size_t length);
     std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> gomh2reads_main(std::vector<std::vector<seqan3::dna5>> unique_reads, std::uint64_t seed, unsigned k);
     std::vector<std::uint64_t> gomh_pos2(const std::vector<seqan3::dna5>& read, unsigned k, std::uint64_t seed);

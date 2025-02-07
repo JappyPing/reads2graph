@@ -14,7 +14,7 @@
 
 gOMH::gOMH(cmd_arguments args) : args(args) {}
 
-unsigned gOMH::gomh_k(unsigned L, double p, uint8_t d) {
+unsigned gOMH::gomh_k_size(unsigned L, double p, uint8_t d) {
     unsigned k;
     if (args.default_params) {
         if (args.read_length >= 6 && args.read_length < 50){

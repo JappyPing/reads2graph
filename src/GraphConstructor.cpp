@@ -210,9 +210,9 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
         std::vector<std::pair<std::uint64_t, unsigned>> seeds_k;
         uint8_t d_t = args.max_edit_dis;
         if (args.min_edit_dis <= args.max_edit_dis){
-            // std::uint64_t cur_k = gOMH(args).gomh_k(args.read_length, args.probability, d_t);
+            // std::uint64_t cur_k = gOMH(args).gomh_k_size(args.read_length, args.probability, d_t);
             for (unsigned int cur_d = d_t; cur_d >= 1; cur_d--) {
-                std::uint64_t cur_k = gOMH(args).gomh_k(args.read_length, args.probability, cur_d);
+                std::uint64_t cur_k = gOMH(args).gomh_k_size(args.read_length, args.probability, cur_d);
                 for (unsigned j = 0; j < args.gomh_times; ++j) {
                     std::uint64_t cur_seed = distribution(generator);
                     std::pair<std::uint64_t, unsigned> cur_pair = std::make_pair(cur_seed, cur_k);
@@ -388,9 +388,9 @@ void GraphConstructor::update_graph_omh(std::vector<std::vector<seqan3::dna5>> u
     std::vector<std::pair<std::uint64_t, unsigned>> seeds_k;
     uint8_t d_t = args.max_edit_dis;
     if (args.min_edit_dis <= args.max_edit_dis){
-        // std::uint64_t cur_k = gOMH(args).gomh_k(args.read_length, args.probability, d_t);
+        // std::uint64_t cur_k = gOMH(args).gomh_k_size(args.read_length, args.probability, d_t);
         for (unsigned int cur_d = d_t; cur_d >= 1; cur_d--) {
-            std::uint64_t cur_k = gOMH(args).gomh_k(args.read_length, args.probability, cur_d);
+            std::uint64_t cur_k = gOMH(args).gomh_k_size(args.read_length, args.probability, cur_d);
             for (unsigned j = 0; j < args.gomh_times; ++j) {
                 std::uint64_t cur_seed = distribution(generator);
                 std::pair<std::uint64_t, unsigned> cur_pair = std::make_pair(cur_seed, cur_k);
