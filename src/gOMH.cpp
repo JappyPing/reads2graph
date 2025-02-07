@@ -20,7 +20,7 @@ unsigned gOMH::gomh_k(unsigned L, double p, uint8_t d) {
         if (args.read_length >= 6 && args.read_length < 50){
             auto gomh_kmer_n = args.read_length- 2 * args.gomh_k + 1;
             if (gomh_kmer_n < 3 ){
-                Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("only %1% kmers setted for gOMH selection.") % omh_kmer_n));
+                Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("only %1% kmers setted for gOMH selection.") % gomh_kmer_n));
             }        
             k = args.gomh_k;
         } else if (args.read_length >= 50 && args.read_length <= 300){
