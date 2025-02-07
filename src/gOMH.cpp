@@ -18,11 +18,11 @@ unsigned gOMH::gomh_k(unsigned L, double p, uint8_t d) {
     unsigned k;
     if (args.default_params) {
         if (args.read_length >= 6 && args.read_length < 50){
-            auto omh_kmer_n = args.read_length- 2 * args.omh_k + 1;
-            if (omh_kmer_n < 3 ){
+            auto gomh_kmer_n = args.read_length- 2 * args.gomh_k + 1;
+            if (gomh_kmer_n < 3 ){
                 Utils::getInstance().logger(LOG_LEVEL_WARNING, boost::str(boost::format("only %1% kmers setted for gOMH selection.") % omh_kmer_n));
             }        
-            k = args.omh_k;
+            k = args.gomh_k;
         } else if (args.read_length >= 50 && args.read_length <= 300){
             k = ceil(((1-p)*(2+L))/(d+2-2*p));
             if (k < 4){
