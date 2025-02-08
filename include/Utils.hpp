@@ -32,7 +32,7 @@ struct cmd_arguments
     uint8_t k_size{};
     uint8_t w_size{};
     double alpha{0.5}; //  the relationship (w = segment_size * alpha) 
-    double beta{1.5}; //  the relationship (w = beta * k) between k and w for miniception 
+    double beta{2}; //  the relationship (w = beta * k) between k and w for miniception 
     uint8_t n_kmer{6}; // expected kmer for miniception
 
     // double bin2reads_ratio{0.8};
@@ -46,7 +46,7 @@ struct cmd_arguments
     bool gomh_flag{false};
     std::uint64_t seed{2024};
     double differ_kmer_ratio{0.3};
-    double probability{0.9};
+    double probability{0.86};
     unsigned visit_depth{15};
     bool save_graph{false};
     std::string bucketing_mode{"minimizer_gomh"};

@@ -185,12 +185,12 @@ void GraphConstructor::construct_graph(std::unordered_map<std::uint64_t, std::ve
             args.gomh_times = 4;
         } else {
             // args.gomh_times = 4;
-            if (args.max_edit_dis == 1){
-                args.gomh_times = 4;
-            } else if (args.max_edit_dis == 2){
+            if (args.max_edit_dis == 1 || args.max_edit_dis == 2){
                 args.gomh_times = 3;
-            } else if (args.max_edit_dis == 3){
-                args.gomh_times = 2;                
+            // } else if (args.max_edit_dis == 2){
+            //     args.gomh_times = 3;
+            // } else if (args.max_edit_dis == 3){
+            //     args.gomh_times = 2;                
             } else {
                 args.gomh_times = 1;
             }
