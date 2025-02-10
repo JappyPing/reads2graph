@@ -55,7 +55,6 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                 w_size = static_cast<uint8_t>(std::ceil(k_size * args.beta));
                 
                 if (w_size >= segment_size) {
-                    // w_size = static_cast<uint8_t>(segment_size * args.alpha);
                     w_size = k_size + 1; 
                 }
             }          
@@ -97,7 +96,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
             auto sub_strs = divide_into_substrings(read, num_substr);
             for (auto const & sub_str : sub_strs){
                 if (args.bucketing_mode == "miniception_gomh") {
-                    minimisers = Miniception(args).miniception_main(sub_str, k_size, k_size + args.beta, args.seed);                 
+                    minimisers = Miniception(args).miniception_main(sub_str, k_size, w_size, args.seed);                 
                 } else if (args.bucketing_mode == "minimizer_gomh") {
                     // auto substr_size = static_cast<uint8_t>(sub_str.size());
                     // uint8_t w_size = static_cast<uint8_t>(substr_size * 0.5);
