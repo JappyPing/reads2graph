@@ -28,9 +28,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
 
     if (args.default_params) {
         if (args.read_length >= 6 && args.read_length < 16){
-            args.segmentation = false;
-            k_size = 3;
-            w_size = 3 + k_size;                  
+            args.segmentation = false;                
         } else {
             if (args.read_length >= 16 && args.read_length < 50){
                 num_substr = 2;
@@ -42,13 +40,13 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
             // }   
             // k_size = k_estimate(num_substr);
         }
-        if (args.segmentation) {
-            k_size = k_estimate(num_substr);
-            uint8_t segment_size = static_cast<uint8_t>(std::ceil(args.read_length / num_substr));
-            if (args.bucketing_mode == "minimizer_gomh" && args.read_length >= 16) {
+        if (args.segmentation && args.read_length >= 16) {
+            if (args.bucketing_mode == "minimizer_gomh") {
+                k_size = k_estimate(num_substr);
+                uint8_t segment_size = static_cast<uint8_t>(std::ceil(args.read_length / num_substr));                
                 w_size = static_cast<uint8_t>(segment_size * args.alpha);  
             } else if (args.bucketing_mode == "miniception_gomh"){
-                k_size = static_cast<uint8_t>(std::ceil((2 * (args.read_length + 1) - args.n_kmer/num_substr) / ((args.n_kmer / num_substr) * args.beta + 2)));
+                k_size = static_cast<uint8_t>(std::ceil((2 * (args.read_length + 1) - std::ceil(args.n_kmer/num_substr)) / (std::ceil(args.n_kmer / num_substr) * args.beta + 2)));
                 if (k_size < 3){
                     k_size = 3;
                 }  
@@ -72,11 +70,15 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                     k_size = 3;
                     w_size = 2;  
                 }
-                // w_size = static_cast<uint8_t>(std::ceil(k_size * args.beta));
-            } else if (args.bucketing_mode == "minimizer_gomh" && args.read_length >= 16) {
-                k_size = k_estimate(num_substr);
-                uint8_t segment_size = static_cast<uint8_t>(std::ceil(args.read_length / num_substr));
-                w_size = static_cast<uint8_t>(segment_size * args.alpha); 
+            } else if (args.bucketing_mode == "minimizer_gomh") {
+                if (args.read_length >= 16) {
+                    k_size = k_estimate(num_substr);
+                    uint8_t segment_size = static_cast<uint8_t>(std::ceil(args.read_length / num_substr));
+                    w_size = static_cast<uint8_t>(segment_size * args.alpha); 
+                } else if (args.read_length >= 6 && args.read_length < 16) {
+                    k_size = 3;
+                    w_size = 3 + k_size;  
+                }
             } 
         }
     } else { 
