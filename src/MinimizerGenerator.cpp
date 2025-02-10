@@ -48,15 +48,14 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
             if (args.bucketing_mode == "minimizer_gomh" && args.read_length >= 16) {
                 w_size = static_cast<uint8_t>(segment_size * args.alpha);  
             } else if (args.bucketing_mode == "miniception_gomh"){
-                k_size = static_cast<uint8_t>(std::ceil((2 * (segment_size + 1) - 2 * (args.beta + 1)) / (2 + 2))); // here, n_kmer = 2
+                k_size = static_cast<uint8_t>(std::ceil((2 * (args.read_length + 1) - args.n_kmer/num_substr) / ((args.n_kmer / num_substr) * args.beta + 2)));
                 if (k_size < 3){
                     k_size = 3;
-                }                   
+                }  
                 w_size = static_cast<uint8_t>(std::ceil(k_size * args.beta));
-                
-                if (w_size >= segment_size) {
+                if (w_size >= args.read_length - k_size + 1) {
                     w_size = k_size + 1; 
-                }
+                }  
             }          
         } else {
             if (args.bucketing_mode == "miniception_gomh" ){
