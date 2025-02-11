@@ -68,7 +68,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                     }  
                 } else if (args.read_length >= 6 && args.read_length < 16) {
                     k_size = 3;
-                    w_size = 5;  
+                    w_size = 3;  
                 }
             } else if (args.bucketing_mode == "minimizer_gomh") {
                 if (args.read_length >= 16) {
@@ -76,8 +76,8 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                     uint8_t segment_size = static_cast<uint8_t>(std::ceil(args.read_length / num_substr));
                     w_size = static_cast<uint8_t>(segment_size * args.alpha); 
                 } else if (args.read_length >= 6 && args.read_length < 16) {
-                    k_size = 4;
-                    w_size = 4 + k_size + 1;  
+                    k_size = 3;
+                    w_size = 3 + k_size + 1;  
                 }
             } 
         }
