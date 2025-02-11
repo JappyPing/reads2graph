@@ -31,7 +31,7 @@ struct cmd_arguments
     bool default_params{true};
     uint8_t k_size{};
     uint8_t w_size{};
-    double alpha{0.9}; //  the relationship (w = segment_size * alpha) 
+    double alpha{0.5}; //  the relationship (w = segment_size * alpha) 
     double beta{2}; //  the relationship (w = beta * k) between k and w for miniception 
     uint8_t n_kmer{6}; // expected kmer for miniception
 
