@@ -68,7 +68,7 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                     }  
                 } else if (args.read_length >= 6 && args.read_length < 16) {
                     k_size = 3;
-                    w_size = 2;  
+                    w_size = 3;  
                 }
             } else if (args.bucketing_mode == "minimizer_gomh") {
                 if (args.read_length >= 16) {
