@@ -17,10 +17,8 @@ gOMH::gOMH(cmd_arguments args) : args(args) {}
 unsigned gOMH::gomh_k_size(unsigned L, double p, uint8_t d) {
     unsigned k;
     if (args.default_params) {
-        if (args.read_length >= 6 && args.read_length <= 16){
-            k = 3;
-        } else if (args.read_length > 16 && args.read_length < 50){
-            k = 4; 
+        if (args.read_length >= 6 && args.read_length <= 50){
+            k = args.gomh_k; 
         } else if (args.read_length >= 50 && args.read_length <= 300){
             k = ceil(((1-p)*(2+L))/(d+2-2*p));
             if (k < 4){
