@@ -48,8 +48,8 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
                 w_size = static_cast<uint8_t>(segment_size * args.alpha);  
             } else if (args.bucketing_mode == "miniception_gomh"){
                 k_size = static_cast<uint8_t>(std::ceil((2 * (segment_size + 1) - std::ceil(args.n_kmer/num_substr)) / (std::ceil(args.n_kmer / num_substr) * args.beta + 2)));
-                if (k_size < 3){
-                    k_size = 3;
+                if (k_size < 4){
+                    k_size = 4;
                 }  
                 w_size = static_cast<uint8_t>(std::ceil(k_size * args.beta));
                 if (w_size >= segment_size - k_size + 1) {
@@ -59,8 +59,8 @@ std::unordered_map<std::uint64_t, std::vector<std::vector<seqan3::dna5>>> Minimi
         } else {
             if (args.bucketing_mode == "miniception_gomh" ){
                 k_size = static_cast<uint8_t>(std::ceil((2 * (args.read_length + 1) - args.n_kmer) / (args.n_kmer * args.beta + 2)));
-                if (k_size < 3){
-                    k_size = 3;
+                if (k_size < 4){
+                    k_size = 4;
                 }  
                 w_size = static_cast<uint8_t>(std::ceil(k_size * args.beta));
                 if (w_size >= args.read_length - k_size + 1) {
