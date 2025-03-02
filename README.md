@@ -264,8 +264,9 @@ LEGAL
     Author: Pengyao Ping
     SeqAn Copyright: 2006-2023 Knut Reinert, FU-Berlin; released under the 3-clause BSDL.
     For full copyright and/or warranty information see --copyright.
+```
 
 ## Question
 
-Feel free to contact me if you have any questions or bugs on runnning reads2graph or are interested in reads2graph
+Feel free to contact me if you have any questions or bugs on running reads2graph or are interested in reads2graph
 
