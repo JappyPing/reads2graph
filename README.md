@@ -140,7 +140,7 @@ If you are constructing UMI graphs, you must input the following parameters by y
           The number of expected processes. Default: 26. -->
 
 ## reads2graph modes
-Reads2graph supports the following bucketing modes via the combinations between minimizer and gOMH with and without read segmentation. We recommend the first two modes to construct the edit-distance graph.
+Reads2graph offers several bucketing modes through various combinations of minimizer and gOMH, with or without read segmentation for both minimizer bucketing to construct the edit-distance graph. We recommend using the minimizer_gomh or miniception_gomh modes without read segmentation.
 
 - Using random minimizer as minimizer bucketing without read segmentation
 
