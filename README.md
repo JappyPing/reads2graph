@@ -12,7 +12,8 @@ reads2graph is a practical method for constructing an edit-distance-based read g
 ## Installation
 ### From ```bioconda```
 #### Create an environment and install reads2graph via ```conda```
-**Important Note**: the latest version of reads2graph has been updated to bioconda channel, please install the reads2graph via this Github repo.
+**Important Note**: the latest version of reads2graph has NOT been updated to bioconda channel, please install the reads2graph via this Github repo.
+
 Note: reads2graph installed from ```bioconda``` currently only support linux-64
 
 Add the necessary channels if you are not currently using them.
