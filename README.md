@@ -12,7 +12,7 @@ reads2graph is a practical method for constructing an edit-distance-based read g
 ## Installation
 ### From ```bioconda```
 #### Create an environment and install reads2graph via ```conda```
-
+**Important Note**: the latest version of reads2graph has been updated to bioconda channel, please install the reads2graph via this Github repo.
 Note: reads2graph installed from ```bioconda``` currently only support linux-64
 
 Add the necessary channels if you are not currently using them.
@@ -62,7 +62,7 @@ Please check the number of available CPU cores that can be used. Specify the exa
 ```
 cd ..
 cd example
-../bin/reads2graph -i ./data/SRR1543965.umi.fasta -o ./ -x 2 -n 1 -p 64 -k 4 --window_number 2 --omh_times 4 --omh_k 4
+../bin/reads2graph --bucketing_mode minimizer_gomh --segmentation false -i ./data/SRR1543965.umi.fasta -o ./ -x 2 -n 1 -p 64 --alpha 1
 ```
 ### Installing reads2graph from ```bioconda```
 download the example data SRR1543965.umi.fasta under /example/data of this repo
