@@ -108,7 +108,7 @@ Note: The date, time, and commands will reflect the current status upon executin
 2025-02-14 23:35:32: INFO:  *************************************************
 ```
 
-## Parameters Configuration
+<!-- ## Parameters Configuration
 
 ### Constructing read graph
 If you are constructing graphs for short reads (e.g., with read lengths between 50bp and 300bp), you may only need to customise the following paramters following your needs. Using all the other parameters as default, we have optimised this for you. 
@@ -136,7 +136,7 @@ If you are constructing UMI graphs, you must input the following parameters by y
     --omh_times (unsigned 32 bit integer)
           The number of times to perform permutation in order min hashing. Default: 3.
     -p, --num_process (signed 32 bit integer)
-          The number of expected processes. Default: 26.
+          The number of expected processes. Default: 26. -->
 
 ### Print help
 Please use the following commands to view all the options if you need
@@ -155,8 +155,8 @@ installed from Source codes
 
 #### Expected outputs
 ```
-2024-06-22 13:57:19: INFO: Welcome to use reads2graph!
-2024-06-22 13:57:19: INFO: reads2graph -h
+2025-03-02 21:29:40: INFO:  Welcome to use reads2graph!
+2025-03-02 21:29:40: INFO:  ./bin/reads2graph -h
 reads2graph - Construction of edit-distance graphs from a set of short reads.
 =============================================================================
 
@@ -169,33 +169,43 @@ OPTIONS
           Please provide a fasta/fastq/ data file. Default: "".
     -o, --output_dir (std::filesystem::path)
           The directory for outputs. Default: "/data/pping/Repo/reads2graph".
-    -r, --read_length (unsigned 32 bit integer)
-          No need to input this parameter, reads2graph will calculate the minimum read length. Default: 0.
+    --default_params (bool)
+          Default true. If false, user must set k and w from CLI. Default: 1.
     -k, --k_size (unsigned 8 bit integer)
-          The size for minimiser. Default: 4.
-    -w, --window_number (unsigned 8 bit integer)
+          The size for minimiser. Default: 0.
+    -w, --w_size (unsigned 8 bit integer)
+          The window size for minimiser. Default: 0.
+    --alpha (double)
+          For window size determination from segment size, w = sge_size * alpha for minimizer bucketing. Default 1
+          Default: 0.5.
+    --beta (double)
+          The relationship (w=beta * k) between k and w for miniception bucketing. Default 2. Default: 2.
+    --n_kmer (unsigned 8 bit integer)
+          The expected number of minimizer for miniception Default: 6.
+    --substr_number (unsigned 8 bit integer)
           The window number for minimiser. Default: 3.
     -x, --max_edit_dis (unsigned 8 bit integer)
           The maximum edit distance for constructing edges between reads Default: 2.
     -n, --min_edit_dis (unsigned 8 bit integer)
           The minimum edit distance for constructing edges between reads. Default: 1.
     -p, --num_process (signed 32 bit integer)
-          The number of expected processes. Default: 26.
-    --pair_wise (bool)
-          Brute Force calcualte the pairwise edit distance. Default: 0.
+          The number of expected processes. Default: 1.
     --bin_size_max (unsigned 32 bit integer)
           The larger threshold used to group buckets of different sizes. Default: 10000.
-    --omh_k (unsigned 32 bit integer)
+    --gomh_k (unsigned 32 bit integer)
           K-mer size used in order min hashing. Default: 4.
-    --omh_times (unsigned 32 bit integer)
+    --gomh_times (unsigned 32 bit integer)
           The number of times to perform permutation in order min hashing. Default: 3.
-    --omh_seed (unsigned 64 bit integer)
-          The seed to generate a series of seeds for OMH bucketing. Default: 2024.
-    --omh_flag (bool)
+    --seed (unsigned 64 bit integer)
+          Multiple purposes used initial seed in reads2graph. For eaxmple, the seed to generate a series of seeds for
+          OMH bucketing. The initial seed used in minimizer and original omh bucketing modes for reproducing results.
+          Default: 2024.
+    --gomh_flag (bool)
           Do not set this flag by yourself. When the permutation_times larger than the number of k-mer candidates and
           the kmer size are the same one, bucketing the reads using each kmer candidate. Default: 0.
-    --bad_kmer_ratio (double)
-          The maximum ratio of bad k-mers out of total number of kmers in a window of a read. Default: 0.3.
+    --differ_kmer_ratio (double)
+          The predefined ratio of k-mers with differing bases out of total number of kmers in a segment of a read.
+          Default: 0.3.
     --probability (double)
           The expected probability P for grouping two similar reads into same bucket by at least one minimiser that
           does not include the different bases Default: 0.86.
@@ -203,10 +213,48 @@ OPTIONS
           The maximum distance of nodes from the give node for updating more potential edges. Default: 15.
     --save_graph (bool)
           If ture, reads2graph will save graph to file in graphviz dot format. Default: 0.
+    --bucketing_mode (std::string)
+          Specify the bucketing mode using the following options: minimizer_gomh, miniception_gomh, miniception, omh,
+          and brute_force. The default option is minimizer_gomh. The miniception, omh, and brute_force modes are
+          implemented for assessing the performance of our method, reads2graph. The minimizer_gomh and
+          miniception_gomh modes use minimizers implemented in seqan3 and miniception for bucketing reads in a random
+          order to construct an edit-distance graph. The omh mode utilizes the original OMH method for bucketing short
+          reads to create an edit-distance graph, while the brute_force mode calculates the pairwise edit distance for
+          a set of short reads. Default: minimizer_gomh.
+    --segmentation (bool)
+          If ture, reads2graph divides reads into separate substrings and generates multiple minimizers for each read;
+          otherwise, it generates minimizers for the entire read. Default: 1.
+    --miniception_gomh (bool)
+          If ture, reads2graph uses miniception for bucketing reads first and then uses gOMH for bucketing. Default:
+          1.
+    --omh_k (unsigned 32 bit integer)
+          K-mer size for bucketing reads used in the original OMH only to construct edit-distance graph. Default: 18.
+    --omh_m (unsigned 32 bit integer)
+          The parameter m, the number of hash functions, for bucketing reads used in the original OMH only to
+          construct edit-distance graph. Default: 3.
+    --omh_l (unsigned 32 bit integer)
+          The parameter l for bucketing reads used in the original OMH only to construct edit-distance graph. Default:
+          2.
+    --miniception_k (unsigned 32 bit integer)
+          K-mer size for bucketing reads used in the miniception mode to construct edit-distance graph. Default: 18.
+    --miniception_w (unsigned 32 bit integer)
+          The window size for bucketing reads in the miniception mode to construct edit-distance graph. Default: 19.
+
+  Common options
+    -h, --help
+          Prints the help page.
+    -hh, --advanced-help
+          Prints the help page including advanced options.
+    --version
+          Prints the version information.
+    --copyright
+          Prints the copyright/license information.
+    --export-help (std::string)
+          Export the help page information. Value must be one of [html, man, ctd, cwl].
 
 VERSION
-    Last update: 04.06.2024
-    reads2graph version: 1.0.0
+    Last update: 14.Feb.2025
+    reads2graph version: 1.1.0
     Sharg version: 1.1.1
     SeqAn version: 3.3.0
 
@@ -215,7 +263,6 @@ LEGAL
     Author: Pengyao Ping
     SeqAn Copyright: 2006-2023 Knut Reinert, FU-Berlin; released under the 3-clause BSDL.
     For full copyright and/or warranty information see --copyright.
-```
 
 ## Question
 
