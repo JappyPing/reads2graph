@@ -172,6 +172,7 @@ The following baseline methods are implemented into reads2graph based the graph 
 ```reads2graph --bucketing_mode OMH```
 
 - Using the brute force to create an edit-distance graph (the ground truth)
+
 ```reads2graph --bucketing_mode brute_force```
 
 ### Print help
